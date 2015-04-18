@@ -10,6 +10,9 @@ public class G : MonoBehaviour
 
     //Some settings
     public float hexInset = 0.9f;
+    public float terrainTexScale = 0.1f;
+    public float terrainFullness = 0.75f;
+    public float terrainSnowiness = 0.1f;
 
     public void Awake()
     {
@@ -23,8 +26,8 @@ public class G : MonoBehaviour
         world = new World();
         var worldBlock = new WorldBlock(new HexXY(0, 0), 10);
 
-        var nonEmpty = new BinaryNoiseFunc(new Vector2(100, 200), 0.25f, -1f);
-        var snow = new BinaryNoiseFunc(new Vector2(200, 100), 0.25f, 0);
+        var nonEmpty = new BinaryNoiseFunc(new Vector2(100, 200), 0.25f, terrainFullness);
+        var snow = new BinaryNoiseFunc(new Vector2(200, 100), 0.25f, terrainSnowiness);
 
         worldBlock.Generate(nonEmpty, snow);
 

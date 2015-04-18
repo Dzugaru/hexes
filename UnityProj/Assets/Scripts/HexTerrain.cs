@@ -50,7 +50,6 @@ public class HexTerrain : MonoBehaviour
         {
             allTriangles[i] = new int[block.cellTypeCounts[i + 1] * celltcnt];           
         }
-        
 
         int[] idx = new int[typescnt];       
 
@@ -67,8 +66,14 @@ public class HexTerrain : MonoBehaviour
                 Vector2 coord = new HexXY(x, y).ToPlaneCoordinates();                
                 for (int v = 0; v < cellvcnt; v++)
                 {
-                    vertices[iv * cellvcnt + v].x = cellVertices[v].x * G.g.hexInset + coord.x;
-                    vertices[iv * cellvcnt + v].z = cellVertices[v].y * G.g.hexInset + coord.y;
+                    int ivv = iv * cellvcnt + v;
+                    float vx = cellVertices[v].x * G.g.hexInset + coord.x;
+                    float vy = cellVertices[v].y * G.g.hexInset + coord.y;
+
+                    vertices[ivv].x = vx;
+                    vertices[ivv].z = vy;
+                    uvs[ivv].x = vx * G.g.terrainTexScale;
+                    uvs[ivv].y = vy * G.g.terrainTexScale;
                 }
 
                 int[] tri = allTriangles[ctype - 1];                

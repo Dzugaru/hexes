@@ -6,18 +6,19 @@ namespace Engine
     {
         public Vector2 randomOffset;
         public float frequency;
-        public float threshold;
+        public float perlinThreshold;
 
         public BinaryNoiseFunc(Vector2 randomOffset, float frequency, float threshold)
-        {
+        {            
             this.randomOffset = randomOffset;
             this.frequency = frequency;
-            this.threshold = threshold;
+            this.perlinThreshold = 1 - threshold * 2;
         }
 
         public bool Get(Vector2 p)
         {
-            return Noise.Perlin2D(p + randomOffset, frequency) > threshold;
+            float noiseVal = Noise.Perlin2D(p + randomOffset, frequency);
+            return noiseVal > perlinThreshold;
         }
     }
 }
