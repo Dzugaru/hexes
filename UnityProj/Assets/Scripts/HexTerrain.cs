@@ -67,8 +67,8 @@ public class HexTerrain : MonoBehaviour
                 Vector2 coord = new HexXY(x, y).ToPlaneCoordinates();                
                 for (int v = 0; v < cellvcnt; v++)
                 {
-                    vertices[iv * cellvcnt + v].x = cellVertices[v].x + coord.x;
-                    vertices[iv * cellvcnt + v].z = cellVertices[v].y + coord.y;                         
+                    vertices[iv * cellvcnt + v].x = cellVertices[v].x * G.g.hexInset + coord.x;
+                    vertices[iv * cellvcnt + v].z = cellVertices[v].y * G.g.hexInset + coord.y;
                 }
 
                 int[] tri = allTriangles[ctype - 1];                

@@ -4,11 +4,22 @@ using Engine;
 public class G : MonoBehaviour
 {
     public static World world;
+    public static G g { get; private set; }
 
     public GameObject hexTerrainPrefab;
 
+    //Some settings
+    public float hexInset = 0.9f;
+
     public void Awake()
     {
+        if (g != null)
+        {
+            throw new System.InvalidProgramException("Two global objects");
+        }
+
+        g = this;
+
         world = new World();
         var worldBlock = new WorldBlock(new HexXY(0, 0), 10);
 
