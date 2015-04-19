@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using Engine;
+using System.Runtime.InteropServices;
 
 public class G : MonoBehaviour
 {
@@ -22,48 +23,27 @@ public class G : MonoBehaviour
             throw new System.InvalidProgramException("Two global objects");
         }
 
-        g = this;
+        g = this;       
 
-        world = new World();
-        var worldBlock = new WorldBlock(new HexXY(0, 0), 10);
-
-        var nonEmpty = new BinaryNoiseFunc(new Vector2(100, 200), 0.25f, terrainFullness);
-        var snow = new BinaryNoiseFunc(new Vector2(200, 100), 0.25f, terrainSnowiness);
-
-        worldBlock.Generate(nonEmpty, snow);
-
-        GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);
-        //ht.transform.position = new Vector3(1, 1, 1);
-        ht.name = "Terrain Block 1";
-        ht.GetComponent<HexTerrain>().Generate(worldBlock);
+     
 
         D.setLogger(D.GetCallbackPointer((D.PtrToVoid)(msgPtr =>
         {
             Debug.Log(D.GetStringFromPointer(msgPtr));
         })));
 
+        D.start();
+        var wbhandle = D.getWorldBlockHandle();        
+        var worldBlock = (WorldBlock)Marshal.PtrToStructure(wbhandle, typeof(WorldBlock));
 
-        Debug.Log(D.sqr(9));
-        Debug.Log(D.dbl(2));
-        Debug.Log(D.five());
+        GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);        
+        ht.name = "Terrain Block 1";
+        ht.GetComponent<HexTerrain>().Generate(worldBlock);
 
-        Bench();
+
+        
     }
-
-    void Bench()
-    {
-        var worldBlock = new WorldBlock(new HexXY(0, 0), 100);
-
-        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-        sw.Start();
-        for (int i = 0; i < 100; i++)
-        {
-            var nonEmpty = new BinaryNoiseFunc(new Vector2(UnityEngine.Random.Range(100,200), UnityEngine.Random.Range(100, 200)), 0.25f, 0.6f);
-            var snow = new BinaryNoiseFunc(new Vector2(UnityEngine.Random.Range(100, 200), UnityEngine.Random.Range(100, 200)), 0.25f, 0.4f);
-            worldBlock.Generate(nonEmpty, snow);
-        }
-        sw.Stop();
-        Debug.Log(sw.ElapsedMilliseconds);
-    }
+    
+    //Bench for 100 100x100 world blocks was 0.44 sec
 }
 

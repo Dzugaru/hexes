@@ -27,7 +27,7 @@ public class HexTerrain : MonoBehaviour
             0, 2, 4//Center triangle
         };
 
-    public void Generate(WorldBlock block)
+    unsafe public void Generate(WorldBlock block)
     {
         mesh = new Mesh();
         mesh.name = "Hex Terrain mesh";
@@ -53,11 +53,11 @@ public class HexTerrain : MonoBehaviour
 
         int[] idx = new int[typescnt];       
 
-        for (int x = 0; x < block.size; x++)
+        for (int x = 0; x < WorldBlock.size; x++)
         {
-            for (int y = 0; y < block.size; y++)
+            for (int y = 0; y < WorldBlock.size; y++)
             {
-                int ctype = (int)block.cellTypes[x, y];
+                int ctype = (int)block.cellTypes[y * WorldBlock.size + x];
                 if (ctype == 0) continue;
                
                 int it = idx[ctype - 1]++;

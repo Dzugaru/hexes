@@ -2,7 +2,7 @@ module engine;
 import std.conv;
 import std.math;
 import std.string;
-import math;
+public import math;
 import noise;
 import std.traits : EnumMembers;
 import logger : log;
@@ -49,6 +49,11 @@ nothrow:
 	{
 		return HexXY(mixin("x" ~ op ~ "rhs.x"), mixin("y" ~ op ~ "rhs.y"));
 	}
+
+	bool opEquals(HexXY rhs) const
+	{
+		return x == rhs.x && y == rhs.y;
+	}
 }
 
 struct BinaryNoiseFunc
@@ -73,12 +78,11 @@ nothrow:
 	}
 }
 
-class WorldBlock(uint sz)
+final class WorldBlock(uint sz)
 {
 	immutable HexXY position;
 
 	TerrainCellType[sz][sz] cellTypes;
-
 	int[terrainTypesCount] cellTypeCounts;
 	int nonEmptyCellsCount;
 

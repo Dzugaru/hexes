@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿using System.Runtime.InteropServices;
+using UnityEngine;
 
 
 namespace Engine
 {
+    [StructLayout(LayoutKind.Sequential)]
     public struct HexXY
     {
         static Vector2 ex = new Vector2(Mathf.Sqrt(3) * 0.5f, 0.5f);

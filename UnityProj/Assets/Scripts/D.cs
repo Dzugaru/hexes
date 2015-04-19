@@ -16,6 +16,9 @@ public class D : MonoBehaviour
     IntPtr pDll;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void VoidToVoid();
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int IntToInt(int x);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -24,11 +27,17 @@ public class D : MonoBehaviour
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void PtrToVoid(IntPtr cb);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate IntPtr VoidToPtr();  
+
 
     public static IntToInt sqr;
     public static IntToInt dbl;
     public static VoidToInt five;
     public static PtrToVoid setLogger;
+    public static VoidToVoid start;
+    public static VoidToPtr getWorldBlockHandle;
+
 
 
     public static IntPtr GetCallbackPointer(Delegate d)

@@ -1,8 +1,27 @@
 module interopTest;
 import std.random;
 import std.conv;
+import engine;
+import utils;
 
 extern(C) void function(wchar*) externLog;
+
+extern(C) export void start()
+{
+	wb1 = new WorldBlock!10(HexXY(0,0));
+	wb1.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
+				 BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
+
+	log(wformat("Non empty: %d", wb1.nonEmptyCellsCount));
+}
+
+WorldBlock!10 wb1;
+extern(C) export void* getWorldBlockHandle()
+{
+	return cast(void*)wb1 + wb1.position.offsetof;
+}
+
+
 
 void log(wstring msg)
 {	
@@ -31,3 +50,6 @@ extern(C) export void setLogger(void function(wchar*) logPtr)
 {
 	externLog = logPtr;
 }
+
+
+

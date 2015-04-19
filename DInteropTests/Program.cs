@@ -21,6 +21,9 @@ namespace NotUnityTests
         static IntPtr pDll;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void VoidToVoid();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int IntToInt(int x);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -32,10 +35,23 @@ namespace NotUnityTests
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void StringToVoid(IntPtr x);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void PtrToVoid(IntPtr cb);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate IntPtr VoidToPtr();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void PtrPtrIntToVoid(IntPtr src, IntPtr dst, int num);
+
+
         public static IntToInt sqr;
         public static IntToInt dbl;
         public static VoidToInt five;
-        public static CallbackToVoid setLogger;
+        public static PtrToVoid setLogger;
+        public static VoidToVoid start;
+        public static VoidToPtr getWorldBlockHandle;
+        public static PtrPtrIntToVoid copyMemory;
 
         public static IntPtr GetCallbackPointer(Delegate d)
         {
@@ -52,18 +68,40 @@ namespace NotUnityTests
                 funcField.SetValue(null, unmanagedFunc);
             }
 
+
+
             setLogger(GetCallbackPointer((StringToVoid)(msgPtr =>
             {
                 string msg = Marshal.PtrToStringUni(msgPtr);
                 Console.WriteLine(msg);
             })));
 
+            start();
+            var wbhandle = getWorldBlockHandle();
+           
+            var testBlock = (DWorldBlock)Marshal.PtrToStructure(wbhandle, typeof(DWorldBlock));
 
-            sqr(9);
-            dbl(2);
-            five();
+
+            //sqr(9);
+            //dbl(2);
+            //five();
 
             Console.ReadLine();
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct HexXY
+    {
+        public int x, y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe public struct DWorldBlock
+    {
+        public HexXY position;
+        public fixed int cellTypes[4];
+        public fixed int cellTypeCounts[3];
+        public int nonEmptyCellsCount;
     }
 }

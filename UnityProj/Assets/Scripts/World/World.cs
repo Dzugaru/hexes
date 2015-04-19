@@ -6,6 +6,6 @@ namespace Engine
 {
     public class World
     {
-        public static int TerrainCellTypesCount = Enum.GetValues(typeof(TerrainCellType)).Length;
+        public const int TerrainCellTypesCount = 3;
     }
 }
