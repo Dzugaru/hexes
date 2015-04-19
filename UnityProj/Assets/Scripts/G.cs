@@ -34,7 +34,11 @@ public class G : MonoBehaviour
         GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);
         //ht.transform.position = new Vector3(1, 1, 1);
         ht.name = "Terrain Block 1";
-        ht.GetComponent<HexTerrain>().Generate(worldBlock);
+        ht.GetComponent<HexTerrain>().Generate(worldBlock);    
+
+        Debug.Log(D.sqr(9));
+        Debug.Log(D.dbl(2));
+        Debug.Log(D.five());
     }
 }
 
