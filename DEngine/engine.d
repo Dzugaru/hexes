@@ -80,6 +80,7 @@ nothrow:
 
 final class WorldBlock(uint sz)
 {
+align:
 	immutable HexXY position;
 
 	TerrainCellType[sz][sz] cellTypes;

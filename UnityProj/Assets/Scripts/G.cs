@@ -33,15 +33,14 @@ public class G : MonoBehaviour
         })));
 
         D.start();
-        var wbhandle = D.getWorldBlockHandle();        
-        var worldBlock = (WorldBlock)Marshal.PtrToStructure(wbhandle, typeof(WorldBlock));
+        var wbhandle = D.getWorldBlockHandle(); 
 
         GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);        
         ht.name = "Terrain Block 1";
-        ht.GetComponent<HexTerrain>().Generate(worldBlock);
-
-
-        
+        unsafe
+        {
+            ht.GetComponent<HexTerrain>().Generate(wbhandle.ToPointer());
+        }
     }
     
     //Bench for 100 100x100 world blocks was 0.44 sec

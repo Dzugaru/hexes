@@ -8,7 +8,7 @@ extern(C) void function(wchar*) externLog;
 
 extern(C) export void start()
 {
-	wb1 = new WorldBlock!10(HexXY(0,0));
+	wb1 = new WorldBlock!10(HexXY(2,3));
 	wb1.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
 				 BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
 
