@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Engine;
 
 public class G : MonoBehaviour
@@ -34,7 +35,13 @@ public class G : MonoBehaviour
         GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);
         //ht.transform.position = new Vector3(1, 1, 1);
         ht.name = "Terrain Block 1";
-        ht.GetComponent<HexTerrain>().Generate(worldBlock);    
+        ht.GetComponent<HexTerrain>().Generate(worldBlock);
+
+        D.setLogger(D.GetCallbackPointer((D.PtrToVoid)(msgPtr =>
+        {
+            Debug.Log(D.GetStringFromPointer(msgPtr));
+        })));
+
 
         Debug.Log(D.sqr(9));
         Debug.Log(D.dbl(2));

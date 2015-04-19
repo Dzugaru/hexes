@@ -19,12 +19,27 @@ public class D : MonoBehaviour
     public delegate int IntToInt(int x);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate int ToInt();
+    public delegate int VoidToInt();
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PtrToVoid(IntPtr cb);
+
 
     public static IntToInt sqr;
     public static IntToInt dbl;
-    public static ToInt five;
+    public static VoidToInt five;
+    public static PtrToVoid setLogger;
 
+
+    public static IntPtr GetCallbackPointer(Delegate d)
+    {
+        return Marshal.GetFunctionPointerForDelegate(d);
+    }
+
+    public static string GetStringFromPointer(IntPtr pStr)
+    {
+        return Marshal.PtrToStringUni(pStr);
+    }
 
 
     void Awake()
