@@ -22,6 +22,13 @@ namespace Engine
 
         public void Generate(BinaryNoiseFunc nonEmpty, BinaryNoiseFunc snow)
         {
+            nonEmptyCellsCount = 0;
+            for (int i = 0; i < cellTypeCounts.Length; i++)
+            {
+                cellTypeCounts[i] = 0;
+            }
+
+
             for (int y = 0; y < size; ++y)
             {
                 for (int x = 0; x < size; ++x)
@@ -50,11 +57,11 @@ namespace Engine
                 }
             }
 
-            Debug.Log("Block generated: " + nonEmptyCellsCount + " non-empty cells");
-            for (int i = 1; i < World.TerrainCellTypesCount; i++)
-            {
-                Debug.Log(((TerrainCellType)i).ToString() + " " + cellTypeCounts[i]);
-            }
+            //Debug.Log("Block generated: " + nonEmptyCellsCount + " non-empty cells");
+            //for (int i = 1; i < World.TerrainCellTypesCount; i++)
+            //{
+            //   Debug.Log(((TerrainCellType)i).ToString() + " " + cellTypeCounts[i]);
+            //}
         }
     }
 }

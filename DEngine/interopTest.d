@@ -11,8 +11,8 @@ void log(wstring msg)
 
 extern(C) export int sqr(int x)
 {
-	log("sqr called"w);
-	return x * x;
+	log("sqr called!"w);
+	return x * x; 
 }
 
 extern(C) export int dbl(int x)

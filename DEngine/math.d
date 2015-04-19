@@ -16,7 +16,7 @@ nothrow @nogc
 	private T[sz] c;
 	//alias c this;
 
-	mixin(emitXYZMembers());
+	mixin(emitXYZMembers());	
 
 	this(T[] c ...)
 	{
@@ -38,15 +38,15 @@ nothrow @nogc
 	{
 		Vector!(sz,T) res;
 		foreach(i, ref e; res.c)		
-			e *= rhs;		
+			e = c[i] * rhs;		
 		return res;
 	}
 
-	auto opBinaryRight(string op : "*")(in T rhs)
+	auto opBinaryRight(string op : "*")(in T rhs) const
 	{
 		Vector!(sz,T) res;
 		foreach(i, ref e; res.c)		
-			e *= rhs;		
+			e = c[i] * rhs;		
 		return res;
 	}
 
@@ -81,7 +81,7 @@ nothrow @nogc
 }
 
 	//throw and @gc
-	string toString()
+	@trusted string toString()
 	{		
 		return to!string(c);
 	}

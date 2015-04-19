@@ -46,6 +46,24 @@ public class G : MonoBehaviour
         Debug.Log(D.sqr(9));
         Debug.Log(D.dbl(2));
         Debug.Log(D.five());
+
+        Bench();
+    }
+
+    void Bench()
+    {
+        var worldBlock = new WorldBlock(new HexXY(0, 0), 100);
+
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        for (int i = 0; i < 100; i++)
+        {
+            var nonEmpty = new BinaryNoiseFunc(new Vector2(UnityEngine.Random.Range(100,200), UnityEngine.Random.Range(100, 200)), 0.25f, 0.6f);
+            var snow = new BinaryNoiseFunc(new Vector2(UnityEngine.Random.Range(100, 200), UnityEngine.Random.Range(100, 200)), 0.25f, 0.4f);
+            worldBlock.Generate(nonEmpty, snow);
+        }
+        sw.Stop();
+        Debug.Log(sw.ElapsedMilliseconds);
     }
 }
 

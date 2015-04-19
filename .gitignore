@@ -26,4 +26,6 @@ sysinfo.txt
 
 # D project
 **/Debug/
+**/Release/
+trace.def
 *.dll_cv
