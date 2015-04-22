@@ -5,11 +5,29 @@ import std.string;
 public import math;
 import noise;
 import std.traits : EnumMembers;
-import logger : log;
+import logger;
 import utils;
 
 @safe:
 
+/***************************************************************************************************
+* Sandbox
+* 1 world block 10x10 for now
+*/
+WorldBlock!10 worldBlock;
+
+void startTheWorld()
+{
+	//Setup logging
+
+	worldBlock = new WorldBlock!10(HexXY(0,0));
+	worldBlock.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
+						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
+}
+
+/***************************************************************************************************
+* Terrain types
+*/
 enum TerrainCellType
 {
 	Empty = 0,
@@ -19,6 +37,9 @@ enum TerrainCellType
 
 enum terrainTypesCount = EnumMembers!TerrainCellType.length;
 
+/***************************************************************************************************
+* Terrain tile
+*/
 struct HexXY
 {
 nothrow:
@@ -56,6 +77,9 @@ nothrow:
 	}
 }
 
+/***************************************************************************************************
+* Convenience struct for terrain generation
+*/
 struct BinaryNoiseFunc
 {
 nothrow:
@@ -78,6 +102,9 @@ nothrow:
 	}
 }
 
+/***************************************************************************************************
+* A block of terrain, consisting of (sz x sz) tiles
+*/
 final class WorldBlock(uint sz)
 {
 align:
@@ -127,14 +154,17 @@ align:
 		}
 
 
-		log(wformat("Block generated: %d non-empty cells"w, nonEmptyCellsCount));
+		log(format("Block generated: %d non-empty cells", nonEmptyCellsCount));
 		foreach(i, c; cellTypeCounts)
 		{
-		    log(wformat("%s %d"w, to!string(cast(TerrainCellType)i), c));
+		    log(format("%s %d", to!string(cast(TerrainCellType)i), c));
 		}
 	}
 }
 
+/***************************************************************************************************
+* Some "living" entity?
+*/
 class Character
 {
 

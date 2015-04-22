@@ -2,9 +2,9 @@ module logger;
 
 enum isLogging = true;
 
-void function(wstring msg) logImpl;
+void function(string msg) logImpl;
 
-@trusted void log(lazy wstring msg)
+@trusted void log(lazy string msg)
 {
 	if(isLogging && logImpl)
 	{

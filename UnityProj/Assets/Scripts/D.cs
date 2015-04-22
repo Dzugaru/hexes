@@ -29,14 +29,9 @@ public class D : MonoBehaviour
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate IntPtr VoidToPtr();  
-
-
-    public static IntToInt sqr;
-    public static IntToInt dbl;
-    public static VoidToInt five;
-    public static PtrToVoid setLogger;
-    public static VoidToVoid start;
-    public static VoidToPtr getWorldBlockHandle;
+  
+    public static PtrToVoid onStart;
+    public static VoidToPtr queryWorld;
 
 
 
@@ -46,8 +41,8 @@ public class D : MonoBehaviour
     }
 
     public static string GetStringFromPointer(IntPtr pStr)
-    {
-        return Marshal.PtrToStringUni(pStr);
+    {       
+        return Marshal.PtrToStringAnsi(pStr);
     }
 
 
