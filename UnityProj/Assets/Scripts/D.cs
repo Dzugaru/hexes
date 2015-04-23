@@ -28,10 +28,24 @@ public class D : MonoBehaviour
     public delegate void PtrToVoid(IntPtr cb);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate IntPtr VoidToPtr();  
-  
-    public static PtrToVoid onStart;
-    public static VoidToPtr queryWorld;
+    public delegate IntPtr VoidToPtr();
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PtrPtrToVoid(IntPtr name, IntPtr cb);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UInt32Uint32ShowObjectTypeFloatToVoid(uint x, uint y, ShowObjectType objName, float durSecs);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void HexXYToHexXYToVoid(int x0, int y0, int x1, int y1);
+
+
+    private static PtrPtrToVoid setCallback;
+
+    public static PtrToVoid setLogging;
+    public static VoidToVoid onStart;    
+    public static VoidToPtr queryWorld;    
+    public static HexXYToHexXYToVoid calcAndShowPath;
 
 
 
@@ -43,6 +57,13 @@ public class D : MonoBehaviour
     public static string GetStringFromPointer(IntPtr pStr)
     {       
         return Marshal.PtrToStringAnsi(pStr);
+    }
+
+    public static void SetCallback(string name, Delegate method)
+    {
+        var strPtr = Marshal.StringToHGlobalAnsi(name);
+        setCallback(strPtr, GetCallbackPointer(method));
+        Marshal.FreeHGlobal(strPtr);
     }
 
 
@@ -57,7 +78,7 @@ public class D : MonoBehaviour
 
         pDll = LoadLibrary("DEngine.dll");
 
-        foreach (var funcField in typeof(D).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public))
+        foreach (var funcField in typeof(D).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public))
         {
             var unmanagedFunc = Marshal.GetDelegateForFunctionPointer(GetProcAddress(pDll, funcField.Name), funcField.FieldType);
             funcField.SetValue(null, unmanagedFunc);

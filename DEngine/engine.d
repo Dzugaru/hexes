@@ -10,6 +10,8 @@ import utils;
 
 @safe:
 
+mixin(import("SharedEnums.cs"));
+
 /***************************************************************************************************
 * Sandbox
 * 1 world block 10x10 for now
@@ -25,16 +27,6 @@ void startTheWorld()
 						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
 }
 
-/***************************************************************************************************
-* Terrain types
-*/
-enum TerrainCellType
-{
-	Empty = 0,
-	Grass,
-	Snow
-}
-
 enum terrainTypesCount = EnumMembers!TerrainCellType.length;
 
 /***************************************************************************************************
@@ -47,6 +39,7 @@ nothrow:
 	static immutable Vector2 ex = Vector2(sqrt(3f) * 0.5f, 0.5f);
 	static immutable Vector2 ey = Vector2(-sqrt(3f) * 0.5f, 0.5f);
 
+align:
 	int x, y;
 
 	this(int x, int y)

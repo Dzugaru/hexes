@@ -96,7 +96,7 @@
   <exefile>..\UnityProj\$(ProjectName).dll</exefile>
   <useStdLibPath>1</useStdLibPath>
   <cRuntime>2</cRuntime>
-  <additionalOptions />
+  <additionalOptions>-J../UnityProj/Assets/Scripts/</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
@@ -197,7 +197,7 @@
   <exefile>..\UnityProj\$(ProjectName).dll</exefile>
   <useStdLibPath>1</useStdLibPath>
   <cRuntime>1</cRuntime>
-  <additionalOptions />
+  <additionalOptions>-J../UnityProj/Assets/Scripts/</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>

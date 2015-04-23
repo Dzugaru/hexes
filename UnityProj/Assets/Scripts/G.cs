@@ -25,12 +25,16 @@ public class G : MonoBehaviour
             throw new System.InvalidProgramException("Two global objects");
         }
 
-        g = this;       
+        g = this;
 
-        D.onStart(D.GetCallbackPointer((D.PtrToVoid)(msgPtr =>
+        D.setLogging(D.GetCallbackPointer((D.PtrToVoid)(msgPtr =>
         {
             Debug.Log(D.GetStringFromPointer(msgPtr));
         })));
+        D.SetCallback("showObjectOnTile", (D.UInt32Uint32ShowObjectTypeFloatToVoid)ShowObjectOnTile);
+        D.onStart();
+
+
         var wbhandle = D.queryWorld(); 
 
         GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);        
@@ -39,6 +43,8 @@ public class G : MonoBehaviour
         {
             ht.GetComponent<HexTerrain>().Generate(wbhandle.ToPointer());
         }
+
+        D.calcAndShowPath(2, 3, 4, 5);
     }
 
     void Update()
@@ -54,6 +60,13 @@ public class G : MonoBehaviour
                 HexXY hexPos = HexXY.FromPlaneCoordinates(planePos);                
             }
         }
+    }
+
+    
+
+    void ShowObjectOnTile(uint x, uint y, ShowObjectType objName, float durSecs)
+    {
+        Debug.Log(x + " " + y + " " + objName + " " + durSecs);
     }
     
     //Bench for 100 100x100 world blocks was 0.44 sec
