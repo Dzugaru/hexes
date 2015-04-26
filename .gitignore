@@ -25,7 +25,8 @@ sysinfo.txt
 *.sln.ide
 
 # D project
-**/Debug/
+DEngine/Debug/
+**/bin/Debug/
 **/Release/
 trace.def
 *.dll_cv
