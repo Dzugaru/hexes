@@ -31,7 +31,7 @@ public class G : MonoBehaviour
         {
             Debug.Log(D.GetStringFromPointer(msgPtr));
         })));
-        D.SetCallback("showObjectOnTile", (D.UInt32Uint32ShowObjectTypeFloatToVoid)ShowObjectOnTile);
+        D.SetCallback("showObjectOnTile", (D.HexXYShowObjectTypeFloatToVoid)ShowObjectOnTile);
         D.onStart();
 
 
@@ -75,9 +75,20 @@ public class G : MonoBehaviour
 
     
 
-    void ShowObjectOnTile(uint x, uint y, ShowObjectType objName, float durSecs)
+    void ShowObjectOnTile(HexXY pos, ShowObjectType objType, float durSecs)
     {
-        Debug.Log(x + " " + y + " " + objName + " " + durSecs);
+        //Debug.Log(x + " " + y + " " + objName + " " + durSecs);
+        string prefabPath = "Prefabs/";
+        switch (objType)
+        {
+            case ShowObjectType.PathMarker: prefabPath += "Debug/PathMarker"; break;
+            default: throw new InvalidProgramException();
+        }
+
+        GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
+        Vector2 planeCoord = pos.ToPlaneCoordinates();
+        obj.transform.position = new Vector3(planeCoord.x, 0.2f, planeCoord.y);
+        obj.GetComponent<IHasDuration>().SetDuration(durSecs);
     }
     
     //Bench for 100 100x100 world blocks was 0.44 sec

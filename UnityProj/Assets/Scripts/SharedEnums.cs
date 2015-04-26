@@ -7,5 +7,5 @@ public enum TerrainCellType
 
 public enum ShowObjectType
 {
-    Sphere
+    PathMarker
 }

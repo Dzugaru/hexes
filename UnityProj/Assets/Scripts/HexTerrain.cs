@@ -61,7 +61,7 @@ public class HexTerrain : MonoBehaviour
         {
             for (int y = 0; y < World.BlockSize; y++)
             {
-                int ctype = (int)cellTypes[y * World.BlockSize + x];
+                int ctype = (int)cellTypes[x * World.BlockSize + y];
                 if (ctype == 0) continue;
                
                 int it = idx[ctype - 1]++;

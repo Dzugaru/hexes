@@ -35,10 +35,20 @@ extern(C) export void onStart()
 extern(C) export void calcAndShowPath(HexXY from, HexXY to)
 {
 	log(format("calcAndShowPath called %s -> %s", from, to));
-	//if(cb.showObjectOnTile != null)
-	//{
-	//    cb.showObjectOnTile(0, 0, ShowObjectType.Sphere, 5);
-	//}
+	HexXY[128] pathStorage;
+	auto path = findPath(from, to, pathStorage);
+	if(path is null)
+	{
+		log("NO PATH");
+	}
+	else
+	{
+		cb.showObjectOnTile(from.x, from.y, ShowObjectType.PathMarker, 5);
+		foreach(p; path)
+		{
+			cb.showObjectOnTile(p.x, p.y, ShowObjectType.PathMarker, 5);
+		}
+	}
 }
 
 extern(C) export void setLogging(void function(immutable(char)*) l)

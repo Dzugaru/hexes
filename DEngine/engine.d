@@ -255,7 +255,7 @@ enum pfMaxFrontSize = 8192;
 		}
 	} while(front.length > 0);
 
-	if(isFound && c.len + 1 <= pathStorage.length)
+	if(isFound && c.len <= pathStorage.length)
 	{
 		uint pathLen = c.len;
 		HexXY p = c.p;
