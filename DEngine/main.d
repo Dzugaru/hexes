@@ -20,14 +20,8 @@ import std.random;
 
 void main()
 {
-	logImpl = (msg) => writeln(msg);
 	
-	writeln("Hello world!");
-	auto wb = new WorldBlock!100(HexXY(0,0));
-
-
-	
-	
+	writeln("All ok!");
 	readln();
 }
 

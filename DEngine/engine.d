@@ -7,6 +7,8 @@ import noise;
 import std.traits : EnumMembers;
 import logger;
 import utils;
+import std.container;
+import std.stdio;
 
 @safe:
 
@@ -34,23 +36,23 @@ enum terrainTypesCount = EnumMembers!TerrainCellType.length;
 */
 struct HexXY
 {
-nothrow:
-@nogc:
+nothrow 
+@nogc
+{
 	static immutable Vector2 ex = Vector2(sqrt(3f) * 0.5f, 0.5f);
 	static immutable Vector2 ey = Vector2(-sqrt(3f) * 0.5f, 0.5f);
 
 align:
 	int x, y;
 
-	this(int x, int y)
+	pure static float distSqr(in HexXY a, in HexXY b)
 	{
-		this.x = x;
-		this.y = y;
+		return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) - (a.x - b.x) * (a.y - b.y);
 	}
 
-	pure static float distSqr(HexXY a, HexXY b)
+	pure static float dist(in HexXY a, in HexXY b)
 	{
-		return a.x * a.x + b.y * b.y - a.x * a.y;
+		return sqrt(distSqr(a, b));
 	}
 
 	Vector2 toPlaneCoordinates() const
@@ -64,9 +66,15 @@ align:
 		return HexXY(mixin("x" ~ op ~ "rhs.x"), mixin("y" ~ op ~ "rhs.y"));
 	}
 
-	bool opEquals(HexXY rhs) const
+	bool opEquals(in HexXY rhs) const
 	{
 		return x == rhs.x && y == rhs.y;
+	}
+}
+	//throw and gc
+	string toString()
+	{
+		return format("(%d,%d)", x, y);
 	}
 }
 
@@ -107,9 +115,25 @@ align:
 	int[terrainTypesCount] cellTypeCounts;
 	int nonEmptyCellsCount;
 
+	//Pathfinding support
+	uint pfExpandMarker;
+	uint[sz][sz] pfExpandMap;
+	ubyte[sz][sz] pfStepsMap;
+
 	this(HexXY position)
 	{
 		this.position = position;		
+	}
+
+	bool pfIsPassable(HexXY pos)
+	{
+		return pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz &&
+			   cellTypes[pos.x][pos.y] != TerrainCellType.Empty;
+	}
+
+	float pfGetPassCost(HexXY pos)
+	{
+		return 1;
 	}
 
 	void generate(in BinaryNoiseFunc nonEmpty, in BinaryNoiseFunc snow)
@@ -141,7 +165,7 @@ align:
 				{
 					type = TerrainCellType.Empty;
 				}
-				cellTypes[y][x] = type;
+				cellTypes[x][y] = type;
 				++cellTypeCounts[type];
 			}
 		}
@@ -153,7 +177,121 @@ align:
 		    log(format("%s %d", to!string(cast(TerrainCellType)i), c));
 		}
 	}
+	void generateSolidFirstType()
+	{
+		for (int y = 0; y < sz; ++y)		
+			for (int x = 0; x < sz; ++x)			
+				cellTypes[x][y] = cast(TerrainCellType)1;		
+	}
 }
+
+/***************************************************************************************************
+* Pathfinding (simple A*)
+*/
+enum pfMaxFrontSize = 8192;
+
+@trusted HexXY[] findPath(in HexXY from, in HexXY to, HexXY[] pathStorage)
+{
+	static immutable struct Step 
+	{ 
+		int dx, dy; 
+		ubyte backIdx;
+		HexXY opBinaryRight(string op : "+")(HexXY lhs)
+		{
+			return HexXY(lhs.x + dx, lhs.y + dy);
+		}
+	}
+
+	static immutable Step[6] steps = [Step(1,0,3), Step(1,1,4), Step(0,1,5), Step(-1,0,0), Step(-1,-1,1), Step(0,-1,2)];
+
+	static struct XYCost
+	{ 
+		HexXY p; 
+		uint len;
+		float cost, sumCostHeuristic;		
+		int opCmp(XYCost rhs) { return sumCostHeuristic >= rhs.sumCostHeuristic ? -1 : 1; }	
+	}
+	
+	float getHeuristic(HexXY pos)
+	{
+		return HexXY.dist(pos, to);
+	}
+
+	static XYCost[pfMaxFrontSize] frontStore;
+
+	auto front = BinaryHeap!(XYCost[])(frontStore, 0);
+	front.insert(XYCost(from, 0, 0, getHeuristic(from)));
+
+	//TODO: assume we're in the single worldblock for now
+	++worldBlock.pfExpandMarker;	
+	worldBlock.pfExpandMap[from.x][from.y] = worldBlock.pfExpandMarker;
+
+	XYCost c;
+	bool isFound = false;
+
+	do
+	{
+		c = front.front;
+		front.removeFront(); //BUG: removeAny documentation is broken!
+
+		if(c.p == to)
+		{
+			isFound = true;
+			break;
+		}
+		
+		foreach(st; steps)
+		{
+			auto np = c.p + st;
+			if(worldBlock.pfIsPassable(np) &&
+			   worldBlock.pfExpandMap[np.x][np.y] < worldBlock.pfExpandMarker)
+			{	
+				worldBlock.pfExpandMap[np.x][np.y] = worldBlock.pfExpandMarker;	
+				float cost = c.cost + worldBlock.pfGetPassCost(np);
+				auto n = XYCost(np, c.len + 1, cost, cost + getHeuristic(np));
+				front.insert(n);
+				worldBlock.pfStepsMap[np.x][np.y] = cast(ubyte)st.backIdx;
+			}
+		}
+	} while(front.length > 0);
+
+	if(isFound && c.len + 1 <= pathStorage.length)
+	{
+		uint pathLen = c.len;
+		HexXY p = c.p;
+		foreach(i; 0 .. pathLen)
+		{
+			pathStorage[pathLen - i - 1] = p;
+			auto backIdx = worldBlock.pfStepsMap[p.x][p.y];
+			p = p + steps[backIdx];
+		}
+		return pathStorage[0 .. pathLen];
+	}
+	else
+	{
+		return null;
+	}
+}
+
+unittest
+{
+	worldBlock = new WorldBlock!10(HexXY(0,0));
+	worldBlock.generateSolidFirstType();
+	worldBlock.cellTypes[0][1] = cast(TerrainCellType)0;
+	worldBlock.cellTypes[1][1] = cast(TerrainCellType)0;
+	auto pathStorage = new HexXY[128];
+
+	auto path = findPath(HexXY(0,0), HexXY(0,2), pathStorage); //simple path around wall	
+	assert(path == [HexXY(1,0), HexXY(2,1), HexXY(2,2), HexXY(1,2), HexXY(0,2)]);
+
+	path = findPath(HexXY(2,2), HexXY(2,2), pathStorage); //zero-length path	
+	assert(path == []);
+
+	worldBlock.cellTypes[1][0] = cast(TerrainCellType)0;
+	path = findPath(HexXY(0,0), HexXY(0,2), pathStorage); //no path anymore
+	assert(path is null);
+}
+
 
 /***************************************************************************************************
 * Some "living" entity?

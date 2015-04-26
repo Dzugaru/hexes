@@ -37,7 +37,7 @@ public class D : MonoBehaviour
     public delegate void UInt32Uint32ShowObjectTypeFloatToVoid(uint x, uint y, ShowObjectType objName, float durSecs);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void HexXYToHexXYToVoid(int x0, int y0, int x1, int y1);
+    public delegate void HexXYToHexXYToVoid(Engine.HexXY from, Engine.HexXY to);
 
 
     private static PtrPtrToVoid setCallback;

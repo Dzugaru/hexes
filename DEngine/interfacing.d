@@ -32,13 +32,13 @@ extern(C) export void onStart()
 	engine.startTheWorld();
 }
 
-extern(C) export void calcAndShowPath(int x0, int y0, int x1, int y1)
+extern(C) export void calcAndShowPath(HexXY from, HexXY to)
 {
-	log("calcAndShowPath called");
-	if(cb.showObjectOnTile != null)
-	{
-		cb.showObjectOnTile(0, 0, ShowObjectType.Sphere, 5);
-	}
+	log(format("calcAndShowPath called %s -> %s", from, to));
+	//if(cb.showObjectOnTile != null)
+	//{
+	//    cb.showObjectOnTile(0, 0, ShowObjectType.Sphere, 5);
+	//}
 }
 
 extern(C) export void setLogging(void function(immutable(char)*) l)
@@ -64,7 +64,7 @@ extern(C) export void* queryWorld()
 
 extern(C) export void setCallback(immutable(char)* name, void* fPtr)
 {
-	log("Callback try set: " ~ to!string(name));	
+	//log("Callback try set: " ~ to!string(name));	
 
 	//Emits switch code to cast and assign fPtr according to name
 	string emitSwitch()
@@ -88,8 +88,6 @@ extern(C) export void setCallback(immutable(char)* name, void* fPtr)
 	    mixin(emitSwitch());
 	    default: assert(0);
 	}
-
-	log(to!string(cb.showObjectOnTile == null));
 
 	pragma(msg, emitSwitch());	
 }

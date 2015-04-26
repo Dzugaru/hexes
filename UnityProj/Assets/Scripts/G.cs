@@ -43,12 +43,13 @@ public class G : MonoBehaviour
         {
             ht.GetComponent<HexTerrain>().Generate(wbhandle.ToPointer());
         }
-
-        D.calcAndShowPath(2, 3, 4, 5);
     }
 
+    bool wasFromChosen = false;
+    HexXY from;
+
     void Update()
-    {
+    {   
         if (Input.GetMouseButtonDown(0))
         {
             float dist;
@@ -57,7 +58,17 @@ public class G : MonoBehaviour
             {
                 Vector3 inter = ray.origin + dist * ray.direction;
                 Vector2 planePos = new Vector2(inter.x, inter.z);
-                HexXY hexPos = HexXY.FromPlaneCoordinates(planePos);                
+                HexXY hexPos = HexXY.FromPlaneCoordinates(planePos);
+                if (!wasFromChosen)
+                {
+                    from = hexPos;
+                }
+                else
+                {
+                    D.calcAndShowPath(from, hexPos);
+                }
+
+                wasFromChosen = !wasFromChosen;
             }
         }
     }
