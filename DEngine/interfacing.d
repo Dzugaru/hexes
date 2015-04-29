@@ -36,7 +36,7 @@ extern(C) export void calcAndShowPath(HexXY from, HexXY to)
 {
 	log(format("calcAndShowPath called %s -> %s", from, to));
 	HexXY[128] pathStorage;
-	auto path = findPath(from, to, pathStorage);
+	auto path = findPathStatic(from, to, pathStorage);
 	if(path is null)
 	{
 		log("NO PATH");

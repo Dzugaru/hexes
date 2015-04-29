@@ -4,12 +4,13 @@ import std.math;
 import std.string;
 public import math;
 import noise;
-import std.traits : EnumMembers;
+import std.traits;
 import logger;
 import utils;
 import std.container;
 import std.stdio;
 import freelist;
+import std.typecons;
 
 @safe:
 
@@ -138,14 +139,26 @@ align:
 	uint pfExpandMarker;
 	uint[sz][sz] pfExpandMap;
 	ubyte[sz][sz] pfStepsMap;
+	bool[sz][sz] pfBlockedMap; //TODO: flags enum for layers of blocking (ground, air, astral, etc.?)
 	bool pfIsPassable(HexXY pos)
 	{
 		return pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz &&
-			cellTypes[pos.x][pos.y] != TerrainCellType.Empty;
+				!pfBlockedMap[pos.x][pos.y];
+	}
+	bool pfIsStaticPassable(HexXY pos)
+	{
+		return pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz &&
+				cellTypes[pos.x][pos.y] != TerrainCellType.Empty;
 	}
 	float pfGetPassCost(HexXY pos)
 	{
 		return 1;
+	}
+	void pfCalcStaticBlocking()
+	{	
+		foreach(x; 0..sz)
+			foreach(y; 0..sz)
+				pfBlockedMap[x][y] = cellTypes[x][y] == TerrainCellType.Empty;
 	}
 
 	this(HexXY position)
@@ -188,6 +201,7 @@ align:
 			}
 		}
 
+		pfCalcStaticBlocking();
 
 		log(format("Block generated: %d non-empty cells", nonEmptyCellsCount));
 		foreach(i, c; cellTypeCounts)
@@ -197,6 +211,10 @@ align:
 	}
 	void generateSolidFirstType()
 	{
+		foreach(ref e; cellTypeCounts)		
+			e = 0;	
+		nonEmptyCellsCount = cellTypeCounts[1] = sz * sz;		
+
 		for (int y = 0; y < sz; ++y)		
 			for (int x = 0; x < sz; ++x)			
 				cellTypes[x][y] = cast(TerrainCellType)1;		
@@ -208,7 +226,10 @@ align:
 */
 enum pfMaxFrontSize = 8192;
 
-@trusted HexXY[] findPath(in HexXY from, in HexXY to, HexXY[] pathStorage)
+alias findPathStatic = findPath!(WorldBlock.pfIsStaticPassable);
+alias findPathDynamic = findPath!(WorldBlock.pfIsPassable);
+
+@trusted HexXY[] findPath(alias passableFunc)(in HexXY from, in HexXY to, HexXY[] pathStorage)
 {
 	static immutable struct Step 
 	{ 
@@ -261,7 +282,7 @@ enum pfMaxFrontSize = 8192;
 		foreach(st; steps)
 		{
 			auto np = c.p + st;
-			if(worldBlock.pfIsPassable(np) &&
+			if(mixin(q{worldBlock.} ~ __traits(identifier, passableFunc) ~ q{(np)}) &&
 			   worldBlock.pfExpandMap[np.x][np.y] < worldBlock.pfExpandMarker)
 			{	
 				worldBlock.pfExpandMap[np.x][np.y] = worldBlock.pfExpandMarker;	
@@ -299,14 +320,14 @@ unittest
 	worldBlock.cellTypes[1][1] = cast(TerrainCellType)0;
 	auto pathStorage = new HexXY[128];
 
-	auto path = findPath(HexXY(0,0), HexXY(0,2), pathStorage); //simple path around wall	
+	auto path = findPathStatic(HexXY(0,0), HexXY(0,2), pathStorage); //simple path around wall	
 	assert(path == [HexXY(1,0), HexXY(2,1), HexXY(2,2), HexXY(1,2), HexXY(0,2)]);
 
-	path = findPath(HexXY(2,2), HexXY(2,2), pathStorage); //zero-length path	
+	path = findPathStatic(HexXY(2,2), HexXY(2,2), pathStorage); //zero-length path	
 	assert(path == []);
 
 	worldBlock.cellTypes[1][0] = cast(TerrainCellType)0;
-	path = findPath(HexXY(0,0), HexXY(0,2), pathStorage); //no path anymore
+	path = findPathStatic(HexXY(0,0), HexXY(0,2), pathStorage); //no path anymore
 	assert(path is null);
 }
 
@@ -322,21 +343,150 @@ public:
 	//Entity can span multiple tiles, but has a single coordinate
 	HexXY pos;
 
-	void update(float deltaTime) { }
+	void update(float dt)
+	{
+
+	}
+
+	void spawn(HexXY pos)
+	{
+		this.pos = pos;
+	}
 }
 
 interface CanWalk
 {	
 }
 
+mixin template _CompsEventHandlers()
+{
+	void compsOnSpawn(HexXY pos)
+	{
+		static if(isAssignable!(CanWalk, typeof(this)))		
+			canWalkOnSpawn(pos);		
+	}
+
+	void compsOnUpdate(float dt)
+	{
+		static if(isAssignable!(CanWalk, typeof(this)))		
+			move(dt);		
+	}
+}
+
 mixin template _CanWalk(uint maxPathLen)
 {
+	static assert(isAssignable!(CanWalk, typeof(this)));
+
 	HexXY[maxPathLen] pathStorage;
 	HexXY[] path;
-	float speed;
+	HexXY prevTile;
+	Nullable!HexXY dest;
+	bool onTileCenter;
+	float speed, invSpeed, distToNextTile;
 
-	void move(float deltaTime)
+	void canWalkOnSpawn(HexXY pos)
 	{
+		prevTile = pos;
+		distToNextTile = 1;
+		onTileCenter = true;
+	}	
 
+	@trusted void changePath()
+	{
+		path = findPathStatic(pos, dest, pathStorage);
+		dest.nullify();
 	}
+
+	void move(float dt)
+	{		
+		if(onTileCenter && !dest.isNull)
+			changePath();
+
+		if(path.length == 0) return;
+		auto nextTile = path[0];
+
+		if(distToNextTile > 0.5)
+			pos = prevTile;
+		else
+			pos = path[0];
+
+		if(onTileCenter)
+		{
+			if(worldBlock.pfBlockedMap[nextTile.x][nextTile.y]) return; //TODO: set blocked flag/add blocked time
+			worldBlock.pfBlockedMap[nextTile.x][nextTile.y] = true;
+		}
+
+		float timeLeft = distToNextTile * invSpeed;
+		if(timeLeft > dt)
+		{
+			distToNextTile -= dt * speed;
+			onTileCenter = false;
+		}
+		else
+		{
+			worldBlock.pfBlockedMap[prevTile.x][prevTile.y] = false;
+			prevTile = nextTile;
+			distToNextTile = 1;	
+			onTileCenter = true;
+			path = path[1..$];				
+			move(dt - timeLeft);			
+		}
+	}
+
+	//Path will be changed on next tile center
+	void setDest(HexXY p)
+	{
+		dest = p;
+	}
+
+	void setSpeed(float speed)
+	{
+		this.speed = speed;
+		this.invSpeed = 1. / speed;
+	}
+}
+
+class Mob : Entity, CanWalk
+{
+	mixin Freelist;
+
+	mixin _CompsEventHandlers;
+	mixin _CanWalk!64;
+
+	void construct(float speed)
+	{
+		setSpeed(speed);
+	}
+
+	override void update(float dt)
+	{	
+		compsOnUpdate(dt);
+		Entity.update(dt);	
+	}
+
+	override void spawn(HexXY p)
+	{
+		compsOnSpawn(p);
+		Entity.spawn(p);		
+	}
+}
+
+unittest
+{
+	worldBlock = new WorldBlock(HexXY(0,0));
+	worldBlock.generateSolidFirstType();
+	worldBlock.cellTypes[0][1] = cast(TerrainCellType)0;
+	worldBlock.cellTypes[1][1] = cast(TerrainCellType)0;
+	
+	auto mob1 = Mob.allocate(1.0);
+	mob1.spawn(HexXY(0,0));
+	mob1.setDest(HexXY(0,2));
+	mob1.update(0.25);
+
+	while(mob1.path.length > 0)
+	{
+		mob1.update(0.25);		
+	}
+
+	assert(mob1.pos == HexXY(0,2));
 }

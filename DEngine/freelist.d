@@ -17,7 +17,7 @@ mixin template Freelist()
 	private static _FlT _freelist;
 	private _FlT _flNext;
 
-	public static _FlT allocate(AA...)(AA args)
+	@trusted public static _FlT allocate(AA...)(AA args)
 	{
 		_FlT inst;
 		if(_freelist)
@@ -67,10 +67,11 @@ if (is(T == class))
 	}
 }
 
+debug uint newCount = 0;
+
 private:
 debug:
 
-debug uint newCount = 0;
 class A
 {
 	mixin Freelist;
@@ -124,6 +125,8 @@ class D : A
 
 unittest
 {
+	newCount = 0;
+
 	auto c0 = C.allocate("bla0");
 	auto c1 = C.allocate("bla1");
 	auto c2 = C.allocate("bla2");
