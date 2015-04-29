@@ -9,6 +9,7 @@ import logger;
 import utils;
 import std.container;
 import std.stdio;
+import freelist;
 
 @safe:
 
@@ -294,9 +295,29 @@ unittest
 
 
 /***************************************************************************************************
-* Some "living" entity?
+* Something, that is physically present on a hex grid
 */
-class Character
+abstract class Entity
 {
+public:
+	//Entity can span multiple tiles, but has a single coordinate
+	HexXY pos;
 
+	void update(float deltaTime) { }
+}
+
+interface CanWalk
+{	
+}
+
+mixin template _CanWalk(uint maxPathLen)
+{
+	HexXY[maxPathLen] pathStorage;
+	HexXY[] path;
+	float speed;
+
+	void move(float deltaTime)
+	{
+
+	}
 }

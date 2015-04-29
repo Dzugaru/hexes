@@ -406,6 +406,7 @@
  </Config>
  <Folder name="DEngineExe">
   <File path="engine.d" />
+  <File path="freelist.d" />
   <File path="logger.d" />
   <File path="main.d" />
   <File path="math.d" />
