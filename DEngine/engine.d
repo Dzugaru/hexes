@@ -19,13 +19,14 @@ mixin(import("SharedEnums.cs"));
 * Sandbox
 * 1 world block 10x10 for now
 */
-WorldBlock!10 worldBlock;
+immutable uint worldBlocksSize = 10;
+WorldBlock worldBlock;
 
 void startTheWorld()
 {
 	//Setup logging
 
-	worldBlock = new WorldBlock!10(HexXY(0,0));
+	worldBlock = new WorldBlock(HexXY(0,0));
 	worldBlock.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
 						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
 }
@@ -107,36 +108,52 @@ nothrow:
 /***************************************************************************************************
 * A block of terrain, consisting of (sz x sz) tiles
 */
-final class WorldBlock(uint sz)
+final  class WorldBlock
 {
+	alias sz = worldBlocksSize;
+
 align:
 	immutable HexXY position;
 
+	//TODO:
+	static void dispatchToBlock(alias func, AA...)(HexXY globalPos, AA args)
+	{
+		HexXY localPos;
+		auto blockX = globalPos.x < 0 ? (-globalPos.x - 1) / sz - 1 : globalPos.x / sz;
+		auto blockY = globalPos.y < 0 ? (-globalPos.y - 1) / sz - 1 : globalPos.y / sz;
+		localPos.x = globalPos.x - blockX * sz;
+		localPos.y = globalPos.y - blockY * sz;
+		//getBlock(blockX, blockY).func(localPos, args);
+	}
+
+	//Terrain
 	TerrainCellType[sz][sz] cellTypes;
 	int[terrainTypesCount] cellTypeCounts;
 	int nonEmptyCellsCount;
+	
+	//Entities
+	SLList!(Entity, Entity.wbEntityMapNext)[sz][sz] entityMap;
 
 	//Pathfinding support
 	uint pfExpandMarker;
 	uint[sz][sz] pfExpandMap;
 	ubyte[sz][sz] pfStepsMap;
-
-	this(HexXY position)
-	{
-		this.position = position;		
-	}
-
 	bool pfIsPassable(HexXY pos)
 	{
 		return pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz &&
-			   cellTypes[pos.x][pos.y] != TerrainCellType.Empty;
+			cellTypes[pos.x][pos.y] != TerrainCellType.Empty;
 	}
-
 	float pfGetPassCost(HexXY pos)
 	{
 		return 1;
 	}
 
+	this(HexXY position)
+	{
+		this.position = position;		
+	}	
+
+	//Generation
 	void generate(in BinaryNoiseFunc nonEmpty, in BinaryNoiseFunc snow)
 	{
 		nonEmptyCellsCount = 0;
@@ -276,7 +293,7 @@ enum pfMaxFrontSize = 8192;
 
 unittest
 {
-	worldBlock = new WorldBlock!10(HexXY(0,0));
+	worldBlock = new WorldBlock(HexXY(0,0));
 	worldBlock.generateSolidFirstType();
 	worldBlock.cellTypes[0][1] = cast(TerrainCellType)0;
 	worldBlock.cellTypes[1][1] = cast(TerrainCellType)0;
@@ -298,7 +315,9 @@ unittest
 * Something, that is physically present on a hex grid
 */
 abstract class Entity
-{
+{	
+	Entity wbEntityMapNext;
+
 public:
 	//Entity can span multiple tiles, but has a single coordinate
 	HexXY pos;

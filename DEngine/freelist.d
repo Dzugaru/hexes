@@ -7,6 +7,7 @@ module freelist;
 import std.traits;
 import std.stdio;
 import std.conv : to;
+import std.math;
 
 mixin template Freelist()
 {
@@ -23,6 +24,7 @@ mixin template Freelist()
 		{
 			inst = _freelist;
 			_freelist = inst._flNext;
+			resetObj(inst);
 			debug --_flCount;
 		}
 		else
@@ -31,7 +33,7 @@ mixin template Freelist()
 			inst = new _FlT();
 		}
 
-		inst.reConstruct(args);
+		inst.construct(args);
 		return inst;
 	}
 
@@ -55,6 +57,16 @@ mixin template Freelist()
 	}
 }
 
+void resetObj(T)(T obj) 
+if (is(T == class)) 
+{
+	if (obj !is null) 
+	{
+		auto omem = *cast(void**)&obj;
+		omem[0..__traits(classInstanceSize, T)] = typeid(T).init[];
+	}
+}
+
 private:
 debug:
 
@@ -66,7 +78,7 @@ class A
 	long[128] x;
 	float a, b, c;	
 
-	void reConstruct(float a, float b, float c)
+	void construct(float a, float b, float c)
 	{
 		foreach(i, ref e; x)		
 			e = i * 2;				
@@ -83,10 +95,10 @@ class B : A
 	static int blaCnt = 0;
 	string bla;
 
-	void reConstruct(string bl)
+	void construct(string bl)
 	{
 		bla = to!string(blaCnt++) ~ bl;
-		A.reConstruct(3.14, 2.7, 1.4);
+		A.construct(3.14, 2.7, 1.4);
 	}
 }
 
@@ -94,11 +106,21 @@ class C : B
 {
 	mixin Freelist;	
 
-	override void reConstruct(string bl)
+	override void construct(string bl)
 	{
-		B.reConstruct(bl ~ "C");
+		B.construct(bl ~ "C");
 	}
 }
+
+class D : A
+{
+	mixin Freelist;
+
+	void construct()
+	{
+	}
+}
+
 
 unittest
 {
@@ -121,5 +143,13 @@ unittest
 	assert(newCount == 4);
 	assert(A._flCount == 0);
 	assert(C._flCount == 1);
+
+	D d1 = D.allocate();
+	d1.a = 5.0;
+	d1.x[0] = 42;
+	d1.deallocate();
+	D d2 = D.allocate();
+	assert(isNaN(d2.a));
+	assert(d2.x[0] == 0);
 }
 
