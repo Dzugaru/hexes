@@ -57,6 +57,9 @@ mixin template Freelist()
 	}
 }
 
+/***************************
+* "Zeroes" the memory owned by obj pointer
+*/
 void resetObj(T)(T obj) 
 if (is(T == class)) 
 {

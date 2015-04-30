@@ -11,6 +11,10 @@ wstring wformat(A...)(wstring fmt, A args)
 	return a.data;
 }
 
+/***************************
+* Single-linked list, that uses unique existing field "nextEl" in an object to link,
+* therefore avoiding any additional memory allocations
+*/
 struct SLList(T, alias nextEl)
 if(is(T == class))
 {
@@ -60,12 +64,12 @@ if(is(T == class))
 		@trusted int opApply(int delegate(T) loopBody)
 		{
 			int result = 0;
-			do
+			while(c !is null)
 			{
 				result = loopBody(c);
 				if (result)	break;
 				c = mixin(q{c.} ~ next);
-			} while(c !is null);
+			}
 			return result;
 		}	
 	}

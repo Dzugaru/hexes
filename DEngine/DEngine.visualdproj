@@ -408,7 +408,9 @@
   <File path="dll.def" />
   <File path="dllmain.d" />
   <File path="engine.d" />
+  <File path="enums.d" />
   <File path="freelist.d" />
+  <File path="frontendMock.d" />
   <File path="interfacing.d" />
   <File path="logger.d" />
   <File path="math.d" />

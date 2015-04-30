@@ -11,10 +11,9 @@ import std.container;
 import std.stdio;
 import freelist;
 import std.typecons;
-
-@safe:
-
-mixin(import("SharedEnums.cs"));
+import interfacing;
+import enums;
+import frontendMock;
 
 /***************************************************************************************************
 * Sandbox
@@ -25,11 +24,28 @@ WorldBlock worldBlock;
 
 void startTheWorld()
 {
-	//Setup logging
-
 	worldBlock = new WorldBlock(HexXY(0,0));
 	worldBlock.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
 						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
+
+	auto mob1 = Mob.allocate(GrObjType.Cube, 1.0);
+	mob1.spawn(HexXY(5,8));	
+
+	auto mob2 = Mob.allocate(GrObjType.Pyramid, 1.0);
+	mob2.spawn(HexXY(7,7));
+
+	auto mob3 = Mob.allocate(GrObjType.Sphere, 1.0);
+	mob3.spawn(HexXY(8,3));
+
+	mob1.setDest(HexXY(0,0));
+	mob2.setDest(HexXY(0,0));
+	mob3.setDest(HexXY(0,0));
+}
+
+void update(float dt)
+{	
+	foreach(e; worldBlock.entityList.els())	
+		e.update(dt);	
 }
 
 enum terrainTypesCount = EnumMembers!TerrainCellType.length;
@@ -133,6 +149,7 @@ align:
 	int nonEmptyCellsCount;
 	
 	//Entities
+	SLList!(Entity, Entity.wbAllEntitiesNext) entityList;
 	SLList!(Entity, Entity.wbEntityMapNext)[sz][sz] entityMap;
 
 	//Pathfinding support
@@ -229,7 +246,7 @@ enum pfMaxFrontSize = 8192;
 alias findPathStatic = findPath!(WorldBlock.pfIsStaticPassable);
 alias findPathDynamic = findPath!(WorldBlock.pfIsPassable);
 
-@trusted HexXY[] findPath(alias passableFunc)(in HexXY from, in HexXY to, HexXY[] pathStorage)
+HexXY[] findPath(alias passableFunc)(in HexXY from, in HexXY to, HexXY[] pathStorage)
 {
 	static immutable struct Step 
 	{ 
@@ -314,6 +331,8 @@ alias findPathDynamic = findPath!(WorldBlock.pfIsPassable);
 
 unittest
 {
+	frontendMock.setup();
+
 	worldBlock = new WorldBlock(HexXY(0,0));
 	worldBlock.generateSolidFirstType();
 	worldBlock.cellTypes[0][1] = cast(TerrainCellType)0;
@@ -337,20 +356,48 @@ unittest
 */
 abstract class Entity
 {	
-	Entity wbEntityMapNext;
+	//Lists support
+	Entity wbEntityMapNext, wbAllEntitiesNext;	
 
 public:
 	//Entity can span multiple tiles, but has a single coordinate
 	HexXY pos;
 
-	void update(float dt)
-	{
+	GrObjHandle grHandle;
 
+	abstract void compsOnSpawn(HexXY pos);
+	abstract void compsOnUpdate(float dt);
+
+	void construct(GrObjType type)
+	{
+		grHandle = interfacing.cb.createGrObj(GrObjClass.Entity, type);
 	}
 
-	void spawn(HexXY pos)
+	void update(float dt)
 	{
-		this.pos = pos;
+		HexXY prevPos = pos;
+
+		compsOnUpdate(dt);
+
+		if(pos != prevPos)
+		{
+			worldBlock.entityMap[prevPos.x][prevPos.y].remove(this);
+			worldBlock.entityMap[pos.x][pos.y].insert(this);
+
+			interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Move, &pos);
+		}
+	}
+
+	void spawn(HexXY p)
+	{
+		pos = p;
+
+		worldBlock.entityList.insert(this);
+		worldBlock.entityMap[p.x][p.y].insert(this);	
+
+		compsOnSpawn(p);
+
+		interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Spawn, &pos);
 	}
 }
 
@@ -360,13 +407,13 @@ interface CanWalk
 
 mixin template _CompsEventHandlers()
 {
-	void compsOnSpawn(HexXY pos)
+	override void compsOnSpawn(HexXY pos)
 	{
 		static if(isAssignable!(CanWalk, typeof(this)))		
 			canWalkOnSpawn(pos);		
 	}
 
-	void compsOnUpdate(float dt)
+	override void compsOnUpdate(float dt)
 	{
 		static if(isAssignable!(CanWalk, typeof(this)))		
 			move(dt);		
@@ -391,7 +438,7 @@ mixin template _CanWalk(uint maxPathLen)
 		onTileCenter = true;
 	}	
 
-	@trusted void changePath()
+	void changePath()
 	{
 		path = findPathStatic(pos, dest, pathStorage);
 		dest.nullify();
@@ -453,32 +500,23 @@ class Mob : Entity, CanWalk
 	mixin _CompsEventHandlers;
 	mixin _CanWalk!64;
 
-	void construct(float speed)
-	{
+	void construct(GrObjType grType, float speed)
+	{		
+		Entity.construct(grType);
 		setSpeed(speed);
-	}
-
-	override void update(float dt)
-	{	
-		compsOnUpdate(dt);
-		Entity.update(dt);	
-	}
-
-	override void spawn(HexXY p)
-	{
-		compsOnSpawn(p);
-		Entity.spawn(p);		
-	}
+	}	
 }
 
 unittest
 {
+	frontendMock.setup();
+
 	worldBlock = new WorldBlock(HexXY(0,0));
 	worldBlock.generateSolidFirstType();
 	worldBlock.cellTypes[0][1] = cast(TerrainCellType)0;
 	worldBlock.cellTypes[1][1] = cast(TerrainCellType)0;
 	
-	auto mob1 = Mob.allocate(1.0);
+	auto mob1 = Mob.allocate(GrObjType.Sphere, 1.0);
 	mob1.spawn(HexXY(0,0));
 	mob1.setDest(HexXY(0,2));
 	mob1.update(0.25);

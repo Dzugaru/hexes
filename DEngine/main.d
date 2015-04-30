@@ -6,6 +6,8 @@ import math;
 import logger;
 import std.datetime;
 import std.random;
+import frontendMock;
+import enums;
 
 //struct Boo
 //{
@@ -20,7 +22,20 @@ import std.random;
 
 void main()
 {
+	frontendMock.setup();
 	
+	engine.startTheWorld();
+
+	//auto mob1 = Mob.allocate(GrObjType.Cube, 1.0);
+	//mob1.spawn(HexXY(0,0));
+	//mob1.setDest(HexXY(2,2));
+
+	foreach(i; 0..100)
+	{
+		engine.update(0.1);
+	}
+
+
 	writeln("All ok!");
 	readln();
 }

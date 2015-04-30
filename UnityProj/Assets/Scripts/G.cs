@@ -2,6 +2,7 @@
 using UnityEngine;
 using Engine;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 public class G : MonoBehaviour
 {
@@ -18,8 +19,16 @@ public class G : MonoBehaviour
 
     Plane gamePlane = new Plane(new Vector3(0, 1, 0), 0);
 
+    static readonly int grObjsClassesCount = Enum.GetValues(typeof(GrObjClass)).Length;
+
+    static uint[] grObjsCountByClass;
+    static Dictionary<D.GrObjHandle, GameObject> grObjs;
+
     void Awake()
-    {
+    {        
+        grObjs = new Dictionary<D.GrObjHandle, GameObject>();
+        grObjsCountByClass = new uint[grObjsClassesCount];
+
         if (g != null)
         {
             throw new System.InvalidProgramException("Two global objects");
@@ -27,12 +36,12 @@ public class G : MonoBehaviour
 
         g = this;
 
-        D.setLogging(D.GetCallbackPointer((D.PtrToVoid)(msgPtr =>
-        {
-            Debug.Log(D.GetStringFromPointer(msgPtr));
-        })));
+        D.setLogging(D.GetCallbackPointer((D.PtrToVoid)Log));
         D.SetCallback("showObjectOnTile", (D.HexXYShowObjectTypeFloatToVoid)ShowObjectOnTile);
+        D.SetCallback("createGrObj", (D.TCreateGrObj)CreateGrObj);
+        D.SetCallback("performOpOnGrObj", (D.TPerformOpOnGrObj)PerformOpOnGrObj);
         D.onStart();
+      
 
 
         var wbhandle = D.queryWorld(); 
@@ -44,10 +53,7 @@ public class G : MonoBehaviour
             ht.GetComponent<HexTerrain>().Generate(wbhandle.ToPointer());
         }
     }
-
-    bool wasFromChosen = false;
-    HexXY from;
-
+  
     void Update()
     {   
         if (Input.GetMouseButtonDown(0))
@@ -59,23 +65,57 @@ public class G : MonoBehaviour
                 Vector3 inter = ray.origin + dist * ray.direction;
                 Vector2 planePos = new Vector2(inter.x, inter.z);
                 HexXY hexPos = HexXY.FromPlaneCoordinates(planePos);
-                if (!wasFromChosen)
-                {
-                    from = hexPos;
-                }
-                else
-                {
-                    D.calcAndShowPath(from, hexPos);
-                }
-
-                wasFromChosen = !wasFromChosen;
+                Debug.Log(hexPos);
             }
         }
+
+        D.update(Time.deltaTime);        
     }
 
-    
+    static void Log(IntPtr msgPtr)
+    {        
+        Debug.Log(D.GetStringFromPointer(msgPtr));
+    }
 
-    void ShowObjectOnTile(HexXY pos, ShowObjectType objType, float durSecs)
+    static D.GrObjHandle CreateGrObj(GrObjClass objClass, GrObjType objType)
+    {        
+        string prefabPath = "Prefabs/" + objClass.ToString() + "/" + objType.ToString();
+        GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
+        obj.SetActive(false);
+        D.GrObjHandle handle = new D.GrObjHandle() { objClass = objClass, idx = grObjsCountByClass[(int)objClass]++ };
+        grObjs.Add(handle, obj);
+       
+        return handle;
+    }
+
+    unsafe static void PerformOpOnGrObj(D.GrObjHandle objHandle, GrObjOperation op, IntPtr opParamsIntPtr)
+    {
+        
+       // Debug.Log("Blabla" + grObjs.Count + objHandle.objClass + objHandle.idx);
+
+        
+        GameObject obj = grObjs[objHandle];
+
+        void* opParams = opParamsIntPtr.ToPointer();
+        switch (op)
+        {
+            case GrObjOperation.Spawn:
+                {
+                    Vector2 planeCoord = (*(HexXY*)opParams).ToPlaneCoordinates();
+                    obj.transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
+                    obj.SetActive(true);
+                    break;
+                }
+
+            case GrObjOperation.Move:
+                {                   
+                    Vector2 planeCoord = (*(HexXY*)opParams).ToPlaneCoordinates();
+                    obj.transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
+                    break;
+                }
+        }
+    }
+    static void ShowObjectOnTile(HexXY pos, ShowObjectType objType, float durSecs)
     {
         //Debug.Log(x + " " + y + " " + objName + " " + durSecs);
         string prefabPath = "Prefabs/";

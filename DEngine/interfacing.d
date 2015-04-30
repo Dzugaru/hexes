@@ -8,6 +8,9 @@ import logger;
 import std.string;
 import std.conv : to;
 import std.traits;
+import enums;
+import std.array : replaceFirst;
+import std.string : startsWith;
 
 /**
 * Callbacks wrapper
@@ -16,11 +19,67 @@ class cb
 {
 	@disable this();
 static:
-	//Aliases are needed for cast from void*
-	alias extern(C) void function(immutable(char)*) Tlogging;
-	Tlogging logging;
-	alias extern(C) void function(uint x, uint y, ShowObjectType objType, float durSecs) TshowObjectOnTile;
-	TshowObjectOnTile showObjectOnTile;
+private:
+	immutable string[] decls = [
+		q{void function(immutable(char)*)},														q{log},
+		q{void function(uint x, uint y, ShowObjectType objType, float durSecs)},				q{showObjectOnTile},
+		q{GrObjHandle function(GrObjClass objClass, GrObjType objType)},						q{createGrObj},
+		q{void function(GrObjHandle objHandle, GrObjOperation op, void* opParams)},				q{performOpOnGrObj},
+	];
+
+	string emitDecls()
+	{
+		string code;
+		//Aliases are needed for cast from void* in setCallback	
+		foreach(i; 0 .. decls.length / 2)
+		{
+			string type = decls[i*2];
+			string typeAlias = "T" ~ decls[i*2 + 1];
+			string name = decls[i*2 + 1];
+			code ~= q{ alias extern(C) } ~ type ~ " " ~ typeAlias  ~ "; " ~ typeAlias ~ " " ~ name ~ ";\n";
+		}
+		
+		return code;		
+	}
+
+	//Emits realizations to void returning callbacks that do nothing
+	string emitBlackholes()
+	{
+		string code;		
+		foreach(i; 0 .. decls.length / 2)
+		{
+			string type = decls[i*2];
+			if(!type.startsWith("void")) continue;
+			string name = decls[i*2 + 1];
+			code ~= "extern (C) " ~ type.replaceFirst("function", "_BH" ~ name) ~ "{}\n";
+		}		
+		return code;
+	}
+
+
+
+	mixin(emitBlackholes());
+	
+public:
+	mixin(emitDecls());
+
+	void setBlackholes()
+	{
+		static string emitSetBlackholes()
+		{
+			string code;		
+			foreach(i; 0 .. decls.length / 2)
+			{			
+				string type = decls[i*2];
+				if(!type.startsWith("void")) continue;
+				string name = decls[i*2 + 1];
+				code ~= name ~ " = &_BH" ~ name ~ ";\n";
+			}		
+			return code;
+		}
+
+		mixin(emitSetBlackholes());
+	}
 }
 
 /**
@@ -30,6 +89,14 @@ extern(C) export void onStart()
 {
 	//Starting
 	engine.startTheWorld();
+}
+
+/**
+* Gets called by Unity3D every frame
+*/
+extern(C) export void update(float dt)
+{		
+	engine.update(dt);
 }
 
 extern(C) export void calcAndShowPath(HexXY from, HexXY to)
@@ -53,10 +120,10 @@ extern(C) export void calcAndShowPath(HexXY from, HexXY to)
 
 extern(C) export void setLogging(void function(immutable(char)*) l)
 {
-	cb.logging = l;
+	cb.log = l;
 	static void logAdapt(string msg)
 	{
-		cb.logging(toStringz(msg));
+		cb.log(toStringz(msg));
 	}
 	logger.logImpl = &logAdapt;
 }
@@ -69,8 +136,6 @@ extern(C) export void* queryWorld()
 {	
 	return cast(void*)worldBlock + worldBlock.position.offsetof;
 }
-
-
 
 extern(C) export void setCallback(immutable(char)* name, void* fPtr)
 {
@@ -99,8 +164,20 @@ extern(C) export void setCallback(immutable(char)* name, void* fPtr)
 	    default: assert(0);
 	}
 
-	pragma(msg, emitSwitch());	
+	//pragma(msg, emitSwitch());	
 }
+
+/**
+* Graphics object handle
+*/
+struct GrObjHandle
+{
+align:
+	GrObjClass objClass;
+	uint idx;
+}
+
+
 
 
 

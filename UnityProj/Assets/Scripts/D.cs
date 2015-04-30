@@ -39,13 +39,29 @@ public class D : MonoBehaviour
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void HexXYToHexXYToVoid(Engine.HexXY from, Engine.HexXY to);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate GrObjHandle TCreateGrObj(GrObjClass objClass, GrObjType objType);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void TPerformOpOnGrObj(GrObjHandle objHandle, GrObjOperation op, IntPtr opParams);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void TUpdate(float dt);
+
+    public struct GrObjHandle
+    {
+        public GrObjClass objClass;
+        public uint idx;
+    }
+
 
     private static PtrPtrToVoid setCallback;
 
     public static PtrToVoid setLogging;
-    public static VoidToVoid onStart;    
+    public static VoidToVoid onStart;
+    public static TUpdate update;
     public static VoidToPtr queryWorld;    
-    public static HexXYToHexXYToVoid calcAndShowPath;
+    public static HexXYToHexXYToVoid calcAndShowPath;    
 
 
 
