@@ -4,12 +4,12 @@
 */
 
 module freelist;
-import std.traits;
 import std.stdio;
 import std.conv : to;
 import std.math;
+public import std.traits : hasMember, BaseClassesTuple;
 
-mixin template Freelist()
+mixin template Freelist(bool shouldReset = true)
 {
 	private alias _FlT = typeof(this);
 
@@ -24,7 +24,7 @@ mixin template Freelist()
 		{
 			inst = _freelist;
 			_freelist = inst._flNext;
-			resetObj(inst);
+			static if(shouldReset) resetObj(inst);
 			debug --_flCount;
 		}
 		else

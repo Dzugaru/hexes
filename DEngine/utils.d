@@ -13,11 +13,14 @@ wstring wformat(A...)(wstring fmt, A args)
 
 /***************************
 * Single-linked list, that uses unique existing field "nextEl" in an object to link,
-* therefore avoiding any additional memory allocations
+* therefore avoiding any additional memory allocations. 
+* Inserting/deleting elements while iterating over it should be safe
 */
 struct SLList(T, alias nextEl)
 if(is(T == class))
 {
+	//alias ListType = typeof(this);
+	
 	T head;
 	static immutable string next = __traits(identifier, nextEl);
 
