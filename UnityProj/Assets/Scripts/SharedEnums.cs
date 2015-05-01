@@ -19,11 +19,14 @@ public enum GrObjType
 {
     Pyramid,
     Sphere,
-    Cube
+    Cube,
+    UnityChan,
+    Spider
 }
 
 public enum GrObjOperation
 {
     Spawn,
-    Move
+    Move,
+    Stop
 }

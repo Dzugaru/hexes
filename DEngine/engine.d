@@ -28,18 +28,23 @@ void startTheWorld()
 	worldBlock.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
 						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
 
-	auto mob1 = Mob.allocate(GrObjType.Cube, 1.0);
-	mob1.spawn(HexXY(5,8));	
+	auto mob1 = Mob.allocate(GrObjType.UnityChan, 1.0);
+	mob1.spawn(HexXY(5,8));
 
-	auto mob2 = Mob.allocate(GrObjType.Pyramid, 1.0);
+	auto mob2 = Mob.allocate(GrObjType.Spider, 1.0);
 	mob2.spawn(HexXY(7,7));
 
-	auto mob3 = Mob.allocate(GrObjType.Sphere, 1.0);
-	mob3.spawn(HexXY(8,3));
+	auto mob3 = Mob.allocate(GrObjType.Spider, 1.0);
+	mob3.spawn(HexXY(7,2));	
 
+	auto mob4 = Mob.allocate(GrObjType.Spider, 1.0);
+	mob4.spawn(HexXY(8,3));
+	
+	
 	mob1.setDest(HexXY(0,0));
-	mob2.setDest(HexXY(0,0));
-	mob3.setDest(HexXY(0,0));
+	mob2.setDest(HexXY(0,0));	
+	mob3.setDest(HexXY(0,0));	
+	mob4.setDest(HexXY(0,0));	
 }
 
 void update(float dt)
@@ -382,9 +387,7 @@ public:
 		if(pos != prevPos)
 		{
 			worldBlock.entityMap[prevPos.x][prevPos.y].remove(this);
-			worldBlock.entityMap[pos.x][pos.y].insert(this);
-
-			interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Move, &pos);
+			worldBlock.entityMap[pos.x][pos.y].insert(this);			
 		}
 	}
 
@@ -430,12 +433,14 @@ mixin template _CanWalk(uint maxPathLen)
 	Nullable!HexXY dest;
 	bool onTileCenter;
 	float speed, invSpeed, distToNextTile;
+	bool isWalkBlocked;
 
 	void canWalkOnSpawn(HexXY pos)
 	{
 		prevTile = pos;
 		distToNextTile = 1;
 		onTileCenter = true;
+		isWalkBlocked = false;
 	}	
 
 	void changePath()
@@ -459,8 +464,22 @@ mixin template _CanWalk(uint maxPathLen)
 
 		if(onTileCenter)
 		{
-			if(worldBlock.pfBlockedMap[nextTile.x][nextTile.y]) return; //TODO: set blocked flag/add blocked time
+			if(worldBlock.pfBlockedMap[nextTile.x][nextTile.y])
+			{
+				if(!isWalkBlocked)
+				{
+					isWalkBlocked = true;
+					interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);
+				}
+				return; 
+			}
+			isWalkBlocked = false;
 			worldBlock.pfBlockedMap[nextTile.x][nextTile.y] = true;
+
+			//Animate movement
+			struct TCbArgs { HexXY dest; float time; } 
+			TCbArgs cbArgs = { nextTile, distToNextTile * invSpeed };			
+			interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Move, &cbArgs);
 		}
 
 		float timeLeft = distToNextTile * invSpeed;
@@ -475,8 +494,15 @@ mixin template _CanWalk(uint maxPathLen)
 			prevTile = nextTile;
 			distToNextTile = 1;	
 			onTileCenter = true;
-			path = path[1..$];				
-			move(dt - timeLeft);			
+			path = path[1..$];
+			if(path.length > 0)
+			{
+				move(dt - timeLeft);			
+			}
+			else
+			{
+				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);
+			}
 		}
 	}
 

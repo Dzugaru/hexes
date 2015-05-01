@@ -38,8 +38,8 @@ public class HexTerrain : MonoBehaviour
         GetComponent<MeshFilter>().mesh = mesh;
 
         var mats = new Material[2];
-        mats[0] = (Material)Resources.Load("Materials/Grass");
-        mats[1] = (Material)Resources.Load("Materials/Snow");        
+        mats[0] = (Material)Resources.Load("Terrain/Grass");
+        mats[1] = (Material)Resources.Load("Terrain/Snow");        
         GetComponent<MeshRenderer>().sharedMaterials = mats;
 
         int typescnt = World.TerrainCellTypesCount - 1;

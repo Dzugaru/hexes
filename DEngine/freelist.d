@@ -17,7 +17,7 @@ mixin template Freelist()
 	private static _FlT _freelist;
 	private _FlT _flNext;
 
-	@trusted public static _FlT allocate(AA...)(AA args)
+	public static _FlT allocate(AA...)(AA args)
 	{
 		_FlT inst;
 		if(_freelist)
@@ -137,7 +137,7 @@ unittest
 	c1.deallocate();
 	auto c3 = C.allocate("bla3");
 	A ac2 = c2;
-	c2.deallocate(); //deallocating from base reference, should work
+	ac2.deallocate(); //deallocating from base reference, should work
 	auto c4 = C.allocate("bla4");
 
 	auto a1 = A.allocate(1,2,3);

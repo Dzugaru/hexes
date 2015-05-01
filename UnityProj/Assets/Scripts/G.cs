@@ -24,8 +24,9 @@ public class G : MonoBehaviour
     static uint[] grObjsCountByClass;
     static Dictionary<D.GrObjHandle, GameObject> grObjs;
 
+
     void Awake()
-    {        
+    {
         grObjs = new Dictionary<D.GrObjHandle, GameObject>();
         grObjsCountByClass = new uint[grObjsClassesCount];
 
@@ -89,32 +90,14 @@ public class G : MonoBehaviour
     }
 
     unsafe static void PerformOpOnGrObj(D.GrObjHandle objHandle, GrObjOperation op, IntPtr opParamsIntPtr)
-    {
-        
-       // Debug.Log("Blabla" + grObjs.Count + objHandle.objClass + objHandle.idx);
-
-        
+    {   
         GameObject obj = grObjs[objHandle];
-
-        void* opParams = opParamsIntPtr.ToPointer();
-        switch (op)
+        switch (objHandle.objClass)
         {
-            case GrObjOperation.Spawn:
-                {
-                    Vector2 planeCoord = (*(HexXY*)opParams).ToPlaneCoordinates();
-                    obj.transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
-                    obj.SetActive(true);
-                    break;
-                }
-
-            case GrObjOperation.Move:
-                {                   
-                    Vector2 planeCoord = (*(HexXY*)opParams).ToPlaneCoordinates();
-                    obj.transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
-                    break;
-                }
-        }
+            case GrObjClass.Entity: obj.GetComponent<EntityGraphics>().DispatchOp(op, opParamsIntPtr.ToPointer()); break;
+        }       
     }
+
     static void ShowObjectOnTile(HexXY pos, ShowObjectType objType, float durSecs)
     {
         //Debug.Log(x + " " + y + " " + objName + " " + durSecs);
