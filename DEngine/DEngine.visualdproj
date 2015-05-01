@@ -415,6 +415,7 @@
   <File path="logger.d" />
   <File path="math.d" />
   <File path="noise.d" />
+  <File path="fibers.d" />
   <File path="utils.d" />
  </Folder>
 </DProject>

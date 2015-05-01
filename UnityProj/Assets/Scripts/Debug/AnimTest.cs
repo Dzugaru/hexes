@@ -13,7 +13,7 @@ public class AnimTest : MonoBehaviour
 	
 	// Update is called once per frame
 	void Update () 
-    {       
+    {        
         animator.SetBool("IsWalking", Input.GetKey(KeyCode.W));
 	}
 }

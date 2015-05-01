@@ -33,7 +33,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>0</useUnitTests>
+  <useUnitTests>1</useUnitTests>
   <useInline>0</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -407,8 +407,10 @@
  <Folder name="DEngineExe">
   <File path="engine.d" />
   <File path="enums.d" />
+  <File path="fibers.d" />
   <File path="freelist.d" />
   <File path="frontendMock.d" />
+  <File path="gctrack.d" />
   <File path="interfacing.d" />
   <File path="logger.d" />
   <File path="main.d" />
