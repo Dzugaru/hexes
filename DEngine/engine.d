@@ -25,12 +25,16 @@ public import fibers;
 */
 immutable uint worldBlocksSize = 10;
 WorldBlock worldBlock;
+Player player;
 
 void startTheWorld()
 {
 	worldBlock = new WorldBlock(HexXY(0,0));
 	worldBlock.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
 						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
+
+	player = new Player();
+	player.spawn(HexXY(0,0));
 
 	overseer.start();
 }
@@ -141,6 +145,7 @@ align:
 
 	//Terrain
 	TerrainCellType[sz][sz] cellTypes;
+	auto cellType(in HexXY p) const { return cellTypes[p.x][p.y]; }
 	int[terrainTypesCount] cellTypeCounts;
 	int nonEmptyCellsCount;
 	
@@ -161,7 +166,7 @@ align:
 	bool pfIsStaticPassable(HexXY pos)
 	{
 		return pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz &&
-				cellTypes[pos.x][pos.y] != TerrainCellType.Empty;
+				cellType(pos) != TerrainCellType.Empty;
 	}
 	float pfGetPassCost(HexXY pos)
 	{
@@ -432,17 +437,18 @@ mixin template _CanWalk(uint maxPathLen)
 		distToNextTile = 1;
 		onTileCenter = true;
 		isWalkBlocked = false;
+		worldBlock.pfBlockedMap[pos.x][pos.y] = true;
 	}	
 
 	void changePath()
 	{
-		path = findPathStatic(pos, dest, pathStorage);
-		dest.nullify();
+		path = findPathStatic(pos, dest, pathStorage);		
 	}
 
 	void move(float dt)
 	{		
-		if(onTileCenter && !dest.isNull)
+		if(onTileCenter && !dest.isNull && 
+		   (path.length == 0 || path[$-1] != dest))
 			changePath();
 
 		if(path.length == 0) return;
@@ -493,6 +499,8 @@ mixin template _CanWalk(uint maxPathLen)
 			else
 			{
 				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);
+				if(dest == pos)				
+					dest.nullify();
 			}
 		}
 	}
@@ -544,4 +552,16 @@ unittest
 	}
 
 	assert(mob1.pos == HexXY(0,2));
+}
+
+class Player : Entity, CanWalk
+{
+	mixin _CompsEventHandlers;
+	mixin _CanWalk!64;
+
+	this()
+	{
+		Entity.construct(GrObjType.Player);
+		setSpeed(2);
+	}
 }

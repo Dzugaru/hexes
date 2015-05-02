@@ -21,7 +21,7 @@ public enum GrObjType
     Pyramid,
     Sphere,
     Cube,
-    UnityChan,
+    Player,
     Spider
 }
 

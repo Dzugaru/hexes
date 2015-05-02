@@ -99,25 +99,6 @@ extern(C) export void update(float dt)
 	engine.update(dt);
 }
 
-extern(C) export void calcAndShowPath(HexXY from, HexXY to)
-{
-	//log(format("calcAndShowPath called %s -> %s", from, to));
-	//HexXY[128] pathStorage;
-	//auto path = findPathStatic(from, to, pathStorage);
-	//if(path is null)
-	//{
-	//    log("NO PATH");
-	//}
-	//else
-	//{
-	//    cb.showObjectOnTile(from.x, from.y, ShowObjectType.PathMarker, 5);
-	//    foreach(p; path)
-	//    {
-	//        cb.showObjectOnTile(p.x, p.y, ShowObjectType.PathMarker, 5);
-	//    }
-	//}
-}
-
 extern(C) export void setLogging(void function(immutable(char)*) l)
 {
 	cb.log = l;
@@ -175,6 +156,16 @@ struct GrObjHandle
 align:
 	GrObjClass objClass;
 	uint idx;
+}
+
+//UI methods
+extern(C) export void playerMove(HexXY p)
+{
+	if(worldBlock.cellType(p) != TerrainCellType.Empty &&
+	   p != player.dest)
+	{
+		player.setDest(p);
+	}
 }
 
 

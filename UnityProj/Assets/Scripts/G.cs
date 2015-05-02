@@ -17,7 +17,7 @@ public class G : MonoBehaviour
     public float terrainFullness = 0.75f;
     public float terrainSnowiness = 0.1f;
 
-    Plane gamePlane = new Plane(new Vector3(0, 1, 0), 0);
+    public static readonly Plane gamePlane = new Plane(new Vector3(0, 1, 0), 0);
 
     static readonly int grObjsClassesCount = Enum.GetValues(typeof(GrObjClass)).Length;
 
@@ -57,19 +57,6 @@ public class G : MonoBehaviour
   
     void Update()
     {   
-        if (Input.GetMouseButtonDown(0))
-        {
-            float dist;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if(gamePlane.Raycast(ray, out dist))
-            {
-                Vector3 inter = ray.origin + dist * ray.direction;
-                Vector2 planePos = new Vector2(inter.x, inter.z);
-                HexXY hexPos = HexXY.FromPlaneCoordinates(planePos);
-                Debug.Log(hexPos);
-            }
-        }
-
         D.update(Time.deltaTime);        
     }
 
@@ -83,6 +70,8 @@ public class G : MonoBehaviour
         string prefabPath = "Prefabs/" + objClass.ToString() + "/" + objType.ToString();
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
         obj.SetActive(false);
+        if (objClass == GrObjClass.Entity)        
+            obj.GetComponent<EntityGraphics>().grObjType = objType;        
         D.GrObjHandle handle = new D.GrObjHandle() { objClass = objClass, idx = grObjsCountByClass[(int)objClass]++ };
         grObjs.Add(handle, obj);
        

@@ -34,6 +34,8 @@ class EntityGraphics : MonoBehaviour
     Coroutine flashHighlightAnimation; //These don't support state view (exec, term), wtf
     bool isflashHighlightAnimationRunning;
 
+    public GrObjType grObjType;
+
 
     void Awake()
     {
@@ -72,7 +74,12 @@ class EntityGraphics : MonoBehaviour
     {
         Vector2 planeCoord = pos.ToPlaneCoordinates();
         transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
-        gameObject.SetActive(true);        
+        gameObject.SetActive(true);
+
+        if (grObjType == GrObjType.Player)
+        {
+            Camera.main.GetComponent<CameraControl>().player = gameObject;
+        }
     }
 
     void Move(MoveArgs args)
