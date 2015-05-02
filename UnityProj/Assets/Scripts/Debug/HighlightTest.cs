@@ -3,37 +3,42 @@ using System.Collections;
 
 public class HighlightTest : MonoBehaviour 
 {
-    Material hlMat;
-    GameObject highlightedCopy;
+    //Material hlMat;
+    //GameObject highlightedCopy;
 
-    public GameObject meshRoot;    
+    //public GameObject meshRoot;
+    public KeyCode key;
+    public Color color;
+    public float dur, peakAlpha;
+
 	
 	void Start () 
     {        
-        hlMat = (Material)Resources.Load("Debug/Highlight");
-        highlightedCopy = Instantiate(meshRoot);
-        highlightedCopy.transform.parent = meshRoot.transform.parent;
+        //hlMat = (Material)Resources.Load("Debug/Highlight");
+        //highlightedCopy = Instantiate(meshRoot);
+        //highlightedCopy.transform.parent = meshRoot.transform.parent;
         
 
-        foreach (var mr in highlightedCopy.GetComponentsInChildren<MeshRenderer>())
-        {
-            //Debug.Log(mr.gameObject.name);
+        //foreach (var mr in highlightedCopy.GetComponentsInChildren<MeshRenderer>())
+        //{
+        //    //Debug.Log(mr.gameObject.name);
 
-            mr.material = hlMat;
-            mr.gameObject.layer = 8;
-        }
+        //    mr.material = hlMat;           
+        //}
 
-        foreach (var mr in highlightedCopy.GetComponentsInChildren<SkinnedMeshRenderer>())
-        {
-            //Debug.Log(mr.gameObject.name);
-            mr.material = hlMat;
-            mr.gameObject.layer = 8;
-        }
+        //foreach (var mr in highlightedCopy.GetComponentsInChildren<SkinnedMeshRenderer>())
+        //{
+        //    //Debug.Log(mr.gameObject.name);
+        //    mr.material = hlMat;           
+        //}
 	}
 	
 	
 	void Update () 
     {
-	
+        if (Input.GetKeyDown(key))
+        {           
+            GetComponent<EntityGraphics>().AnimateFlashHighlight(color, dur, peakAlpha);
+        }
 	}
 }

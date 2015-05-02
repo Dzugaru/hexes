@@ -8,7 +8,10 @@
     SubShader
     {
         Lighting Off
-        ZTest Always Cull Off ZWrite Off Fog { Mode Off }         
+        ZTest LEqual Cull Off ZWrite Off Fog { Mode Off } 
+		Blend SrcAlpha OneMinusSrcAlpha
+		Tags{ "Queue" = "Transparent" }
+		Offset 0, -1
 
         Pass
         {
@@ -19,21 +22,21 @@
 
             struct v2f 
             {
-	float4 pos : POSITION;	
+				float4 pos : POSITION;	
             };
 			
             v2f vert(appdata_img v) 
             {
-	v2f o;
-	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);	
-	return o;
+				v2f o;
+				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);	
+				return o;
             }
 
             fixed4 _Color;
 
             fixed4 frag(v2f i) : COLOR
             {
-	return _Color;
+				return _Color;
             }
             ENDCG
         }
