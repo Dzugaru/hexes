@@ -416,6 +416,7 @@
   <File path="main.d" />
   <File path="math.d" />
   <File path="noise.d" />
+  <File path="overseer.d" />
   <File path="utils.d" />
  </Folder>
 </DProject>

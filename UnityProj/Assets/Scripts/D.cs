@@ -33,8 +33,7 @@ public class D : MonoBehaviour
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void PtrPtrToVoid(IntPtr name, IntPtr cb);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void HexXYShowObjectTypeFloatToVoid(Engine.HexXY p, ShowObjectType objName, float durSecs);
+   
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void HexXYToHexXYToVoid(Engine.HexXY from, Engine.HexXY to);
@@ -44,6 +43,10 @@ public class D : MonoBehaviour
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void TPerformOpOnGrObj(GrObjHandle objHandle, GrObjOperation op, IntPtr opParams);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void TShowEffectOnTile(Engine.HexXY p, EffectType effectType);
+
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void TUpdate(float dt);

@@ -409,13 +409,14 @@
   <File path="dllmain.d" />
   <File path="engine.d" />
   <File path="enums.d" />
+  <File path="fibers.d" />
   <File path="freelist.d" />
   <File path="frontendMock.d" />
   <File path="interfacing.d" />
   <File path="logger.d" />
   <File path="math.d" />
   <File path="noise.d" />
-  <File path="fibers.d" />
+  <File path="overseer.d" />
   <File path="utils.d" />
  </Folder>
 </DProject>

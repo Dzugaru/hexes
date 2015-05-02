@@ -5,9 +5,10 @@ public enum TerrainCellType
 	Snow	
 }
 
-public enum ShowObjectType
+public enum EffectType
 {
-    PathMarker
+    YellowBlast,
+    BlueBlast
 }
 
 public enum GrObjClass

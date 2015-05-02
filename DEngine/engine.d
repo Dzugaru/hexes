@@ -2,18 +2,22 @@ module engine;
 import std.conv;
 import std.math;
 import std.string;
-public import math;
-import noise;
 import std.traits;
-import logger;
-import utils;
 import std.container;
 import std.stdio;
-import freelist;
 import std.typecons;
+
 import interfacing;
-import enums;
 import frontendMock;
+import overseer;
+
+import logger;
+import utils;
+import noise;
+public import math;
+public import enums;
+public import freelist;
+public import fibers;
 
 /***************************************************************************************************
 * Sandbox
@@ -28,29 +32,16 @@ void startTheWorld()
 	worldBlock.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
 						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
 
-	auto mob1 = Mob.allocate(GrObjType.UnityChan, 1.0);
-	mob1.spawn(HexXY(5,8));
-
-	auto mob2 = Mob.allocate(GrObjType.Spider, 1.0);
-	mob2.spawn(HexXY(7,7));
-
-	auto mob3 = Mob.allocate(GrObjType.Spider, 1.0);
-	mob3.spawn(HexXY(7,2));	
-
-	auto mob4 = Mob.allocate(GrObjType.Spider, 1.0);
-	mob4.spawn(HexXY(8,3));
-	
-	
-	mob1.setDest(HexXY(0,0));
-	mob2.setDest(HexXY(0,0));	
-	mob3.setDest(HexXY(0,0));	
-	mob4.setDest(HexXY(0,0));	
+	overseer.start();
 }
 
 void update(float dt)
 {	
 	foreach(e; worldBlock.entityList.els())	
 		e.update(dt);	
+
+	overseer.update(dt);
+	fibers.update(dt);
 }
 
 enum terrainTypesCount = EnumMembers!TerrainCellType.length;

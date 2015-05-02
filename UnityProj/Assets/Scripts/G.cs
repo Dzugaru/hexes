@@ -38,7 +38,7 @@ public class G : MonoBehaviour
         g = this;
 
         D.setLogging(D.GetCallbackPointer((D.PtrToVoid)Log));
-        D.SetCallback("showObjectOnTile", (D.HexXYShowObjectTypeFloatToVoid)ShowObjectOnTile);
+        D.SetCallback("showEffectOnTile", (D.TShowEffectOnTile)ShowEffectOnTile);
         D.SetCallback("createGrObj", (D.TCreateGrObj)CreateGrObj);
         D.SetCallback("performOpOnGrObj", (D.TPerformOpOnGrObj)PerformOpOnGrObj);
         D.onStart();
@@ -98,20 +98,14 @@ public class G : MonoBehaviour
         }       
     }
 
-    static void ShowObjectOnTile(HexXY pos, ShowObjectType objType, float durSecs)
-    {
-        //Debug.Log(x + " " + y + " " + objName + " " + durSecs);
-        string prefabPath = "Prefabs/";
-        switch (objType)
-        {
-            case ShowObjectType.PathMarker: prefabPath += "Debug/PathMarker"; break;
-            default: throw new InvalidProgramException();
-        }
+    static void ShowEffectOnTile(HexXY pos, EffectType effectType)
+    {        
+        string prefabPath = "Prefabs/Effects/" + effectType.ToString();        
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
         Vector2 planeCoord = pos.ToPlaneCoordinates();
         obj.transform.position = new Vector3(planeCoord.x, 0.2f, planeCoord.y);
-        obj.GetComponent<IHasDuration>().SetDuration(durSecs);
+        //obj.GetComponent<IHasDuration>().SetDuration(durSecs);
     }
     
     //Bench for 100 100x100 world blocks was 0.44 sec

@@ -22,7 +22,7 @@ static:
 private:
 	immutable string[] decls = [
 		q{void function(immutable(char)*)},														q{log},
-		q{void function(uint x, uint y, ShowObjectType objType, float durSecs)},				q{showObjectOnTile},
+		q{void function(HexXY pos, EffectType effect)},											q{showEffectOnTile},
 		q{GrObjHandle function(GrObjClass objClass, GrObjType objType)},						q{createGrObj},
 		q{void function(GrObjHandle objHandle, GrObjOperation op, void* opParams)},				q{performOpOnGrObj},
 	];
@@ -101,21 +101,21 @@ extern(C) export void update(float dt)
 
 extern(C) export void calcAndShowPath(HexXY from, HexXY to)
 {
-	log(format("calcAndShowPath called %s -> %s", from, to));
-	HexXY[128] pathStorage;
-	auto path = findPathStatic(from, to, pathStorage);
-	if(path is null)
-	{
-		log("NO PATH");
-	}
-	else
-	{
-		cb.showObjectOnTile(from.x, from.y, ShowObjectType.PathMarker, 5);
-		foreach(p; path)
-		{
-			cb.showObjectOnTile(p.x, p.y, ShowObjectType.PathMarker, 5);
-		}
-	}
+	//log(format("calcAndShowPath called %s -> %s", from, to));
+	//HexXY[128] pathStorage;
+	//auto path = findPathStatic(from, to, pathStorage);
+	//if(path is null)
+	//{
+	//    log("NO PATH");
+	//}
+	//else
+	//{
+	//    cb.showObjectOnTile(from.x, from.y, ShowObjectType.PathMarker, 5);
+	//    foreach(p; path)
+	//    {
+	//        cb.showObjectOnTile(p.x, p.y, ShowObjectType.PathMarker, 5);
+	//    }
+	//}
 }
 
 extern(C) export void setLogging(void function(immutable(char)*) l)

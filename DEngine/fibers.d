@@ -1,3 +1,7 @@
+/**
+* Delayable fibers engine, similar to Unity3D coroutines
+*/
+
 module fibers;
 
 import core.thread;
@@ -25,7 +29,7 @@ void update(float dt)
 	}
 }
 
-void startFiber(void function() fn)
+void start(void function() fn)
 {
 	auto fiber = MyFiber.allocate(fn);	
 	allFibers.insert(fiber);
@@ -63,30 +67,4 @@ class MyFiber : Fiber
 		Fiber.yield();
 	}
 }
-
-unittest
-{
-	foreach(k; 0..1000)
-	{
-		startFiber(() 
-			   { 
-				   //writeln("Something start");
-				   foreach(i; 0..5)
-				   {
-					   delay(2);
-					   //writeln("Something loop: " ~ to!string(i));
-				   }
-			   });
-
-		float time = 0;
-		immutable float dt = 0.5;
-		foreach(i; 0..50)
-		{
-			//writeln("time " ~ to!string(time));
-			time += dt;
-			update(dt);
-		}
-	}	
-}
-
 
