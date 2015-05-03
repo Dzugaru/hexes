@@ -13,7 +13,7 @@ mixin template Freelist(bool shouldReset = true)
 {
 	private alias _FlT = typeof(this);
 
-	debug private static uint _flCount; 
+	debug static uint _flCount; 
 	private static _FlT _freelist;
 	private _FlT _flNext;
 
@@ -28,7 +28,7 @@ mixin template Freelist(bool shouldReset = true)
 			debug --_flCount;
 		}
 		else
-		{
+		{			
 			debug ++newCount;
 			inst = new _FlT();
 		}

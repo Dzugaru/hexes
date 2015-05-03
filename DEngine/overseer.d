@@ -45,7 +45,7 @@ void start()
 		}
 	}
 
-	fibers.start(&disco);
+	fibers.startFree(&disco);
 }
 
 

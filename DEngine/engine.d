@@ -414,7 +414,7 @@ public:
 }
 
 interface CanWalk {}
-interface Fibered {}
+
 
 mixin template _CompsEventHandlers()
 {
@@ -552,38 +552,7 @@ mixin template _CanWalk(uint maxPathLen)
 	}
 }
 
-mixin template _BoundFibers()
-{
-	static assert(isAssignable!(Fibered, typeof(this)));
 
-	alias TFiber = BoundFiber!(typeof(this));
-	SLList!(TFiber, TFiber.listNext) fibList;	
-
-	alias fibThis = fibers.getBoundContext!(typeof(this));
-
-	void updateFibers(float dt)
-	{
-		foreach(fib; fibList.els())
-		{
-			if(fib.delayLeft > 0)		
-				fib.delayLeft -= dt;		
-
-			if(fib.delayLeft <= 0)
-				fib.call();
-
-			if(fib.state == Fiber.State.TERM)
-			{
-				fibList.remove(fib);
-				fib.deallocate();
-			}
-		}
-	}
-	void deallocateFibers()
-	{
-		foreach(fib; fibList.els())
-			fib.deallocate();
-	}
-}
 
 class Mob : Entity, CanWalk, Fibered
 {
@@ -631,9 +600,9 @@ class Mob : Entity, CanWalk, Fibered
 				{
 					with(fibThis())
 					{
-						fibers.delay(attackDmgAppDelay);
+						fibers.delay(attackDmgAppDelay); mixin(fibBreak);
 						//Apply dmg
-						fibers.delay(attackDur - attackDmgAppDelay);
+						fibers.delay(attackDur - attackDmgAppDelay); mixin(fibBreak);
 						isAttacking = false;
 					}
 				});

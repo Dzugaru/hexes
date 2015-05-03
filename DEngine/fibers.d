@@ -7,13 +7,15 @@ module fibers;
 public import core.thread : Fiber;
 import std.stdio;
 import freelist;
-import utils;
+public import utils;
+public import std.traits : isAssignable;
+import logger;
 
 SLList!(FreeFiber, FreeFiber.listNext) freeFibers;
 
-void update(float dt)
+void updateFibersInList(T)(ref T fibList, float dt)
 {
-	foreach(fib; freeFibers.els())
+	foreach(fib; fibList.els())
 	{
 		if(fib.delayLeft > 0)		
 			fib.delayLeft -= dt;		
@@ -23,13 +25,18 @@ void update(float dt)
 
 		if(fib.state == Fiber.State.TERM)
 		{
-			freeFibers.remove(fib);
+			fibList.remove(fib);
 			fib.deallocate();
 		}
 	}
 }
 
-void start(void function() fn)
+void update(float dt)
+{
+	updateFibersInList(freeFibers, dt);
+}
+
+void startFree(void function() fn)
 {
 	auto fiber = FreeFiber.allocate(fn);	
 	freeFibers.insert(fiber);
@@ -106,5 +113,40 @@ class BoundFiber(T) : DelayFiber
 		this.func = func;
 		reset(func);
     }	
+}
+
+interface Fibered {}
+
+mixin template _BoundFibers()
+{
+	static assert(isAssignable!(Fibered, typeof(this)));
+
+	alias TFiber = BoundFiber!(typeof(this));
+	SLList!(TFiber, TFiber.listNext) fibList;	
+
+	bool fibIsDestroyed;
+
+	alias fibThis = fibers.getBoundContext!(typeof(this));
+
+	static immutable string fibBreak = q{ if(fibThis.fibIsDestroyed) return; };
+
+	void updateFibers(float dt)
+	{
+		updateFibersInList(fibList, dt);
+	}
+
+	void deallocateFibers()
+	{		
+		fibIsDestroyed = true;
+		foreach(fib; fibList.els())	
+		{			
+			fib.call();				
+			//writeln(fib.state);
+			if(fib.state != Fiber.State.TERM)
+				log("fiber leak!");			
+			else			
+				fib.deallocate();			
+		}		
+	}
 }
 

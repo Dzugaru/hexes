@@ -99,7 +99,7 @@ class EntityGraphics : MonoBehaviour
     void Move(MoveArgs args)
     {
         //if (grObjHandle.idx == 7) Debug.Log(grObjHandle + " move " + args.pos);
-        Debug.Log("Move: " + args.pos + " " + args.timeToGetThere);
+        //Debug.Log("Move: " + args.pos + " " + args.timeToGetThere);
         state = State.Walk;
         Vector2 dest = args.pos.ToPlaneCoordinates();
         walkDest = dest;
@@ -114,7 +114,7 @@ class EntityGraphics : MonoBehaviour
 
     void Stop(HexXY pos)
     {
-        Debug.Log(grObjHandle + " stop " + walkDest);
+        //Debug.Log(grObjHandle + " stop " + walkDest);
         state = State.Stand;
         Vector2 planePos = pos.ToPlaneCoordinates();
         transform.position = new Vector3(planePos.x, 0, planePos.y);
@@ -133,7 +133,7 @@ class EntityGraphics : MonoBehaviour
 
     IEnumerator CorAttack(HexXY pos)
     {
-        Debug.Log("Attack " + pos);
+        //Debug.Log("Attack " + pos);
         if (animationsType == AnimationsType.Legacy)
         {
             if (state == State.Attack) legacyAnimator.Rewind("Attack");
