@@ -6,6 +6,7 @@ import std.traits;
 import std.container;
 import std.stdio;
 import std.typecons;
+import std.algorithm : min, max;
 
 import interfacing;
 import frontendMock;
@@ -68,16 +69,16 @@ nothrow
 	static immutable Vector2 ey = Vector2(-sqrt(3f) * 0.5f, 0.5f);
 
 align:
-	int x, y;
+	int x, y;	
 
-	pure static float distSqr(in HexXY a, in HexXY b)
+	pure static uint dist(in HexXY a, in HexXY b)
 	{
-		return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) - (a.x - b.x) * (a.y - b.y);
-	}
-
-	pure static float dist(in HexXY a, in HexXY b)
-	{
-		return sqrt(distSqr(a, b));
+		int x = a.x - b.x;
+		int y = a.y - b.y;
+		if((x < 0) == (y < 0))		
+			return max(abs(x), abs(y));
+		else
+			return abs(x - y);		
 	}
 
 	Vector2 toPlaneCoordinates() const
@@ -170,7 +171,7 @@ align:
 			cellType(pos) != TerrainCellType.Empty;
 	}
 	
-	float pfGetPassCost(HexXY pos)
+	uint pfGetPassCost(HexXY pos)
 	{
 		return 1;		
 	}
@@ -247,7 +248,7 @@ align:
 */
 enum pfMaxFrontSize = 8192;
 
-HexXY[] findPath(in HexXY from, in HexXY to, HexXY[] pathStorage, in float blockedCost = 0)
+HexXY[] findPath(in HexXY from, in HexXY to, HexXY[] pathStorage, in uint blockedCost = 0)
 {
 	static immutable struct Step 
 	{ 
@@ -265,11 +266,11 @@ HexXY[] findPath(in HexXY from, in HexXY to, HexXY[] pathStorage, in float block
 	{ 
 		HexXY p; 
 		uint len;
-		float cost, sumCostHeuristic;		
+		uint cost, sumCostHeuristic;
 		int opCmp(XYCost rhs) { return sumCostHeuristic >= rhs.sumCostHeuristic ? -1 : 1; }	
 	}
 	
-	float getHeuristic(HexXY pos)
+	uint getHeuristic(HexXY pos)
 	{
 		return HexXY.dist(pos, to);
 	}
@@ -304,7 +305,7 @@ HexXY[] findPath(in HexXY from, in HexXY to, HexXY[] pathStorage, in float block
 			   worldBlock.pfExpandMap[np.x][np.y] < worldBlock.pfExpandMarker)
 			{	
 				worldBlock.pfExpandMap[np.x][np.y] = worldBlock.pfExpandMarker;	
-				float cost = c.cost + worldBlock.pfGetPassCost(np);
+				uint cost = c.cost + worldBlock.pfGetPassCost(np);
 
 				if(blockedCost > 0 && np != to && worldBlock.pfBlockedMap[np.x][np.y]) 
 					cost += blockedCost;				   
@@ -344,14 +345,14 @@ unittest
 	worldBlock.cellTypes[1][1] = cast(TerrainCellType)0;
 	auto pathStorage = new HexXY[128];
 
-	auto path = findPathStatic(HexXY(0,0), HexXY(0,2), pathStorage); //simple path around wall	
+	auto path = findPath(HexXY(0,0), HexXY(0,2), pathStorage); //simple path around wall	
 	assert(path == [HexXY(1,0), HexXY(2,1), HexXY(2,2), HexXY(1,2), HexXY(0,2)]);
 
-	path = findPathStatic(HexXY(2,2), HexXY(2,2), pathStorage); //zero-length path	
+	path = findPath(HexXY(2,2), HexXY(2,2), pathStorage); //zero-length path	
 	assert(path == []);
 
 	worldBlock.cellTypes[1][0] = cast(TerrainCellType)0;
-	path = findPathStatic(HexXY(0,0), HexXY(0,2), pathStorage); //no path anymore
+	path = findPath(HexXY(0,0), HexXY(0,2), pathStorage); //no path anymore
 	assert(path is null);
 }
 
@@ -431,7 +432,7 @@ mixin template _CanWalk(uint maxPathLen)
 	HexXY[] path;
 	HexXY prevTile;
 	Nullable!HexXY dest;
-	float blockedCost;
+	uint blockedCost;
 	bool onTileCenter;
 	float speed, invSpeed, distToNextTile;
 	bool isWalkBlocked;
@@ -457,7 +458,7 @@ mixin template _CanWalk(uint maxPathLen)
 			if(shouldStopNearDest && path.length == 1)
 			{
 				path.length = 0;
-				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);
+				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, &pos);
 			}
 			isWalkBlocked = false;
 		}
@@ -478,7 +479,7 @@ mixin template _CanWalk(uint maxPathLen)
 				{
 					isWalkBlocked = true;
 					walkBlockedTime = 0;
-					interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);
+					interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, &pos);
 				}				
 				walkBlockedTime += dt;				
 				return; 
@@ -512,14 +513,14 @@ mixin template _CanWalk(uint maxPathLen)
 			}
 			else
 			{
-				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);	
+				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, &prevTile);	
 				if(shouldStopNearDest) path.length = 0;
 			}			
 		}
 	}
 
 	//Path will be changed on next tile center
-	void setDest(HexXY dest, float blockedCost, bool shouldStopNearDest)
+	void setDest(HexXY dest, uint blockedCost, bool shouldStopNearDest)
 	{
 		this.dest = dest;
 		this.blockedCost = blockedCost;
@@ -556,37 +557,17 @@ class Mob : Entity, CanWalk
 			setDest(player.pos, 0, true);
 		}
 
-		
-		if(isWalkBlocked && walkBlockedTime > 0.5f)
+		//Is we're blocked for some time try to find a way around other mobs	
+		if(isWalkBlocked && walkBlockedTime > 0.5f) //TODO: random time?
 		{
 			//log(format("%s %f", isWalkBlocked, walkBlockedTime));
 			setDest(player.pos, 10, true);
 		}
 
+		
+
 		Entity.update(dt);
 	}
-}
-
-unittest
-{
-	frontendMock.setup();
-
-	worldBlock = new WorldBlock(HexXY(0,0));
-	worldBlock.generateSolidFirstType();
-	worldBlock.cellTypes[0][1] = cast(TerrainCellType)0;
-	worldBlock.cellTypes[1][1] = cast(TerrainCellType)0;
-	
-	auto mob1 = Mob.allocate(GrObjType.Sphere, 1.0);
-	mob1.spawn(HexXY(0,0));
-	mob1.setDest(HexXY(0,2));
-	mob1.update(0.25);
-
-	while(mob1.path.length > 0)
-	{
-		mob1.update(0.25);		
-	}
-
-	assert(mob1.pos == HexXY(0,2));
 }
 
 class Player : Entity, CanWalk

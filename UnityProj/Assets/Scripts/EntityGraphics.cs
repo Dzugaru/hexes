@@ -67,15 +67,17 @@ class EntityGraphics : MonoBehaviour
         {
             case GrObjOperation.Spawn: Spawn(*(HexXY*)args); break;
             case GrObjOperation.Move: Move(*(MoveArgs*)args); break;
-            case GrObjOperation.Stop: Stop(); break;
+            case GrObjOperation.Stop: Stop(*(HexXY*)args); break;
         }
     }  
 
     void Spawn(HexXY pos)
     {
+        //if(grObjHandle.idx == 7) Debug.Log(grObjHandle + " spawn " + pos);
         Vector2 planeCoord = pos.ToPlaneCoordinates();
         transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
         gameObject.SetActive(true);
+        //if (grObjHandle.idx == 7) Debug.Log(grObjHandle + " " + transform.position);
 
         if (grObjType == GrObjType.Player)
         {
@@ -85,7 +87,7 @@ class EntityGraphics : MonoBehaviour
 
     void Move(MoveArgs args)
     {
-        //Debug.Log(grObjHandle + " moves");
+        //if (grObjHandle.idx == 7) Debug.Log(grObjHandle + " move " + args.pos);
         //Debug.Log("Move: " + args.pos + " " + args.timeToGetThere);
         state = State.Walk;
         Vector2 dest = args.pos.ToPlaneCoordinates();
@@ -101,11 +103,12 @@ class EntityGraphics : MonoBehaviour
         }
     }
 
-    void Stop()
+    void Stop(HexXY pos)
     {
-        //Debug.Log(grObjHandle + " stops");
+        //Debug.Log(grObjHandle + " stop " + walkDest);
         state = State.Stand;
-        transform.position = new Vector3(walkDest.x, 0, walkDest.y);
+        Vector2 planePos = pos.ToPlaneCoordinates();
+        transform.position = new Vector3(planePos.x, 0, planePos.y);
     }
 
     void UpdateMecanimAnimations()
@@ -211,6 +214,7 @@ class EntityGraphics : MonoBehaviour
 
     void Update()
     {
+        //if (grObjHandle.idx == 7) Debug.Log(grObjHandle + " " + transform.position);
         switch (animationsType)
         {
             case AnimationsType.Mecanim: UpdateMecanimAnimations(); break;

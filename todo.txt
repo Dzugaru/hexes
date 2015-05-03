@@ -1,1 +1,2 @@
+- Ranged mobs - modify pathfinding to support it
 - Think about fixed update for engine - or some events may or may not be on the same tick depending on framerate

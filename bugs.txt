@@ -1,1 +1,0 @@
-- Some spider flies away from 0,0 it seems on spawn
