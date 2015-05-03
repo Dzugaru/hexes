@@ -413,6 +413,142 @@ ModelImporter:
         weight: 1
       maskType: 0
       maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: Attack
+      takeName: Spider_Attak
+      firstFrame: 0
+      lastFrame: 35
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/IKnoga_001_L
+        weight: 1
+      - path: Armature/IKnoga_001_R
+        weight: 1
+      - path: Armature/IKnoga_002_L
+        weight: 1
+      - path: Armature/IKnoga_002_R
+        weight: 1
+      - path: Armature/IKnoga_003_L
+        weight: 1
+      - path: Armature/IKnoga_003_R
+        weight: 1
+      - path: Armature/IKnoga_L
+        weight: 1
+      - path: Armature/IKnoga_R
+        weight: 1
+      - path: Armature/Master
+        weight: 1
+      - path: Armature/Master/Thorso
+        weight: 1
+      - path: Armature/Master/Thorso/Bone_003
+        weight: 1
+      - path: Armature/Master/Thorso/Bone_003/Bone_004
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_001_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_001_L/nogaB_001_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_001_L/nogaB_001_L/nogaC_001_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_001_L/nogaB_001_L/nogaC_001_L/nogaD_001_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_001_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_001_R/nogaB_001_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_001_R/nogaB_001_R/nogaC_001_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_001_R/nogaB_001_R/nogaC_001_R/nogaD_001_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_002_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_002_L/nogaB_002_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_002_L/nogaB_002_L/nogaC_002_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_002_L/nogaB_002_L/nogaC_002_L/nogaD_002_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_002_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_002_R/nogaB_002_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_002_R/nogaB_002_R/nogaC_002_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_002_R/nogaB_002_R/nogaC_002_R/nogaD_002_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_003_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_003_L/nogaB_003_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_003_L/nogaB_003_L/nogaC_003_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_003_L/nogaB_003_L/nogaC_003_L/nogaD_003_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_003_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_003_R/nogaB_003_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_003_R/nogaB_003_R/nogaC_003_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_003_R/nogaB_003_R/nogaC_003_R/nogaD_003_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_L/nogaB_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_L/nogaB_L/nogaC_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_L/nogaB_L/nogaC_L/nogaD_L
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_R/nogaB_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_R/nogaB_R/nogaC_R
+        weight: 1
+      - path: Armature/Master/Thorso/nogaA_R/nogaB_R/nogaC_R/nogaD_R
+        weight: 1
+      - path: Armature/Master/Thorso/Sheya
+        weight: 1
+      - path: Armature/Master/Thorso/Sheya/Head
+        weight: 1
+      - path: Armature/Master/Thorso/Sheya/Head/IKzub_L
+        weight: 1
+      - path: Armature/Master/Thorso/Sheya/Head/IKzub_R
+        weight: 1
+      - path: Armature/Master/Thorso/Sheya/Head/zubA_L
+        weight: 1
+      - path: Armature/Master/Thorso/Sheya/Head/zubA_L/zubB_L
+        weight: 1
+      - path: Armature/Master/Thorso/Sheya/Head/zubA_R
+        weight: 1
+      - path: Armature/Master/Thorso/Sheya/Head/zubA_R/zubB_R
+        weight: 1
+      - path: Mesh
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
     isReadable: 1
   meshes:
     lODScreenPercentages: []

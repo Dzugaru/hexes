@@ -68,8 +68,7 @@ nothrow
 	static immutable Vector2 ex = Vector2(sqrt(3f) * 0.5f, 0.5f);
 	static immutable Vector2 ey = Vector2(-sqrt(3f) * 0.5f, 0.5f);
 
-align:
-	int x, y;	
+align {	int x, y; }
 
 	pure static uint dist(in HexXY a, in HexXY b)
 	{
@@ -136,25 +135,17 @@ final  class WorldBlock
 {
 	alias sz = worldBlocksSize;
 
-align:
-	immutable HexXY position;
-
-	//TODO:
-	static void dispatchToBlock(alias func, AA...)(HexXY globalPos, AA args)
-	{
-		HexXY localPos;
-		auto blockX = globalPos.x < 0 ? (-globalPos.x - 1) / sz - 1 : globalPos.x / sz;
-		auto blockY = globalPos.y < 0 ? (-globalPos.y - 1) / sz - 1 : globalPos.y / sz;
-		localPos.x = globalPos.x - blockX * sz;
-		localPos.y = globalPos.y - blockY * sz;
-		//getBlock(blockX, blockY).func(localPos, args);
-	}
+align
+{
+	immutable HexXY position;	
 
 	//Terrain
-	TerrainCellType[sz][sz] cellTypes;
-	auto cellType(in HexXY p) const { return cellTypes[p.x][p.y]; }
+	TerrainCellType[sz][sz] cellTypes;	
 	int[terrainTypesCount] cellTypeCounts;
 	int nonEmptyCellsCount;
+}
+
+	auto cellType(in HexXY p) const { return cellTypes[p.x][p.y]; }
 	
 	//Entities
 	SLList!(Entity, Entity.wbAllEntitiesNext) entityList;
@@ -187,6 +178,17 @@ align:
 	{
 		this.position = position;		
 	}	
+
+	//TODO:
+	static void dispatchToBlock(alias func, AA...)(HexXY globalPos, AA args)
+	{
+		HexXY localPos;
+		auto blockX = globalPos.x < 0 ? (-globalPos.x - 1) / sz - 1 : globalPos.x / sz;
+		auto blockY = globalPos.y < 0 ? (-globalPos.y - 1) / sz - 1 : globalPos.y / sz;
+		localPos.x = globalPos.x - blockX * sz;
+		localPos.y = globalPos.y - blockY * sz;
+		//getBlock(blockX, blockY).func(localPos, args);
+	}
 
 	//Generation
 	void generate(in BinaryNoiseFunc nonEmpty, in BinaryNoiseFunc snow)
@@ -373,6 +375,7 @@ public:
 
 	abstract void compsOnSpawn(HexXY pos);
 	abstract void compsOnUpdate(float dt);
+	abstract void compsOnDie();
 
 	void construct(GrObjType type)
 	{
@@ -403,11 +406,15 @@ public:
 
 		interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Spawn, &pos);
 	}
+
+	void die()
+	{
+		compsOnDie();
+	}
 }
 
-interface CanWalk
-{	
-}
+interface CanWalk {}
+interface Fibered {}
 
 mixin template _CompsEventHandlers()
 {
@@ -420,7 +427,16 @@ mixin template _CompsEventHandlers()
 	override void compsOnUpdate(float dt)
 	{
 		static if(isAssignable!(CanWalk, typeof(this)))		
-			move(dt);		
+			walk(dt);
+
+		static if(isAssignable!(Fibered, typeof(this)))
+			updateFibers(dt);
+	}
+
+	override void compsOnDie()
+	{
+		static if(isAssignable!(Fibered, typeof(this)))
+			deallocateFibers();
 	}
 }
 
@@ -449,7 +465,7 @@ mixin template _CanWalk(uint maxPathLen)
 		worldBlock.pfBlockedMap[pos.x][pos.y] = true;
 	}	
 
-	void move(float dt)
+	void walk(float dt)
 	{		
 		if(onTileCenter && shouldRecalcPath)
 		{
@@ -509,7 +525,7 @@ mixin template _CanWalk(uint maxPathLen)
 
 			if(path.length > (shouldStopNearDest ? 1 : 0))
 			{
-				move(dt - timeLeft);			
+				walk(dt - timeLeft);			
 			}
 			else
 			{
@@ -536,35 +552,93 @@ mixin template _CanWalk(uint maxPathLen)
 	}
 }
 
-class Mob : Entity, CanWalk
+mixin template _BoundFibers()
+{
+	static assert(isAssignable!(Fibered, typeof(this)));
+
+	alias TFiber = BoundFiber!(typeof(this));
+	SLList!(TFiber, TFiber.listNext) fibList;	
+
+	alias fibThis = fibers.getBoundContext!(typeof(this));
+
+	void updateFibers(float dt)
+	{
+		foreach(fib; fibList.els())
+		{
+			if(fib.delayLeft > 0)		
+				fib.delayLeft -= dt;		
+
+			if(fib.delayLeft <= 0)
+				fib.call();
+
+			if(fib.state == Fiber.State.TERM)
+			{
+				fibList.remove(fib);
+				fib.deallocate();
+			}
+		}
+	}
+	void deallocateFibers()
+	{
+		foreach(fib; fibList.els())
+			fib.deallocate();
+	}
+}
+
+class Mob : Entity, CanWalk, Fibered
 {
 	mixin Freelist;
+	mixin _BoundFibers;
 
 	mixin _CompsEventHandlers;
 	mixin _CanWalk!64;	
 
-	void construct(GrObjType grType, float speed)
+	float attackDmgAppDelay, attackDur;
+	bool isAttacking;
+
+	void construct(GrObjType grType, float speed, float attackDmgAppDelay, float attackDur)
 	{		
 		Entity.construct(grType);
 		setSpeed(speed);
+		this.attackDmgAppDelay = attackDmgAppDelay;
+		this.attackDur = attackDur;
+		this.isAttacking = false;		
 	}	
 
 	override void update(float dt)
 	{
-		//Simple walk to player
-		if(dest.isNull() || dest != player.pos)
+		if(!isAttacking)
 		{
-			setDest(player.pos, 0, true);
-		}
+			//Simple walk to player
+			if(dest.isNull() || dest != player.pos)
+			{
+				setDest(player.pos, 0, true);
+			}
 
-		//Is we're blocked for some time try to find a way around other mobs	
-		if(isWalkBlocked && walkBlockedTime > 0.5f) //TODO: random time?
-		{
-			//log(format("%s %f", isWalkBlocked, walkBlockedTime));
-			setDest(player.pos, 10, true);
-		}
+			//Is we're blocked for some time try to find a way around other mobs	
+			if(isWalkBlocked && walkBlockedTime > 0.5f) //TODO: random time?
+			{
+				//log(format("%s %f", isWalkBlocked, walkBlockedTime));
+				setDest(player.pos, 10, true);
+			}
 
-		
+			//Attack
+			if(onTileCenter && HexXY.dist(pos, player.pos) == 1 )
+			{
+				isAttacking = true;
+				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Attack, &player.pos);
+				fibers.start(this, () 
+				{
+					with(fibThis())
+					{
+						fibers.delay(attackDmgAppDelay);
+						//Apply dmg
+						fibers.delay(attackDur - attackDmgAppDelay);
+						isAttacking = false;
+					}
+				});
+			}
+		}
 
 		Entity.update(dt);
 	}

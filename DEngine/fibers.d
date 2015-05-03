@@ -4,16 +4,16 @@
 
 module fibers;
 
-import core.thread;
+public import core.thread : Fiber;
 import std.stdio;
 import freelist;
 import utils;
 
-SLList!(MyFiber, MyFiber.allFibersListNext) allFibers;
+SLList!(FreeFiber, FreeFiber.listNext) freeFibers;
 
 void update(float dt)
 {
-	foreach(fib; allFibers.els())
+	foreach(fib; freeFibers.els())
 	{
 		if(fib.delayLeft > 0)		
 			fib.delayLeft -= dt;		
@@ -23,7 +23,7 @@ void update(float dt)
 
 		if(fib.state == Fiber.State.TERM)
 		{
-			allFibers.remove(fib);
+			freeFibers.remove(fib);
 			fib.deallocate();
 		}
 	}
@@ -31,22 +31,47 @@ void update(float dt)
 
 void start(void function() fn)
 {
-	auto fiber = MyFiber.allocate(fn);	
-	allFibers.insert(fiber);
+	auto fiber = FreeFiber.allocate(fn);	
+	freeFibers.insert(fiber);
+}
+
+void start(T)(T context, void function() fn)
+{
+	auto fiber = BoundFiber!T.allocate(context, fn);	
+	context.fibList.insert(fiber);
 }
 
 void delay(float secs)
 {
-	(cast(MyFiber)Fiber.getThis()).delay(secs);
+	(cast(DelayFiber)Fiber.getThis()).delay(secs);
 }
 
-class MyFiber : Fiber
+T getBoundContext(T)()
+{
+	return (cast(BoundFiber!T)Fiber.getThis()).context;
+}
+
+abstract class DelayFiber : Fiber
+{
+	float delayLeft;
+
+	this(void function() func)
+	{
+		super(func);
+	}
+
+	final void delay(float amount)
+	{
+		delayLeft += amount;
+		Fiber.yield();
+	}
+}
+
+class FreeFiber : DelayFiber
 {
 	mixin Freelist!false;
+	FreeFiber listNext;	
 
-	MyFiber allFibersListNext;
-
-	float delayLeft;
 	void function() func;
 
 	this()
@@ -59,12 +84,27 @@ class MyFiber : Fiber
 		this.delayLeft = 0;
 		this.func = func;
 		reset(func);
-    }	
+    }		
+}
 
-	void delay(float amount)
+class BoundFiber(T) : DelayFiber
+{
+	mixin Freelist!false;
+	BoundFiber!T listNext;
+	T context;
+
+	void function() func;
+	this()
 	{
-		delayLeft += amount;
-		Fiber.yield();
+		super(func);
 	}
+
+	void construct(T context, void function() func)
+    {
+		this.context = context;
+		this.delayLeft = 0;
+		this.func = func;
+		reset(func);
+    }	
 }
 

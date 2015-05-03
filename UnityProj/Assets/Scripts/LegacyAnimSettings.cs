@@ -3,6 +3,6 @@ using UnityEngine;
 
 class LegacyAnimSettings : MonoBehaviour
 {
-    public float walkSpeed;
+    public float walkSpeed, attackSpeed;
 }
 

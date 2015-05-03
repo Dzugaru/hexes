@@ -13,17 +13,20 @@ void start()
 	rndGen.seed(1);
 	foreach(i; 0..25)
 	{
-		
+
 		HexXY p;
 		do
 		{
 			p.x = std.random.uniform(0, worldBlocksSize);
 			p.y = std.random.uniform(0, worldBlocksSize);
 		} while(worldBlock.cellType(p) == TerrainCellType.Empty && player.pos != p);
-	
-		auto mob = Mob.allocate(GrObjType.Spider, 1.0);
+
+		auto mob = Mob.allocate(GrObjType.Spider, 1.0, 0.2, 1.0);
 		mob.spawn(p);		
 	}
+
+	//auto mob = Mob.allocate(GrObjType.Spider, 1.0, 0.2, 1.0);
+	//mob.spawn(HexXY(2,2));		
 	
 	
 
