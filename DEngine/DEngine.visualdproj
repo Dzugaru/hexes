@@ -405,6 +405,7 @@
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="DEngine">
+  <File path="data.d" />
   <File path="dll.def" />
   <File path="dllmain.d" />
   <File path="engine.d" />

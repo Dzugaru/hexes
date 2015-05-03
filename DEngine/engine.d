@@ -15,6 +15,7 @@ import overseer;
 import logger;
 import utils;
 import noise;
+public import data;
 public import math;
 public import enums;
 public import freelist;
@@ -413,9 +414,6 @@ public:
 	}
 }
 
-interface CanWalk {}
-
-
 mixin template _CompsEventHandlers()
 {
 	override void compsOnSpawn(HexXY pos)
@@ -440,10 +438,12 @@ mixin template _CompsEventHandlers()
 	}
 }
 
+interface CanWalk {}
 mixin template _CanWalk(uint maxPathLen)
 {
 	static assert(isAssignable!(CanWalk, typeof(this)));
 
+	//TODO: pack most of this to struct?
 	HexXY[maxPathLen] pathStorage;
 	HexXY[] path;
 	HexXY prevTile;
@@ -552,6 +552,12 @@ mixin template _CanWalk(uint maxPathLen)
 	}
 }
 
+interface HasHP {}
+mixin template _HasHP()
+{
+	float currentHP, maxHP;
+}
+
 
 
 class Mob : Entity, CanWalk, Fibered
@@ -561,17 +567,20 @@ class Mob : Entity, CanWalk, Fibered
 
 	mixin _CompsEventHandlers;
 	mixin _CanWalk!64;	
+	mixin _HasHP;
 
-	float attackDmgAppDelay, attackDur;
+	float attackDmgAppDelay, attackDur, attackDamage;
 	bool isAttacking;
 
-	void construct(GrObjType grType, float speed, float attackDmgAppDelay, float attackDur)
+	void construct(data.Mob mobData)
 	{		
-		Entity.construct(grType);
-		setSpeed(speed);
-		this.attackDmgAppDelay = attackDmgAppDelay;
-		this.attackDur = attackDur;
-		this.isAttacking = false;		
+		Entity.construct(mobData.grType);
+		setSpeed(mobData.speed);
+		attackDmgAppDelay = mobData.attackDmgAppDelay;
+		attackDur = mobData.attackDur;
+		attackDamage = mobData.attackDamage;
+		maxHP = currentHP = mobData.maxHP;
+		isAttacking = false;		
 	}	
 
 	override void update(float dt)
@@ -598,10 +607,14 @@ class Mob : Entity, CanWalk, Fibered
 				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Attack, &player.pos);
 				fibers.start(this, () 
 				{
-					with(fibThis())
+					mixin(fibBreak);
+					with(fibThis)
 					{
 						fibers.delay(attackDmgAppDelay); mixin(fibBreak);
-						//Apply dmg
+						//Apply dmg						
+						float dmg = attackDamage;
+						interfacing.cb.performOpOnGrObj(player.grHandle, GrObjOperation.Damage, &dmg);
+						//TODO: refresh bar including new dot speed? (same with dotheal)
 						fibers.delay(attackDur - attackDmgAppDelay); mixin(fibBreak);
 						isAttacking = false;
 					}

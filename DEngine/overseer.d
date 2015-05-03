@@ -21,7 +21,7 @@ void start()
 			p.y = std.random.uniform(0, worldBlocksSize);
 		} while(worldBlock.cellType(p) == TerrainCellType.Empty && player.pos != p);
 
-		auto mob = Mob.allocate(GrObjType.Spider, 1.0, 0.2, 1.0);
+		auto mob = Mob.allocate(data.mobs["spider"]);
 		mob.spawn(p);		
 	}
 

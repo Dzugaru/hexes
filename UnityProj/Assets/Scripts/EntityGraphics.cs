@@ -79,6 +79,7 @@ class EntityGraphics : MonoBehaviour
             case GrObjOperation.Move: Move(*(MoveArgs*)args); break;
             case GrObjOperation.Stop: Stop(*(HexXY*)args); break;
             case GrObjOperation.Attack: Attack(*(HexXY*)args); break;
+            case GrObjOperation.Damage: Damage(*(float*)args); break;
         }
     }  
 
@@ -129,6 +130,11 @@ class EntityGraphics : MonoBehaviour
             StopCoroutine(attackCor);
 
         attackCor = StartCoroutine(CorAttack(pos));
+    }
+
+    void Damage(float dmg)
+    {
+        AnimateFlashHighlight(Color.white, 0.15f, 0.5f);
     }
 
     IEnumerator CorAttack(HexXY pos)

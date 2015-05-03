@@ -30,5 +30,6 @@ public enum GrObjOperation
     Spawn,
     Move,
     Stop,
-    Attack
+    Attack,
+    Damage
 }
