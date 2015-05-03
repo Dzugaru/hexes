@@ -70,9 +70,14 @@ public class G : MonoBehaviour
         string prefabPath = "Prefabs/" + objClass.ToString() + "/" + objType.ToString();
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
         obj.SetActive(false);
-        if (objClass == GrObjClass.Entity)        
-            obj.GetComponent<EntityGraphics>().grObjType = objType;        
+        
         D.GrObjHandle handle = new D.GrObjHandle() { objClass = objClass, idx = grObjsCountByClass[(int)objClass]++ };
+        if (objClass == GrObjClass.Entity)
+        {
+            var ent = obj.GetComponent<EntityGraphics>();
+            ent.grObjType = objType;
+            ent.grObjHandle = handle;
+        }
         grObjs.Add(handle, obj);
        
         return handle;

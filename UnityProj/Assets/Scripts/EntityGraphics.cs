@@ -35,6 +35,7 @@ class EntityGraphics : MonoBehaviour
     bool isflashHighlightAnimationRunning;
 
     public GrObjType grObjType;
+    public D.GrObjHandle grObjHandle;
 
 
     void Awake()
@@ -84,6 +85,7 @@ class EntityGraphics : MonoBehaviour
 
     void Move(MoveArgs args)
     {
+        //Debug.Log(grObjHandle + " moves");
         //Debug.Log("Move: " + args.pos + " " + args.timeToGetThere);
         state = State.Walk;
         Vector2 dest = args.pos.ToPlaneCoordinates();
@@ -101,6 +103,7 @@ class EntityGraphics : MonoBehaviour
 
     void Stop()
     {
+        //Debug.Log(grObjHandle + " stops");
         state = State.Stand;
         transform.position = new Vector3(walkDest.x, 0, walkDest.y);
     }

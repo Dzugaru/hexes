@@ -23,7 +23,7 @@ public import fibers;
 * Sandbox
 * 1 world block 10x10 for now
 */
-immutable uint worldBlocksSize = 10;
+immutable uint worldBlocksSize = 32;
 WorldBlock worldBlock;
 Player player;
 
@@ -34,7 +34,13 @@ void startTheWorld()
 						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
 
 	player = new Player();
-	player.spawn(HexXY(0,0));
+	HexXY p = HexXY(0,0);
+	//do
+	//{
+	//    p.x = std.random.uniform(0, worldBlocksSize);
+	//    p.y = std.random.uniform(0, worldBlocksSize);
+	//} while(worldBlock.cellType(p) == TerrainCellType.Empty);
+	player.spawn(p);
 
 	overseer.start();
 }
@@ -161,17 +167,14 @@ align:
 	bool pfIsPassable(HexXY pos)
 	{
 		return pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz &&
-				!pfBlockedMap[pos.x][pos.y];
+			cellType(pos) != TerrainCellType.Empty;
 	}
-	bool pfIsStaticPassable(HexXY pos)
-	{
-		return pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz &&
-				cellType(pos) != TerrainCellType.Empty;
-	}
+	
 	float pfGetPassCost(HexXY pos)
 	{
-		return 1;
+		return 1;		
 	}
+
 	void pfCalcStaticBlocking()
 	{	
 		foreach(x; 0..sz)
@@ -244,10 +247,7 @@ align:
 */
 enum pfMaxFrontSize = 8192;
 
-alias findPathStatic = findPath!(WorldBlock.pfIsStaticPassable);
-alias findPathDynamic = findPath!(WorldBlock.pfIsPassable);
-
-HexXY[] findPath(alias passableFunc)(in HexXY from, in HexXY to, HexXY[] pathStorage)
+HexXY[] findPath(in HexXY from, in HexXY to, HexXY[] pathStorage, in float blockedCost = 0)
 {
 	static immutable struct Step 
 	{ 
@@ -300,11 +300,15 @@ HexXY[] findPath(alias passableFunc)(in HexXY from, in HexXY to, HexXY[] pathSto
 		foreach(st; steps)
 		{
 			auto np = c.p + st;
-			if(mixin(q{worldBlock.} ~ __traits(identifier, passableFunc) ~ q{(np)}) &&
+			if(worldBlock.pfIsPassable(np) &&
 			   worldBlock.pfExpandMap[np.x][np.y] < worldBlock.pfExpandMarker)
 			{	
 				worldBlock.pfExpandMap[np.x][np.y] = worldBlock.pfExpandMarker;	
 				float cost = c.cost + worldBlock.pfGetPassCost(np);
+
+				if(blockedCost > 0 && np != to && worldBlock.pfBlockedMap[np.x][np.y]) 
+					cost += blockedCost;				   
+
 				auto n = XYCost(np, c.len + 1, cost, cost + getHeuristic(np));
 				front.insert(n);
 				worldBlock.pfStepsMap[np.x][np.y] = cast(ubyte)st.backIdx;
@@ -427,9 +431,13 @@ mixin template _CanWalk(uint maxPathLen)
 	HexXY[] path;
 	HexXY prevTile;
 	Nullable!HexXY dest;
+	float blockedCost;
 	bool onTileCenter;
 	float speed, invSpeed, distToNextTile;
 	bool isWalkBlocked;
+	float walkBlockedTime;
+	bool shouldRecalcPath;
+	bool shouldStopNearDest;
 
 	void canWalkOnSpawn(HexXY pos)
 	{
@@ -440,16 +448,19 @@ mixin template _CanWalk(uint maxPathLen)
 		worldBlock.pfBlockedMap[pos.x][pos.y] = true;
 	}	
 
-	void changePath()
-	{
-		path = findPathStatic(pos, dest, pathStorage);		
-	}
-
 	void move(float dt)
 	{		
-		if(onTileCenter && !dest.isNull && 
-		   (path.length == 0 || path[$-1] != dest))
-			changePath();
+		if(onTileCenter && shouldRecalcPath)
+		{
+			path = findPath(pos, dest, pathStorage, blockedCost);		
+			shouldRecalcPath = false;
+			if(shouldStopNearDest && path.length == 1)
+			{
+				path.length = 0;
+				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);
+			}
+			isWalkBlocked = false;
+		}
 
 		if(path.length == 0) return;
 		auto nextTile = path[0];
@@ -466,12 +477,15 @@ mixin template _CanWalk(uint maxPathLen)
 				if(!isWalkBlocked)
 				{
 					isWalkBlocked = true;
+					walkBlockedTime = 0;
 					interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);
-				}
+				}				
+				walkBlockedTime += dt;				
 				return; 
 			}
 			isWalkBlocked = false;
 			worldBlock.pfBlockedMap[nextTile.x][nextTile.y] = true;
+			worldBlock.pfBlockedMap[prevTile.x][prevTile.y] = false;
 
 			//Animate movement
 			struct TCbArgs { HexXY dest; float time; } 
@@ -486,29 +500,32 @@ mixin template _CanWalk(uint maxPathLen)
 			onTileCenter = false;
 		}
 		else
-		{
-			worldBlock.pfBlockedMap[prevTile.x][prevTile.y] = false;
+		{			
 			prevTile = nextTile;
 			distToNextTile = 1;	
 			onTileCenter = true;
-			path = path[1..$];
-			if(path.length > 0)
+			path = path[1..$];			
+
+			if(path.length > (shouldStopNearDest ? 1 : 0))
 			{
 				move(dt - timeLeft);			
 			}
 			else
 			{
-				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);
-				if(dest == pos)				
-					dest.nullify();
-			}
+				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, null);	
+				if(shouldStopNearDest) path.length = 0;
+			}			
 		}
 	}
 
 	//Path will be changed on next tile center
-	void setDest(HexXY p)
+	void setDest(HexXY dest, float blockedCost, bool shouldStopNearDest)
 	{
-		dest = p;
+		this.dest = dest;
+		this.blockedCost = blockedCost;
+		this.shouldStopNearDest = shouldStopNearDest;
+
+		this.shouldRecalcPath = true;		
 	}
 
 	void setSpeed(float speed)
@@ -523,13 +540,31 @@ class Mob : Entity, CanWalk
 	mixin Freelist;
 
 	mixin _CompsEventHandlers;
-	mixin _CanWalk!64;
+	mixin _CanWalk!64;	
 
 	void construct(GrObjType grType, float speed)
 	{		
 		Entity.construct(grType);
 		setSpeed(speed);
 	}	
+
+	override void update(float dt)
+	{
+		//Simple walk to player
+		if(dest.isNull() || dest != player.pos)
+		{
+			setDest(player.pos, 0, true);
+		}
+
+		
+		if(isWalkBlocked && walkBlockedTime > 0.5f)
+		{
+			//log(format("%s %f", isWalkBlocked, walkBlockedTime));
+			setDest(player.pos, 10, true);
+		}
+
+		Entity.update(dt);
+	}
 }
 
 unittest

@@ -58,6 +58,11 @@ public class D : MonoBehaviour
     {
         public GrObjClass objClass;
         public uint idx;
+
+        public override string ToString()
+        {
+            return objClass + " " + idx;
+        }
     }
 
 

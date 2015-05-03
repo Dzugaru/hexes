@@ -37,20 +37,20 @@ public class CameraControl : MonoBehaviour
         //Scroll
         if (!boundToPlayer)
         {
-            if (Input.mousePosition.x < scrollMargin)
-                transform.position -= transform.right * scrollSpeed;
+            //if (Input.mousePosition.x < scrollMargin)
+            //    transform.position -= transform.right * scrollSpeed;
 
-            if (Input.mousePosition.x > Screen.width - scrollMargin)
-                transform.position += transform.right * scrollSpeed;
+            //if (Input.mousePosition.x > Screen.width - scrollMargin)
+            //    transform.position += transform.right * scrollSpeed;
 
-            Vector3 fwd = transform.forward;
-            fwd.y = 0;
+            //Vector3 fwd = transform.forward;
+            //fwd.y = 0;
 
-            if (Input.mousePosition.y < scrollMargin)
-                transform.position -= fwd * scrollSpeed;
+            //if (Input.mousePosition.y < scrollMargin)
+            //    transform.position -= fwd * scrollSpeed;
 
-            if (Input.mousePosition.y > Screen.height - scrollMargin)
-                transform.position += fwd * scrollSpeed;
+            //if (Input.mousePosition.y > Screen.height - scrollMargin)
+            //    transform.position += fwd * scrollSpeed;
         }
         else
         {

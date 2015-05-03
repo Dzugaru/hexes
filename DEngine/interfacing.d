@@ -164,7 +164,7 @@ extern(C) export void playerMove(HexXY p)
 	if(worldBlock.cellType(p) != TerrainCellType.Empty &&
 	   p != player.dest)
 	{
-		player.setDest(p);
+		player.setDest(p, 10, false);
 	}
 }
 
