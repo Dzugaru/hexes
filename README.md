@@ -1,5 +1,5 @@
 # Hexes
-Hexes is a (maybe) world first Unity3D game with core logic written in D. It still uses C# code for graphics front-end though.
+Hexes is a (maybe) world first [Unity3D](http://unity3d.com/) game with core logic written in [D](http://dlang.org/). It still uses C# code for graphics front-end though.
 For now it's just an experiment, but it aims to be a finished roguelike on Windows.
 
 ##### Features (for a programmer)
