@@ -63,24 +63,28 @@ class A : Fibered
 
 void FiberLeakTest()
 {
+	
 	writeln("News: " ~ to!string(freelist.newCount));
 	foreach(i; 0..1000000)
-	{
+	{		
 		A a = A.allocate();
 		foreach(j; 0 .. 5)
 		{
-			fibers.start(a, ()
+			a.startFiber(()
 			{
-				if(A.fibThis.fibIsDestroyed) return;
-				//writeln("fib enter");
-				//scope(exit) writeln("fib exit");
-				int k = 0;
-				if(k > 5) scope(exit) writeln(k);
-				
-				for(;;)
+				with(A.fibCtx)
 				{
-					++k;
-					delay(1); if(A.fibThis.fibIsDestroyed) return;
+					//mixin(fibBreak);
+					//writeln("fib enter");
+					//scope(exit) writeln("fib exit");
+					int k = 0;					
+					//++counter;
+
+					for(;;)
+					{
+						++k;
+						mixin(fibDelay!q{1});
+					}
 				}
 				
 			});
@@ -88,7 +92,7 @@ void FiberLeakTest()
 		a.updateFibers(1);
 
 
-		a.deallocateFibers();
+		a.deallocateRunningFibers();
 		a.deallocate();
 
 		//writeln("Freelist fibers: " ~ to!string(A.TFiber._flCount));

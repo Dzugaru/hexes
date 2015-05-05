@@ -9,9 +9,12 @@ import std.conv : to;
 import std.math;
 public import std.traits : hasMember, BaseClassesTuple;
 
+debug bool writelnLog = false;
+
 mixin template Freelist(bool shouldReset = true)
 {
 	private alias _FlT = typeof(this);
+	static assert(is(_FlT == class));
 
 	debug static uint _flCount; 
 	private static _FlT _freelist;
@@ -25,11 +28,13 @@ mixin template Freelist(bool shouldReset = true)
 			inst = _freelist;
 			_freelist = inst._flNext;
 			static if(shouldReset) resetObj(inst);
+			debug if(writelnLog) writeln("Reuse " ~ typeof(this).stringof);
 			debug --_flCount;
 		}
 		else
 		{			
 			debug ++newCount;
+			debug if(writelnLog) writeln("New " ~ typeof(this).stringof);
 			inst = new _FlT();
 		}
 
@@ -43,6 +48,7 @@ mixin template Freelist(bool shouldReset = true)
 		{
 			this._flNext = _freelist;
 			_freelist = this;
+			debug if(writelnLog) writeln("Delete " ~ typeof(this).stringof);
 			debug ++_flCount;
 		}	
 	}
@@ -52,6 +58,7 @@ mixin template Freelist(bool shouldReset = true)
 		{
 			this._flNext = _freelist;
 			_freelist = this;
+			debug if(writelnLog) writeln("Delete " ~ typeof(this).stringof);
 			debug ++_flCount;
 		}	
 	}

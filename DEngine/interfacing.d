@@ -168,6 +168,11 @@ extern(C) export void playerMove(HexXY p)
 	}
 }
 
+extern(C) export void playerCast(HexXY p)
+{
+
+}
+
 
 
 

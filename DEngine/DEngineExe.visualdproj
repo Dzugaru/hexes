@@ -405,6 +405,7 @@
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="DEngineExe">
+  <File path="data.d" />
   <File path="engine.d" />
   <File path="enums.d" />
   <File path="fibers.d" />
@@ -417,6 +418,7 @@
   <File path="math.d" />
   <File path="noise.d" />
   <File path="overseer.d" />
+  <File path="spells.d" />
   <File path="utils.d" />
  </Folder>
 </DProject>

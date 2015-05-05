@@ -1,6 +1,7 @@
 ﻿using Engine;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using System.Collections.Generic;
 using System.Collections;
 
 class EntityGraphics : MonoBehaviour
@@ -21,6 +22,7 @@ class EntityGraphics : MonoBehaviour
 
     public AnimationsType animationsType;
     public GameObject meshRoot;
+    public float hpBarUpDistance;
 
     Animator mecanimAnimator;
     Animation legacyAnimator;
@@ -40,8 +42,13 @@ class EntityGraphics : MonoBehaviour
     Coroutine flashHighlightAnimation; //These don't support state view (exec, term), wtf
     bool isflashHighlightAnimationRunning;
 
+    [HideInInspector]
     public GrObjType grObjType;
+
+    [HideInInspector]
     public D.GrObjHandle grObjHandle;
+
+    public static List<EntityGraphics> activeEntities = new List<EntityGraphics>();
 
 
     void Awake()
@@ -88,19 +95,19 @@ class EntityGraphics : MonoBehaviour
         //if(grObjHandle.idx == 7) Debug.Log(grObjHandle + " spawn " + pos);
         Vector2 planeCoord = pos.ToPlaneCoordinates();
         transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
-        gameObject.SetActive(true);
-        //if (grObjHandle.idx == 7) Debug.Log(grObjHandle + " " + transform.position);
+        gameObject.SetActive(true);        
 
         if (grObjType == GrObjType.Player)
         {
             Camera.main.GetComponent<CameraControl>().player = gameObject;
         }
+
+        activeEntities.Add(this);
     }
 
     void Move(MoveArgs args)
     {
-        //if (grObjHandle.idx == 7) Debug.Log(grObjHandle + " move " + args.pos);
-        //Debug.Log("Move: " + args.pos + " " + args.timeToGetThere);
+        //if (grObjHandle.idx == 7) Debug.Log(grObjHandle + " move " + args.pos);      
         state = State.Walk;
         Vector2 dest = args.pos.ToPlaneCoordinates();
         walkDest = dest;

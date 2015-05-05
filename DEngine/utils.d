@@ -50,6 +50,24 @@ if(is(T == class))
 		}
 	}
 
+	@property bool isEmpty() const
+	{
+		return head is null;
+	}
+
+	@property uint count()
+	{
+		uint cnt = 0;
+		T c = head;
+		while(c !is null) 
+		{
+			c = mixin(q{c.} ~ next);
+			++cnt;
+		}
+
+		return cnt;
+	}
+
 	Iter els()
 	{
 		return Iter(head);

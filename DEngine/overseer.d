@@ -41,7 +41,7 @@ void start()
 				p.y = std.random.uniform(0, worldBlocksSize);
 			} while(worldBlock.cellType(p) == TerrainCellType.Empty);
 			interfacing.cb.showEffectOnTile(p, EffectType.BlueBlast);
-			fibers.delay(0.5);
+			mixin(fibDelayWithoutBreak!q{0.5});
 		}
 	}
 

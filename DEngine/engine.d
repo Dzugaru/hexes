@@ -68,6 +68,7 @@ nothrow
 {
 	static immutable Vector2 ex = Vector2(sqrt(3f) * 0.5f, 0.5f);
 	static immutable Vector2 ey = Vector2(-sqrt(3f) * 0.5f, 0.5f);
+	static immutable HexXY[6] neighbours = [HexXY(1,0), HexXY(1,1), HexXY(0,1), HexXY(-1,0), HexXY(-1,-1), HexXY(0,-1)];
 
 align {	int x, y; }
 
@@ -434,7 +435,7 @@ mixin template _CompsEventHandlers()
 	override void compsOnDie()
 	{
 		static if(isAssignable!(Fibered, typeof(this)))
-			deallocateFibers();
+			deallocateRunningFibers();
 	}
 }
 
@@ -601,21 +602,21 @@ class Mob : Entity, CanWalk, Fibered
 			}
 
 			//Attack
-			if(onTileCenter && HexXY.dist(pos, player.pos) == 1 )
+			if(onTileCenter && HexXY.dist(pos, player.pos) == 1)
 			{
 				isAttacking = true;
 				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Attack, &player.pos);
-				fibers.start(this, () 
-				{
-					mixin(fibBreak);
-					with(fibThis)
+				startFiber(() 
+				{					
+					with(fibCtx)
 					{
-						fibers.delay(attackDmgAppDelay); mixin(fibBreak);
+						//mixin(fibBreak);
+						mixin(fibDelay!q{attackDmgAppDelay});
 						//Apply dmg						
 						float dmg = attackDamage;
 						interfacing.cb.performOpOnGrObj(player.grHandle, GrObjOperation.Damage, &dmg);
 						//TODO: refresh bar including new dot speed? (same with dotheal)
-						fibers.delay(attackDur - attackDmgAppDelay); mixin(fibBreak);
+						mixin(fibDelay!q{attackDur - attackDmgAppDelay});						
 						isAttacking = false;
 					}
 				});
