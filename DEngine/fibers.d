@@ -1,5 +1,6 @@
 /**
 * Delayable fibers engine, similar to Unity3D coroutines
+* TODO: wait for condition?
 */
 
 module fibers;
@@ -28,12 +29,12 @@ void updateFibersInList(T)(ref T fibList, float dt)
 				fib.delayLeft -= dt;		
 
 			if(fib.delayLeft <= 0)
-				fib.call();
+				fib.call(Fiber.Rethrow.no);
 		}
 	}
 }
 
-void update(float dt)
+void updateFree(float dt)
 {
 	updateFibersInList(freeFibers, dt);
 }
@@ -42,12 +43,14 @@ void startFree(void function() fn)
 {
 	auto fiber = FreeFiber.allocate(fn);	
 	freeFibers.insert(fiber);
+	fiber.call(Fiber.Rethrow.no);
 }
 
 void startFree(void delegate() fn)
 {
 	auto fiber = FreeFiber.allocate(fn);	
 	freeFibers.insert(fiber);
+	fiber.call(Fiber.Rethrow.no);
 }
 
 abstract class DelayFiber : Fiber
@@ -94,19 +97,15 @@ class BoundFiber(T) : DelayFiber
 	void construct(T context, void function() func)
     {		
 		this.context = context;
-		this.delayLeft = 0;		
-		//writeln("reset(func) before");
-		reset(func);
-		//writeln("reset(func) after");
+		this.delayLeft = 0;				
+		reset(func);		
     }	
 
 	void construct(T context, void delegate() del)
     {
 		this.context = context;
-		this.delayLeft = 0;		
-		//writeln("reset(del) before");
-		reset(del);
-		//writeln("reset(del) after");
+		this.delayLeft = 0;				
+		reset(del);		
     }	
 }
 
@@ -119,8 +118,6 @@ string fibDelay(string delayExpr)()
 {
 	return fibDelayWithoutBreak!delayExpr ~ q{ if(fibIsDestroyed) return; };
 }
-
-//immutable string fibBreak = q{ if(fibIsDestroyed) return; };
 
 interface Fibered {}
 
@@ -142,16 +139,14 @@ mixin template _BoundFibers()
 	{
 		auto fiber = TFiber.allocate(this, fn);	
 		fibList.insert(fiber);	
-		fiber.call();
-		//writeln("Start function");
+		fiber.call(Fiber.Rethrow.no);		
 	}
 
 	void startFiber(void delegate() del)
 	{
 		auto fiber = TFiber.allocate(this, del);	
 		fibList.insert(fiber);		
-		fiber.call();
-		//writeln("Start delegate");
+		fiber.call(Fiber.Rethrow.no);		
 	}
 
 	void updateFibers(float dt)
@@ -164,7 +159,7 @@ mixin template _BoundFibers()
 		fibIsDestroyed = true;
 		foreach(fib; fibList.els())	
 		{			
-			fib.call();							
+			fib.call(Fiber.Rethrow.no);							
 			if(fib.state != Fiber.State.TERM)
 				logger.log("fiber leak!");			
 			else			

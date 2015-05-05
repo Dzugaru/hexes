@@ -52,7 +52,7 @@ public class D : MonoBehaviour
     public delegate void TUpdate(float dt);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void TPlayerMove(Engine.HexXY p);
+    public delegate void HexXYToVoid(Engine.HexXY p);
 
     public struct GrObjHandle
     {
@@ -72,8 +72,8 @@ public class D : MonoBehaviour
     public static VoidToVoid onStart;
     public static TUpdate update;
     public static VoidToPtr queryWorld;    
-    public static TPlayerMove playerMove;   
-
+    public static HexXYToVoid playerMove;
+    public static HexXYToVoid playerCast;
 
 
     public static IntPtr GetCallbackPointer(Delegate d)

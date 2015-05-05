@@ -24,7 +24,7 @@ private:
 		q{void function(immutable(char)*)},														q{log},
 		q{void function(HexXY pos, EffectType effect)},											q{showEffectOnTile},
 		q{GrObjHandle function(GrObjClass objClass, GrObjType objType)},						q{createGrObj},
-		q{void function(GrObjHandle objHandle, GrObjOperation op, void* opParams)},				q{performOpOnGrObj},
+		q{void function(GrObjHandle objHandle, GrObjOperation op, void* opParams)},				q{performOpOnGrObj},		
 	];
 
 	string emitDecls()
@@ -96,7 +96,11 @@ extern(C) export void onStart()
 */
 extern(C) export void update(float dt)
 {		
-	engine.update(dt);
+	try
+	{
+		engine.update(dt);
+	}
+	finally{}
 }
 
 extern(C) export void setLogging(void function(immutable(char)*) l)
@@ -170,7 +174,18 @@ extern(C) export void playerMove(HexXY p)
 
 extern(C) export void playerCast(HexXY p)
 {
-
+	//try
+	//{
+	//    log(to!string(worldBlock.entityMap[p.x][p.y].count));
+	//}
+	//catch(Throwable th)
+	//{
+	//    log(format("catched %s", th));
+	//}
+	//finally
+	//{
+	//}
+	player.castSpell(p);	
 }
 
 

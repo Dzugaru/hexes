@@ -1,9 +1,12 @@
 module data;
 import enums;
+import spells;
+import engine;
 
-static immutable Mob[string] mobs;
+static immutable MobData[string] mobDatas;
+static immutable SpellData[string] spellDatas;
 
-struct Mob
+struct MobData
 {
 	GrObjType grType;
 	float maxHP;
@@ -13,8 +16,18 @@ struct Mob
 	float attackDamage;
 }
 
+struct SpellData
+{
+	bool function(Entity, HexXY) canCast;
+	void function() mainFiber;
+}
+
 static this()
 {
-	//						Graphics				HP		Speed	DmgDelay	AtkDuration		AtkDmg
-	mobs["spider"] = Mob(	GrObjType.Spider,		10,		1,		0.5,		1.0,			1		);
+	//											Graphics				HP		Speed	DmgDelay	AtkDuration		AtkDmg
+	mobDatas["spider"]				= MobData(	GrObjType.Spider,		10,		1,		0.5,		1.0,			1		);
+
+
+	//											Can cast					Fiber
+	spellDatas["lineOfFire"] = SpellData(		&LineOfFire!().canCast,		&LineOfFire!().mainFiber);
 }

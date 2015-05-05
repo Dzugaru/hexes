@@ -1,6 +1,7 @@
 module utils;
 import std.format;
 import std.array;
+debug import std.stdio;
 
 @safe:
 
@@ -48,6 +49,8 @@ if(is(T == class))
 			} while(curr !is el);
 			mixin(q{prev.} ~ next) = mixin(q{curr.} ~ next);
 		}
+
+		mixin(q{el.} ~ next) = null;
 	}
 
 	@property bool isEmpty() const
@@ -58,7 +61,7 @@ if(is(T == class))
 	@property uint count()
 	{
 		uint cnt = 0;
-		T c = head;
+		T c = head;		
 		while(c !is null) 
 		{
 			c = mixin(q{c.} ~ next);
@@ -127,5 +130,30 @@ unittest
 	foreach(e; list.els())	
 		vals ~= e.x;
 	assert(vals == [4,3,1]);
+
+	//Check removing from one list and inserting into another
+	{
+		auto list1 = SLList!(Foo, Foo.listNextEl)();
+		auto list2 = SLList!(Foo, Foo.listNextEl)();
+		
+		list1.insert(new Foo(1));
+		list1.insert(new Foo(2));
+		auto el = new Foo(3);
+		list1.insert(el);
+		list1.remove(el);
+		list2.insert(el);
+
+		vals.length = 0;
+		foreach(e; list2.els())	
+			vals ~= e.x;
+
+		assert(vals == [3]);
+
+		vals.length = 0;
+		foreach(e; list1.els())	
+			vals ~= e.x;
+
+		assert(vals == [2,1]);
+	}
 }
 

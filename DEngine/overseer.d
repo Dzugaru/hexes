@@ -7,6 +7,7 @@ module overseer;
 import std.random;
 import engine;
 import interfacing;
+import std.stdio;
 
 void start()
 {
@@ -21,7 +22,7 @@ void start()
 			p.y = std.random.uniform(0, worldBlocksSize);
 		} while(worldBlock.cellType(p) == TerrainCellType.Empty && player.pos != p);
 
-		auto mob = Mob.allocate(data.mobs["spider"]);
+		auto mob = Mob.allocate(data.mobDatas["spider"]);
 		mob.spawn(p);		
 	}
 
@@ -45,11 +46,27 @@ void start()
 		}
 	}
 
-	fibers.startFree(&disco);
+	//fibers.startFree(&disco);
 }
 
 
 
 void update(float dt)
 {
+}
+
+unittest
+{
+	frontendMock.setup();
+
+	engine.startTheWorld();
+	overseer.start();
+	writeln("Overseer started");
+
+	foreach(i; 0 .. 1000)
+	{
+		engine.update(0.1f);
+		playerCast(HexXY(1,0));
+	}
+	
 }

@@ -20,6 +20,7 @@ public import math;
 public import enums;
 public import freelist;
 public import fibers;
+public import spells;
 
 /***************************************************************************************************
 * Sandbox
@@ -53,7 +54,8 @@ void update(float dt)
 		e.update(dt);	
 
 	overseer.update(dt);
-	fibers.update(dt);
+	fibers.updateFree(dt);
+	spells.update(dt);
 }
 
 enum terrainTypesCount = EnumMembers!TerrainCellType.length;
@@ -91,6 +93,13 @@ align {	int x, y; }
 	if(op == "+" || op == "-")
 	{
 		return HexXY(mixin("x" ~ op ~ "rhs.x"), mixin("y" ~ op ~ "rhs.y"));
+	}
+
+	void opOpAssign(string op)(HexXY rhs)
+	if(op == "+" || op == "-")
+	{
+		x = mixin("x" ~ op ~ "rhs.x");
+		y = mixin("y" ~ op ~ "rhs.y");
 	}
 
 	bool opEquals(in HexXY rhs) const
@@ -553,15 +562,26 @@ mixin template _CanWalk(uint maxPathLen)
 	}
 }
 
-interface HasHP {}
+interface HasHP 
+{
+	void damage(float dmg);
+}
+
 mixin template _HasHP()
 {
+	static assert(isAssignable!(HasHP, typeof(this)));
+
 	float currentHP, maxHP;
+
+	void damage(float dmg)
+	{
+		currentHP = max(0, currentHP - dmg);
+	}
 }
 
 
 
-class Mob : Entity, CanWalk, Fibered
+class Mob : Entity, CanWalk, Fibered, HasHP
 {
 	mixin Freelist;
 	mixin _BoundFibers;
@@ -573,7 +593,7 @@ class Mob : Entity, CanWalk, Fibered
 	float attackDmgAppDelay, attackDur, attackDamage;
 	bool isAttacking;
 
-	void construct(data.Mob mobData)
+	void construct(MobData mobData)
 	{		
 		Entity.construct(mobData.grType);
 		setSpeed(mobData.speed);
@@ -609,8 +629,7 @@ class Mob : Entity, CanWalk, Fibered
 				startFiber(() 
 				{					
 					with(fibCtx)
-					{
-						//mixin(fibBreak);
+					{						
 						mixin(fibDelay!q{attackDmgAppDelay});
 						//Apply dmg						
 						float dmg = attackDamage;
@@ -632,9 +651,44 @@ class Player : Entity, CanWalk
 	mixin _CompsEventHandlers;
 	mixin _CanWalk!64;
 
+	float spellGcd;
+	Nullable!SpellData nextSpellData;
+	HexXY nextSpellPos;
+
 	this()
 	{
 		Entity.construct(GrObjType.Player);
 		setSpeed(2);
+		spellGcd = 0;
+	}
+
+	override void update(float dt)
+	{		
+		if(onTileCenter)
+		{
+			if(!nextSpellData.isNull() && spellGcd == 0)	
+			{
+				if(nextSpellData.canCast(this, nextSpellPos))				
+				{					
+					spells.castSpell(this, nextSpellPos, nextSpellData.mainFiber);	
+					spellGcd = 0.5f;
+				}
+
+				nextSpellData.nullify();
+			}
+		}
+
+		spellGcd = max(0, spellGcd - dt);
+
+		Entity.update(dt);
+	}
+
+	void castSpell(HexXY p)
+	{			
+		if(nextSpellData.isNull())
+		{
+			nextSpellData = spellDatas["lineOfFire"];
+			nextSpellPos = p;			
+		}		
 	}
 }
