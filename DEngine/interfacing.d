@@ -11,6 +11,7 @@ import std.traits;
 import enums;
 import std.array : replaceFirst;
 import std.string : startsWith;
+import core.exception;
 
 /**
 * Callbacks wrapper
@@ -91,16 +92,23 @@ extern(C) export void onStart()
 	engine.startTheWorld();
 }
 
+bool updatesDisabledDueToError = false;
+
 /**
 * Gets called by Unity3D every frame
 */
 extern(C) export void update(float dt)
-{		
+{			
+	if(updatesDisabledDueToError) return;
 	try
 	{
 		engine.update(dt);
 	}
-	finally{}
+	catch(Throwable th)
+	{
+		log(format("Exception thrown: %s", th));
+		updatesDisabledDueToError = true;
+	}	
 }
 
 extern(C) export void setLogging(void function(immutable(char)*) l)
@@ -167,35 +175,30 @@ extern(C) export void playerMove(HexXY p)
 {
 	try
 	{
-	    if(worldBlock.cellType(p) != TerrainCellType.Empty &&
-				(player.dest.isNull() || p != player.dest))
+		if(worldBlock.cellType(p) != TerrainCellType.Empty &&
+		   (player.dest.isNull() || p != player.dest))
 		{
 			player.setDest(p, 10, false);
 		}
 	}
 	catch(Throwable th)
 	{
-	    log(format("catched %s", th));
-	}
-	finally
-	{
-	}	
+		log(format("Exception thrown: %s", th));
+		updatesDisabledDueToError = true;
+	}		
 }
 
 extern(C) export void playerCast(HexXY p)
 {
-	//try
-	//{
-	//    log(to!string(worldBlock.entityMap[p.x][p.y].count));
-	//}
-	//catch(Throwable th)
-	//{
-	//    log(format("catched %s", th));
-	//}
-	//finally
-	//{
-	//}
-	player.castSpell(p);	
+	try
+	{
+		player.castSpell(p);
+	}
+	catch(Throwable th)
+	{
+		log(format("Exception thrown: %s", th));
+		updatesDisabledDueToError = true;
+	}	
 }
 
 

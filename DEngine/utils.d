@@ -99,9 +99,9 @@ if(is(T == class))
 				debug
 				{
 					++cnt; 
-					if(cnt > 1000)
+					if(cnt > 10000)
 					{
-						//log(format("INFINITE LOOP DETECTED: %s", next) );
+						log(format("INFINITE LOOP DETECTED" ~ next));
 						break;
 					}
 				}

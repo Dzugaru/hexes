@@ -29,7 +29,7 @@ void updateFibersInList(T)(ref T fibList, float dt)
 				fib.delayLeft -= dt;		
 
 			if(fib.delayLeft <= 0)
-				fib.call(Fiber.Rethrow.no);
+				fib.call();
 		}
 	}
 }
@@ -43,14 +43,14 @@ void startFree(void function() fn)
 {
 	auto fiber = FreeFiber.allocate(fn);	
 	freeFibers.insert(fiber);
-	fiber.call(Fiber.Rethrow.no);
+	fiber.call();
 }
 
 void startFree(void delegate() fn)
 {
 	auto fiber = FreeFiber.allocate(fn);	
 	freeFibers.insert(fiber);
-	fiber.call(Fiber.Rethrow.no);
+	fiber.call();
 }
 
 abstract class DelayFiber : Fiber
@@ -139,14 +139,14 @@ mixin template _BoundFibers()
 	{
 		auto fiber = TFiber.allocate(this, fn);	
 		fibList.insert(fiber);	
-		fiber.call(Fiber.Rethrow.no);		
+		fiber.call();		
 	}
 
 	void startFiber(void delegate() del)
 	{
 		auto fiber = TFiber.allocate(this, del);	
 		fibList.insert(fiber);		
-		fiber.call(Fiber.Rethrow.no);		
+		fiber.call();		
 	}
 
 	void updateFibers(float dt)
@@ -159,7 +159,8 @@ mixin template _BoundFibers()
 		fibIsDestroyed = true;
 		foreach(fib; fibList.els())	
 		{			
-			fib.call(Fiber.Rethrow.no);							
+			fib.call();
+			fibList.remove(fib);
 			if(fib.state != Fiber.State.TERM)
 				logger.log("fiber leak!");			
 			else			

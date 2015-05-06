@@ -421,12 +421,14 @@ public:
 
 	void die()
 	{
-		log("die");
+		//log("die");
 		compsOnDie();
 		worldBlock.entityList.remove(this);
 		worldBlock.entityMap[pos.x][pos.y].remove(this);
+		worldBlock.pfBlockedMap[pos.x][pos.y] = false;
 
-		performInterfaceOp(GrObjOperation.Die, null);
+		int test = 0;
+		performInterfaceOp(GrObjOperation.Die, &test);
 	}
 
 	void performInterfaceOp(GrObjOperation op, void* args)
@@ -511,14 +513,20 @@ mixin template _CanWalk(uint maxPathLen)
 	{		
 		if(onTileCenter && shouldRecalcPath)
 		{
-			path = findPath(pos, dest, pathStorage, blockedCost);		
+			path = findPath(pos, dest, pathStorage, blockedCost);
+			if(path is null)
+			{
+				//log("PATH NULL");
+				return;
+			}
+			
 			shouldRecalcPath = false;
 			if(shouldStopNearDest && path.length == 1)
 			{
 				path.length = 0;
 				performInterfaceOp(GrObjOperation.Stop, &pos);
 			}
-			isWalkBlocked = false;
+			isWalkBlocked = false;			
 		}
 
 		if(path.length == 0) return;
@@ -537,7 +545,7 @@ mixin template _CanWalk(uint maxPathLen)
 				{
 					isWalkBlocked = true;
 					walkBlockedTime = 0;
-					performInterfaceOp(GrObjOperation.Stop, &pos);
+					performInterfaceOp(GrObjOperation.Stop, &pos); 
 				}				
 				walkBlockedTime += dt;				
 				return; 

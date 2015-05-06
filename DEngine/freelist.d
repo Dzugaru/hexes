@@ -19,6 +19,7 @@ mixin template Freelist(bool shouldReset = true)
 	debug static uint _flCount; 
 	private static _FlT _freelist;
 	private _FlT _flNext;
+	private bool _flIsFree;
 
 	public static _FlT allocate(AA...)(AA args)
 	{
@@ -38,6 +39,7 @@ mixin template Freelist(bool shouldReset = true)
 			inst = new _FlT();
 		}
 
+		inst._flIsFree = false;
 		inst.construct(args);
 		return inst;
 	}
@@ -56,6 +58,8 @@ mixin template Freelist(bool shouldReset = true)
 	{
 		public void deallocate()
 		{
+			debug assert(!this._flIsFree);
+			this._flIsFree = true;
 			this._flNext = _freelist;
 			_freelist = this;
 			debug if(writelnLog) writeln("Delete " ~ typeof(this).stringof);

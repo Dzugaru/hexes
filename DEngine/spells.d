@@ -67,7 +67,7 @@ template LineOfFire()
 			HexXY dir = target - ent.pos;
 			foreach(i; 0 .. 5)
 			{
-				interfacing.cb.showEffectOnTile(target, EffectType.BlueBlast);			
+				interfacing.cb.showEffectOnTile(target, EffectType.BlueBlast);							
 				
 				foreach(ent; worldBlock.entityMap[target.x][target.y].els())				
 				{
