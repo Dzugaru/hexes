@@ -12,7 +12,7 @@ import std.stdio;
 void start()
 {
 	rndGen.seed(1);
-	foreach(i; 0..25)
+	foreach(i; 0..100)
 	{
 
 		HexXY p;
@@ -20,7 +20,8 @@ void start()
 		{
 			p.x = std.random.uniform(0, worldBlocksSize);
 			p.y = std.random.uniform(0, worldBlocksSize);
-		} while(worldBlock.cellType(p) == TerrainCellType.Empty && player.pos != p);
+		} while(worldBlock.cellType(p) == TerrainCellType.Empty || player.pos == p ||
+				worldBlock.pfBlockedMap[p.x][p.y]);
 
 		auto mob = Mob.allocate(data.mobDatas["spider"]);
 		mob.spawn(p);		

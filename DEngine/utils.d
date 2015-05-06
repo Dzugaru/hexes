@@ -40,19 +40,21 @@ if(is(T == class))
 		}		
 	}
 
-	void remove(T el)
+	bool remove(T el)
 	{	
 		if(head is el) head = mixin(q{head.} ~ next);
 		else
 		{
 			T curr = head, prev;
-			do 
+			while(curr !is null && curr !is el)
 			{ 
 				prev = curr;
 				curr = mixin(q{curr.} ~ next);
-			} while(curr !is el);
+			};
+			if(curr is null) return false;
 			mixin(q{prev.} ~ next) = mixin(q{curr.} ~ next);
 		}		
+		return true;
 	}
 
 	@property bool isEmpty() const

@@ -158,11 +158,14 @@ mixin template _BoundFibers()
 	{		
 		fibIsDestroyed = true;
 		foreach(fib; fibList.els())	
-		{			
-			fib.call();
+		{	
 			fibList.remove(fib);
+
+			if(fib.state != Fiber.State.TERM)			
+				fib.call();			
+			
 			if(fib.state != Fiber.State.TERM)
-				logger.log("fiber leak!");			
+				assert(false, "fiber leak!");
 			else			
 				fib.deallocate();	
 		}		

@@ -401,7 +401,8 @@ public:
 
 		if(pos != prevPos)
 		{
-			worldBlock.entityMap[prevPos.x][prevPos.y].remove(this);
+			bool removeSucceded = worldBlock.entityMap[prevPos.x][prevPos.y].remove(this);
+			assert(removeSucceded);
 			worldBlock.entityMap[pos.x][pos.y].insert(this);			
 		}
 	}
@@ -424,8 +425,7 @@ public:
 		//log("die");
 		compsOnDie();
 		worldBlock.entityList.remove(this);
-		worldBlock.entityMap[pos.x][pos.y].remove(this);
-		worldBlock.pfBlockedMap[pos.x][pos.y] = false;
+		worldBlock.entityMap[pos.x][pos.y].remove(this);		
 
 		int test = 0;
 		performInterfaceOp(GrObjOperation.Die, &test);
@@ -449,10 +449,12 @@ mixin template _CompsEventHandlers()
 
 	override void compsOnUpdate(float dt)
 	{
-		static if(isAssignable!(HasHP, typeof(this)))		
-		{
-			if(currentHP == 0) die();
-		}
+		static if(isAssignable!(HasHP, typeof(this)))				
+			if(currentHP == 0)
+			{
+				die();
+				return;
+			}
 
 		static if(isAssignable!(CanWalk, typeof(this)))		
 			walk(dt);
@@ -465,6 +467,9 @@ mixin template _CompsEventHandlers()
 	{
 		static if(isAssignable!(Fibered, typeof(this)))
 			deallocateRunningFibers();
+
+		static if(isAssignable!(CanWalk, typeof(this)))
+			worldBlock.pfBlockedMap[pfBlockedTile.x][pfBlockedTile.y] = false;
 	}
 
 	override void updateInterfaceInfo()
@@ -490,7 +495,7 @@ mixin template _CanWalk(uint maxPathLen)
 	//TODO: pack most of this to struct?
 	HexXY[maxPathLen] pathStorage;
 	HexXY[] path;
-	HexXY prevTile;
+	HexXY prevTile, pfBlockedTile;
 	Nullable!HexXY dest;
 	uint blockedCost;
 	bool onTileCenter;
@@ -507,6 +512,7 @@ mixin template _CanWalk(uint maxPathLen)
 		onTileCenter = true;
 		isWalkBlocked = false;
 		worldBlock.pfBlockedMap[pos.x][pos.y] = true;
+		pfBlockedTile = pos;
 	}	
 
 	void walk(float dt)
@@ -553,6 +559,7 @@ mixin template _CanWalk(uint maxPathLen)
 			isWalkBlocked = false;
 			worldBlock.pfBlockedMap[nextTile.x][nextTile.y] = true;
 			worldBlock.pfBlockedMap[prevTile.x][prevTile.y] = false;
+			pfBlockedTile = nextTile;
 
 			//Animate movement
 			struct TCbArgs { HexXY dest; float time; } 
