@@ -25,7 +25,7 @@ public class G : MonoBehaviour
     static Dictionary<D.GrObjHandle, GameObject> grObjs;
 
 
-    void Awake()
+    unsafe void Awake()
     {
         grObjs = new Dictionary<D.GrObjHandle, GameObject>();
         grObjsCountByClass = new uint[grObjsClassesCount];
@@ -48,11 +48,8 @@ public class G : MonoBehaviour
         var wbhandle = D.queryWorld(); 
 
         GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);        
-        ht.name = "Terrain Block 1";
-        unsafe
-        {
-            ht.GetComponent<HexTerrain>().Generate(wbhandle.ToPointer());
-        }
+        ht.name = "Terrain Block 1";       
+        ht.GetComponent<HexTerrain>().Generate(wbhandle);        
     }
   
     void Update()
@@ -83,13 +80,13 @@ public class G : MonoBehaviour
         return handle;
     }
 
-    unsafe static void PerformOpOnGrObj(D.GrObjHandle objHandle, GrObjOperation op, IntPtr opParamsIntPtr)
+    unsafe static void PerformOpOnGrObj(D.GrObjHandle objHandle, GrObjOperation op, void* args)
     {
-       // Debug.Log(op);
+        
         GameObject obj = grObjs[objHandle];
         switch (objHandle.objClass)
         {
-            case GrObjClass.Entity: obj.GetComponent<EntityGraphics>().DispatchOp(op, opParamsIntPtr.ToPointer()); break;
+            case GrObjClass.Entity: obj.GetComponent<EntityGraphics>().DispatchOp(op, args); break;
         }       
     }
 

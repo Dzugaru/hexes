@@ -1,3 +1,4 @@
+- More tactical combat - add resource so the player thinks what he does, maybe slower or autopause
 - Proper stress test on a D engine at all times is a must!
 - WEADZX controls (hexes ftw)
 - Ranged mobs - modify pathfinding to support it
@@ -6,6 +7,7 @@
 IDEAS:
 - Light spheres (of different colors?) drifting above give magic power - (same - near tree - tree magic, near stone - stone magic,
 after some uses tree withers)
+
 
 
 

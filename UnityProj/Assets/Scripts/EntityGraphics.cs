@@ -153,7 +153,8 @@ class EntityGraphics : MonoBehaviour
     }
 
     void Damage(float dmg)
-    {        
+    {
+        Debug.Log("damage");
         AnimateFlashHighlight(Color.white, 0.15f, 0.5f);
     }
 

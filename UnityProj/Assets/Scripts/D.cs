@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-public class D : MonoBehaviour
+public unsafe class D : MonoBehaviour
 {
     [DllImport("kernel32.dll")]
     static extern IntPtr LoadLibrary(string dllToLoad);
@@ -28,7 +28,7 @@ public class D : MonoBehaviour
     public delegate void PtrToVoid(IntPtr cb);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate IntPtr VoidToPtr();
+    public delegate void* VoidToPtr();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void PtrPtrToVoid(IntPtr name, IntPtr cb);
@@ -42,7 +42,7 @@ public class D : MonoBehaviour
     public delegate GrObjHandle TCreateGrObj(GrObjClass objClass, GrObjType objType);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void TPerformOpOnGrObj(GrObjHandle objHandle, GrObjOperation op, IntPtr opParams);
+    public delegate void TPerformOpOnGrObj(GrObjHandle objHandle, GrObjOperation op, void* args);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void TShowEffectOnTile(Engine.HexXY p, EffectType effectType);

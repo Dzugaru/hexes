@@ -426,9 +426,8 @@ public:
 		compsOnDie();
 		worldBlock.entityList.remove(this);
 		worldBlock.entityMap[pos.x][pos.y].remove(this);		
-
-		int test = 0;
-		performInterfaceOp(GrObjOperation.Die, &test);
+		
+		performInterfaceOp(GrObjOperation.Die, null);
 	}
 
 	void performInterfaceOp(GrObjOperation op, void* args)
