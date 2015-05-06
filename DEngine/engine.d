@@ -385,7 +385,7 @@ public:
 	GrObjHandle grHandle;
 
 	abstract void compsOnSpawn(HexXY pos);
-	abstract void compsOnUpdate(float dt);
+	abstract void compsOnUpdate(float dt);	
 	abstract void compsOnDie();
 
 	void construct(GrObjType type)
@@ -415,13 +415,26 @@ public:
 
 		compsOnSpawn(p);
 
-		interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Spawn, &pos);
+		performInterfaceOp(GrObjOperation.Spawn, &pos);
+		updateInterfaceInfo();		
 	}
 
 	void die()
 	{
+		log("die");
 		compsOnDie();
+		worldBlock.entityList.remove(this);
+		worldBlock.entityMap[pos.x][pos.y].remove(this);
+
+		performInterfaceOp(GrObjOperation.Die, null);
 	}
+
+	void performInterfaceOp(GrObjOperation op, void* args)
+	{
+		interfacing.cb.performOpOnGrObj(grHandle, op, args);
+	}
+
+	void updateInterfaceInfo() {}
 }
 
 mixin template _CompsEventHandlers()
@@ -429,11 +442,16 @@ mixin template _CompsEventHandlers()
 	override void compsOnSpawn(HexXY pos)
 	{
 		static if(isAssignable!(CanWalk, typeof(this)))		
-			canWalkOnSpawn(pos);		
+			walkSpawnInit(pos);		
 	}
 
 	override void compsOnUpdate(float dt)
 	{
+		static if(isAssignable!(HasHP, typeof(this)))		
+		{
+			if(currentHP == 0) die();
+		}
+
 		static if(isAssignable!(CanWalk, typeof(this)))		
 			walk(dt);
 
@@ -445,6 +463,20 @@ mixin template _CompsEventHandlers()
 	{
 		static if(isAssignable!(Fibered, typeof(this)))
 			deallocateRunningFibers();
+	}
+
+	override void updateInterfaceInfo()
+	{
+		static if(isAssignable!(HasHP, typeof(this)))
+		{
+			static struct Info
+			{
+			align:
+				float currentHP, maxHP;
+			}
+			auto info = Info(this.currentHP, this.maxHP);
+			performInterfaceOp(GrObjOperation.UpdateInfo, &info);
+		}		
 	}
 }
 
@@ -466,7 +498,7 @@ mixin template _CanWalk(uint maxPathLen)
 	bool shouldRecalcPath;
 	bool shouldStopNearDest;
 
-	void canWalkOnSpawn(HexXY pos)
+	void walkSpawnInit(HexXY pos)
 	{
 		prevTile = pos;
 		distToNextTile = 1;
@@ -484,7 +516,7 @@ mixin template _CanWalk(uint maxPathLen)
 			if(shouldStopNearDest && path.length == 1)
 			{
 				path.length = 0;
-				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, &pos);
+				performInterfaceOp(GrObjOperation.Stop, &pos);
 			}
 			isWalkBlocked = false;
 		}
@@ -505,7 +537,7 @@ mixin template _CanWalk(uint maxPathLen)
 				{
 					isWalkBlocked = true;
 					walkBlockedTime = 0;
-					interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, &pos);
+					performInterfaceOp(GrObjOperation.Stop, &pos);
 				}				
 				walkBlockedTime += dt;				
 				return; 
@@ -517,7 +549,7 @@ mixin template _CanWalk(uint maxPathLen)
 			//Animate movement
 			struct TCbArgs { HexXY dest; float time; } 
 			TCbArgs cbArgs = { nextTile, distToNextTile * invSpeed };			
-			interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Move, &cbArgs);
+			performInterfaceOp(GrObjOperation.Move, &cbArgs);
 		}
 
 		float timeLeft = distToNextTile * invSpeed;
@@ -539,7 +571,7 @@ mixin template _CanWalk(uint maxPathLen)
 			}
 			else
 			{
-				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Stop, &prevTile);	
+				performInterfaceOp(GrObjOperation.Stop, &prevTile);	
 				if(shouldStopNearDest) path.length = 0;
 			}			
 		}
@@ -625,7 +657,7 @@ class Mob : Entity, CanWalk, Fibered, HasHP
 			if(onTileCenter && HexXY.dist(pos, player.pos) == 1)
 			{
 				isAttacking = true;
-				interfacing.cb.performOpOnGrObj(grHandle, GrObjOperation.Attack, &player.pos);
+				performInterfaceOp(GrObjOperation.Attack, &player.pos);
 				startFiber(() 
 				{					
 					with(fibCtx)
@@ -633,7 +665,7 @@ class Mob : Entity, CanWalk, Fibered, HasHP
 						mixin(fibDelay!q{attackDmgAppDelay});
 						//Apply dmg						
 						float dmg = attackDamage;
-						interfacing.cb.performOpOnGrObj(player.grHandle, GrObjOperation.Damage, &dmg);
+						player.performInterfaceOp(GrObjOperation.Damage, &dmg);
 						//TODO: refresh bar including new dot speed? (same with dotheal)
 						mixin(fibDelay!q{attackDur - attackDmgAppDelay});						
 						isAttacking = false;

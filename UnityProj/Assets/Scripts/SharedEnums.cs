@@ -31,5 +31,7 @@ public enum GrObjOperation
     Move,
     Stop,
     Attack,
-    Damage
+    Damage,
+    UpdateInfo,
+    Die
 }

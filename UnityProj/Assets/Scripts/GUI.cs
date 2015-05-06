@@ -8,6 +8,7 @@ public class GUI : MonoBehaviour
     string hpBarPrefabName = "Prefabs/UI/HPBar";
     List<GameObject> hpBars = new List<GameObject>();    
     public bool showHPBars;
+    public float hpBarsWidth;
 
 	void Start ()
     {
@@ -50,7 +51,8 @@ public class GUI : MonoBehaviour
                     }
 
                     var rect = bar.GetComponent<RectTransform>();
-                    rect.anchoredPosition = new Vector3(screenBarPosition.x - rect.rect.width * 0.5f, screenBarPosition.y - Screen.height, -1);
+                    rect.anchoredPosition = new Vector3(screenBarPosition.x - hpBarsWidth * 0.5f, screenBarPosition.y - Screen.height, -1);
+                    rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (eg.info.currentHP / eg.info.maxHP) * hpBarsWidth);
 
                     ++barIdx;
                 }

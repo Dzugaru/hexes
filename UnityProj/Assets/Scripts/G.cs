@@ -84,7 +84,8 @@ public class G : MonoBehaviour
     }
 
     unsafe static void PerformOpOnGrObj(D.GrObjHandle objHandle, GrObjOperation op, IntPtr opParamsIntPtr)
-    {   
+    {
+        Debug.Log(op);
         GameObject obj = grObjs[objHandle];
         switch (objHandle.objClass)
         {

@@ -48,6 +48,8 @@ class EntityGraphics : MonoBehaviour
     [HideInInspector]
     public D.GrObjHandle grObjHandle;
 
+    public Info info;
+
     public static List<EntityGraphics> activeEntities = new List<EntityGraphics>();
 
 
@@ -78,6 +80,15 @@ class EntityGraphics : MonoBehaviour
         public float timeToGetThere;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Info
+    {
+        public float currentHP;
+        public float maxHP;
+    }
+
+
+
     unsafe public void DispatchOp(GrObjOperation op, void* args)
     {
         switch (op)
@@ -87,6 +98,8 @@ class EntityGraphics : MonoBehaviour
             case GrObjOperation.Stop: Stop(*(HexXY*)args); break;
             case GrObjOperation.Attack: Attack(*(HexXY*)args); break;
             case GrObjOperation.Damage: Damage(*(float*)args); break;
+            case GrObjOperation.UpdateInfo: UpdateInfo(*(Info*)args); break;
+            case GrObjOperation.Die: Die(); break;
         }
     }  
 
@@ -107,7 +120,7 @@ class EntityGraphics : MonoBehaviour
 
     void Move(MoveArgs args)
     {
-        //if (grObjHandle.idx == 7) Debug.Log(grObjHandle + " move " + args.pos);      
+        //Debug.Log(grObjHandle + " move " + args.pos);      
         state = State.Walk;
         Vector2 dest = args.pos.ToPlaneCoordinates();
         walkDest = dest;
@@ -132,7 +145,7 @@ class EntityGraphics : MonoBehaviour
     }
 
     void Attack(HexXY pos)
-    {
+    {        
         if (attackCor != null)        
             StopCoroutine(attackCor);
 
@@ -140,8 +153,19 @@ class EntityGraphics : MonoBehaviour
     }
 
     void Damage(float dmg)
-    {
+    {        
         AnimateFlashHighlight(Color.white, 0.15f, 0.5f);
+    }
+
+    void UpdateInfo(Info info)
+    {
+        this.info = info;
+    }
+
+    void Die()
+    {
+        Destroy(gameObject);
+        activeEntities.Remove(this);
     }
 
     IEnumerator CorAttack(HexXY pos)

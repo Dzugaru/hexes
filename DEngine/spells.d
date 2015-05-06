@@ -75,7 +75,8 @@ template LineOfFire()
 				    if(hpEnt !is null)		
 				    {				        
 				        hpEnt.damage(damage);				
-				        interfacing.cb.performOpOnGrObj(ent.grHandle, GrObjOperation.Damage, &damage);
+				        ent.performInterfaceOp(GrObjOperation.Damage, &damage);
+						ent.updateInterfaceInfo();
 				    }
 				}
 

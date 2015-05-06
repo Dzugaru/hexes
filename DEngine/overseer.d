@@ -26,6 +26,10 @@ void start()
 		mob.spawn(p);		
 	}
 
+
+	//auto mob = Mob.allocate(data.mobDatas["spider"]);
+	//mob.spawn(HexXY(2,2));
+
 	//auto mob = Mob.allocate(GrObjType.Spider, 1.0, 0.2, 1.0);
 	//mob.spawn(HexXY(2,2));		
 	
@@ -57,6 +61,7 @@ void update(float dt)
 
 unittest
 {
+	logger.logImpl = (msg) { writeln(msg); };
 	frontendMock.setup();
 
 	engine.startTheWorld();
@@ -66,7 +71,7 @@ unittest
 	foreach(i; 0 .. 1000)
 	{
 		engine.update(0.1f);
-		playerCast(HexXY(1,0));
+		playerCast(HexXY(1,1));
 	}
 	
 }

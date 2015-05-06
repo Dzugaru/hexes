@@ -1,6 +1,7 @@
 module utils;
 import std.format;
 import std.array;
+import logger;
 debug import std.stdio;
 
 @safe:
@@ -27,8 +28,11 @@ if(is(T == class))
 
 	void insert(T el)
 	{		
-		if(head is null)		
+		if(head is null)	
+		{
 			head = el;
+			mixin(q{el.} ~ next) = null;
+		}
 		else
 		{
 			mixin(q{el.} ~ next) = head;
@@ -48,9 +52,7 @@ if(is(T == class))
 				curr = mixin(q{curr.} ~ next);
 			} while(curr !is el);
 			mixin(q{prev.} ~ next) = mixin(q{curr.} ~ next);
-		}
-
-		mixin(q{el.} ~ next) = null;
+		}		
 	}
 
 	@property bool isEmpty() const
@@ -87,12 +89,23 @@ if(is(T == class))
 
 		@trusted int opApply(int delegate(T) loopBody)
 		{
+			debug int cnt = 0;
 			int result = 0;
 			while(c !is null)
 			{
 				result = loopBody(c);
 				if (result)	break;
 				c = mixin(q{c.} ~ next);
+				debug
+				{
+					++cnt; 
+					if(cnt > 1000)
+					{
+						//log(format("INFINITE LOOP DETECTED: %s", next) );
+						break;
+					}
+				}
+
 			}
 			return result;
 		}	
@@ -112,24 +125,27 @@ unittest
 		Foo listNextEl;
 	}
 
-	auto list = SLList!(Foo, Foo.listNextEl)();
-
-	list.insert(new Foo(1));
-	auto f2 = new Foo(2);
-	list.insert(f2);
-	list.insert(new Foo(3));
-	list.remove(f2);
 	int[] vals;
-	
-	foreach(e; list.els())	
-		vals ~= e.x;
-	assert(vals == [3,1]);
+	{
+		auto list = SLList!(Foo, Foo.listNextEl)();
 
-	list.insert(new Foo(4));
-	vals.length = 0;
-	foreach(e; list.els())	
-		vals ~= e.x;
-	assert(vals == [4,3,1]);
+		list.insert(new Foo(1));
+		auto f2 = new Foo(2);
+		list.insert(f2);
+		list.insert(new Foo(3));
+		list.remove(f2);
+	
+	
+		foreach(e; list.els())	
+			vals ~= e.x;
+		assert(vals == [3,1]);
+
+		list.insert(new Foo(4));
+		vals.length = 0;
+		foreach(e; list.els())	
+			vals ~= e.x;
+		assert(vals == [4,3,1]);
+	}
 
 	//Check removing from one list and inserting into another
 	{
@@ -154,6 +170,23 @@ unittest
 			vals ~= e.x;
 
 		assert(vals == [2,1]);
+	}
+
+	//Check removing all elements itearting
+	{
+		auto list = SLList!(Foo, Foo.listNextEl)();
+		foreach(i; 0..5)
+			list.insert(new Foo(i));
+
+		vals.length = 0;
+		foreach(e; list.els())	
+		{
+			vals ~= e.x;
+			list.remove(e);
+		}
+		
+		assert(list.count == 0);
+		assert(vals == [4,3,2,1,0]);
 	}
 }
 

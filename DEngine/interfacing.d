@@ -165,11 +165,21 @@ align:
 //UI methods
 extern(C) export void playerMove(HexXY p)
 {
-	if(worldBlock.cellType(p) != TerrainCellType.Empty &&
-	   p != player.dest)
+	try
 	{
-		player.setDest(p, 10, false);
+	    if(worldBlock.cellType(p) != TerrainCellType.Empty &&
+				(player.dest.isNull() || p != player.dest))
+		{
+			player.setDest(p, 10, false);
+		}
 	}
+	catch(Throwable th)
+	{
+	    log(format("catched %s", th));
+	}
+	finally
+	{
+	}	
 }
 
 extern(C) export void playerCast(HexXY p)

@@ -163,7 +163,7 @@ mixin template _BoundFibers()
 			if(fib.state != Fiber.State.TERM)
 				logger.log("fiber leak!");			
 			else			
-				fib.deallocate();			
+				fib.deallocate();	
 		}		
 	}
 }
