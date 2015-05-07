@@ -39,10 +39,10 @@ public unsafe class D : MonoBehaviour
     public delegate void HexXYToHexXYToVoid(Engine.HexXY from, Engine.HexXY to);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate GrObjHandle TCreateGrObj(GrObjClass objClass, GrObjType objType);
+    public delegate EntityHandle TCreateEntity(EntityClass objClass, int objType);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void TPerformOpOnGrObj(GrObjHandle objHandle, GrObjOperation op, void* args);
+    public delegate void TPerformOpOnEntity(EntityHandle objHandle, EntityOperation op, void* args);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void TShowEffectOnTile(Engine.HexXY p, EffectType effectType);
@@ -54,9 +54,19 @@ public unsafe class D : MonoBehaviour
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void HexXYToVoid(Engine.HexXY p);
 
-    public struct GrObjHandle
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void TPlayerPlaceRune(Engine.HexXY p, int runeType);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void BoolToVoid(bool b);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate GUI.GUIData TGetGuiData();
+
+
+    public struct EntityHandle
     {
-        public GrObjClass objClass;
+        public EntityClass objClass;
         public uint idx;
 
         public override string ToString()
@@ -73,7 +83,8 @@ public unsafe class D : MonoBehaviour
     public static TUpdate update;
     public static VoidToPtr queryWorld;    
     public static HexXYToVoid playerMove;
-    public static HexXYToVoid playerCast;
+    public static TPlayerPlaceRune playerPlaceRune;
+    public static TGetGuiData getGuiData;
 
 
     public static IntPtr GetCallbackPointer(Delegate d)

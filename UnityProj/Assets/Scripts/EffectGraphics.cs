@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+//TODO: This should be ObjGraphics too
+
 public class EffectGraphics : MonoBehaviour
 {
     float startTime;
@@ -8,20 +10,20 @@ public class EffectGraphics : MonoBehaviour
     public float scale = 1;
     public float duration = 1;
 
-	void Start ()
+    void Start()
     {
         ScaleParticleSystems();
         startTime = Time.time;
-	}	
-	
-	void Update ()
+    }
+
+    void Update()
     {
-        if (Time.time - startTime > duration)        
-            Destroy(gameObject);        
-	}
+        if (Time.time - startTime > duration)
+            Destroy(gameObject);
+    }
 
     void ScaleParticleSystems()
-    {       
+    {
         ParticleSystem[] particles = gameObject.GetComponentsInChildren<ParticleSystem>();
         foreach (ParticleSystem particle in particles)
         {

@@ -4,11 +4,11 @@ import spells;
 import engine;
 
 static immutable MobData[string] mobDatas;
-static immutable SpellData[string] spellDatas;
+static immutable RuneData[RuneType] runeDatas;
 
-struct MobData
+immutable struct MobData
 {
-	GrObjType grType;
+	CharacterType characterType;
 	float maxHP;
 	float speed;
 	float attackDmgAppDelay; 
@@ -16,18 +16,17 @@ struct MobData
 	float attackDamage;
 }
 
-struct SpellData
+immutable struct RuneData
 {
-	bool function(Entity, HexXY) canCast;
-	void function() mainFiber;
+	float placingTime;
 }
 
 static this()
 {
 	//											Graphics				HP		Speed	DmgDelay	AtkDuration		AtkDmg
-	mobDatas["spider"]				= MobData(	GrObjType.Spider,		10,		1,		0.5,		1.0,			1		);
-
-
-	//											Can cast					Fiber
-	spellDatas["lineOfFire"] = SpellData(		&LineOfFire!().canCast,		&LineOfFire!().mainFiber);
+	mobDatas["spider"]				= MobData(	CharacterType.Spider,		10,		1,		0.5,		1.0,			1		);
+		
+	//											Placing time
+	runeDatas[RuneType.FRune]		= RuneData( 1.0f					);
+	runeDatas[RuneType.CRune]		= RuneData( 1.0f					);
 }

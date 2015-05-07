@@ -27,9 +27,7 @@ void main()
 	
 	//engine.startTheWorld();
 
-	//auto mob1 = Mob.allocate(GrObjType.Cube, 1.0);
-	//mob1.spawn(HexXY(0,0));
-	//mob1.setDest(HexXY(2,2));
+	
 
 	//foreach(i; 0..100)
 	//{

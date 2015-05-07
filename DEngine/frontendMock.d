@@ -2,13 +2,13 @@ module frontendMock;
 import interfacing;
 import enums;
 
-extern(C) GrObjHandle createGrObjMock(GrObjClass objClass, GrObjType objType)
+extern(C) EntityHandle createEntityMock(EntityClass objClass, int objType)
 {
-	return GrObjHandle(objClass, 0);
+	return EntityHandle(objClass, 0);
 }
 
 void setup()
 {
 	interfacing.cb.setBlackholes();
-	interfacing.cb.createGrObj = &createGrObjMock;
+	interfacing.cb.createEntity = &createEntityMock;
 }

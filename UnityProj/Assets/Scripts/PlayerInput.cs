@@ -29,8 +29,21 @@ class PlayerInput : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            D.playerCast(getMouseOverTile());
+            D.playerPlaceRune(getMouseOverTile(), (int)RuneType.FRune);
         }
+
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    G.g.isTimeStopped = !G.g.isTimeStopped;
+        //    if (G.g.isTimeStopped)
+        //    {
+        //        Time.timeScale = 0.1f;
+        //    }
+        //    else
+        //    {
+        //        Time.timeScale = 1;
+        //    }
+        //}
     }
 }
 

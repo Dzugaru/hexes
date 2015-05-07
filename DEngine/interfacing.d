@@ -12,6 +12,7 @@ import enums;
 import std.array : replaceFirst;
 import std.string : startsWith;
 import core.exception;
+import runes;
 
 /**
 * Callbacks wrapper
@@ -24,8 +25,9 @@ private:
 	immutable string[] decls = [
 		q{void function(immutable(char)*)},														q{log},
 		q{void function(HexXY pos, EffectType effect)},											q{showEffectOnTile},
-		q{GrObjHandle function(GrObjClass objClass, GrObjType objType)},						q{createGrObj},
-		q{void function(GrObjHandle objHandle, GrObjOperation op, void* opParams)},				q{performOpOnGrObj},		
+		q{EntityHandle function(EntityClass objClass, int objType)},							q{createEntity},
+		q{void function(EntityHandle objHandle, EntityOperation op, void* opParams)},			q{performOpOnEntity},
+		q{void function(bool isStop)},															q{stopOrResumeTime},
 	];
 
 	string emitDecls()
@@ -111,6 +113,19 @@ extern(C) export void update(float dt)
 	}	
 }
 
+struct GUIData
+{
+align:
+	float cooldownBarValue;
+}
+
+GUIData guiData = { 0 };
+
+extern(C) export GUIData getGuiData()
+{
+	return guiData;
+}
+
 extern(C) export void setLogging(void function(immutable(char)*) l)
 {
 	cb.log = l;
@@ -163,10 +178,10 @@ extern(C) export void setCallback(immutable(char)* name, void* fPtr)
 /**
 * Graphics object handle
 */
-struct GrObjHandle
+struct EntityHandle
 {
 align:
-	GrObjClass objClass;
+	EntityClass objClass;
 	uint idx;
 }
 
@@ -188,11 +203,14 @@ extern(C) export void playerMove(HexXY p)
 	}		
 }
 
-extern(C) export void playerCast(HexXY p)
+extern(C) export void playerPlaceRune(HexXY p, RuneType runeType)
 {
 	try
-	{
-		player.castSpell(p);
+	{	
+		bool result = player.placeRune(runeType, p);
+		if(!result) log("CANT PLACE RUNE");
+		//player.castSpell(p);
+		//runes.place(runeType, p);
 	}
 	catch(Throwable th)
 	{

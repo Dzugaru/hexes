@@ -38,7 +38,7 @@ public class HighlightTest : MonoBehaviour
     {
         if (Input.GetKeyDown(key))
         {           
-            GetComponent<EntityGraphics>().AnimateFlashHighlight(color, dur, peakAlpha);
+            GetComponent<CharacterGraphics>().AnimateFlashHighlight(color, dur, peakAlpha);
         }
 	}
 }

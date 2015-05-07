@@ -20,7 +20,7 @@ void start()
 		{
 			p.x = std.random.uniform(0, worldBlocksSize);
 			p.y = std.random.uniform(0, worldBlocksSize);
-		} while(worldBlock.cellType(p) == TerrainCellType.Empty || player.pos == p ||
+		} while(worldBlock.cellType(p) == TerrainCellType.Empty || HexXY.dist(player.pos, p) < 20 ||
 				worldBlock.pfBlockedMap[p.x][p.y]);
 
 		auto mob = Mob.allocate(data.mobDatas["spider"]);
@@ -29,10 +29,7 @@ void start()
 
 
 	//auto mob = Mob.allocate(data.mobDatas["spider"]);
-	//mob.spawn(HexXY(2,2));
-
-	//auto mob = Mob.allocate(GrObjType.Spider, 1.0, 0.2, 1.0);
-	//mob.spawn(HexXY(2,2));		
+	//mob.spawn(HexXY(2,2));	
 	
 	
 

@@ -30,6 +30,8 @@ immutable uint worldBlocksSize = 32;
 WorldBlock worldBlock;
 Player player;
 
+
+
 void startTheWorld()
 {
 	worldBlock = new WorldBlock(HexXY(0,0));
@@ -55,7 +57,22 @@ void update(float dt)
 
 	overseer.update(dt);
 	fibers.updateFree(dt);
-	spells.update(dt);
+	spells.update(dt);	
+
+	stopOrResumeTime();
+}
+
+bool isTimeStopped = false;
+
+void stopOrResumeTime()
+{
+	bool shouldStop = !player.isWalking && !player.isRunePlacing && spells.allSpells.isEmpty();
+
+	if(isTimeStopped != shouldStop)
+	{
+		isTimeStopped = shouldStop;
+		interfacing.cb.stopOrResumeTime(isTimeStopped);
+	}	
 }
 
 enum terrainTypesCount = EnumMembers!TerrainCellType.length;
@@ -382,23 +399,27 @@ public:
 	//Entity can span multiple tiles, but has a single coordinate
 	HexXY pos;
 
-	GrObjHandle grHandle;
+	EntityHandle entityHandle;
+	int entityType;
 
-	abstract void compsOnSpawn(HexXY pos);
-	abstract void compsOnUpdate(float dt);	
-	abstract void compsOnDie();
+	abstract void componentsOnSpawn(HexXY pos);
+	abstract void componentsOnUpdate(float dt);	
+	abstract void componentsOnDie();
 
-	void construct(GrObjType type)
+	void construct(EntityClass cls, int type)
 	{
-		grHandle = interfacing.cb.createGrObj(GrObjClass.Entity, type);
+		entityHandle = interfacing.cb.createEntity(cls, type);
+		entityType = type;
 	}
 
 	void update(float dt)
 	{
+		//TODO: move this to CanWalk?
 		HexXY prevPos = pos;
 
-		compsOnUpdate(dt);
+		componentsOnUpdate(dt);
 
+		//TODO: move this to CanWalk? or it can be thrown by some other force...
 		if(pos != prevPos)
 		{
 			bool removeSucceded = worldBlock.entityMap[prevPos.x][prevPos.y].remove(this);
@@ -414,61 +435,48 @@ public:
 		worldBlock.entityList.insert(this);
 		worldBlock.entityMap[p.x][p.y].insert(this);	
 
-		compsOnSpawn(p);
+		componentsOnSpawn(p);
 
-		performInterfaceOp(GrObjOperation.Spawn, &pos);
+		performInterfaceOp(EntityOperation.Spawn, &pos);
 		updateInterfaceInfo();		
 	}
 
 	void die()
 	{
 		//log("die");
-		compsOnDie();
+		componentsOnDie();
 		worldBlock.entityList.remove(this);
 		worldBlock.entityMap[pos.x][pos.y].remove(this);		
 		
-		performInterfaceOp(GrObjOperation.Die, null);
+		performInterfaceOp(EntityOperation.Die, null);
 	}
 
-	void performInterfaceOp(GrObjOperation op, void* args)
+	void performInterfaceOp(EntityOperation op, void* args)
 	{
-		interfacing.cb.performOpOnGrObj(grHandle, op, args);
+		interfacing.cb.performOpOnEntity(entityHandle, op, args);
 	}
 
 	void updateInterfaceInfo() {}
 }
 
-mixin template _CompsEventHandlers()
+mixin template _ComponentsEventHandlers()
 {
-	override void compsOnSpawn(HexXY pos)
+	override void componentsOnSpawn(HexXY pos)
 	{
-		static if(isAssignable!(CanWalk, typeof(this)))		
-			walkSpawnInit(pos);		
+		static if(isAssignable!(CanWalk, typeof(this)))	canWalkSpawn(pos);			
 	}
 
-	override void compsOnUpdate(float dt)
+	override void componentsOnUpdate(float dt)
 	{
-		static if(isAssignable!(HasHP, typeof(this)))				
-			if(currentHP == 0)
-			{
-				die();
-				return;
-			}
-
-		static if(isAssignable!(CanWalk, typeof(this)))		
-			walk(dt);
-
-		static if(isAssignable!(Fibered, typeof(this)))
-			updateFibers(dt);
+		static if(isAssignable!(HasHP, typeof(this))) if(hasHPUpdate(dt)) return; //stop updating all others
+		static if(isAssignable!(CanWalk, typeof(this)))	canWalkUpdate(dt);
+		static if(isAssignable!(Fibered, typeof(this)))	fiberedUpdate(dt);
 	}
 
-	override void compsOnDie()
+	override void componentsOnDie()
 	{
-		static if(isAssignable!(Fibered, typeof(this)))
-			deallocateRunningFibers();
-
-		static if(isAssignable!(CanWalk, typeof(this)))
-			worldBlock.pfBlockedMap[pfBlockedTile.x][pfBlockedTile.y] = false;
+		static if(isAssignable!(CanWalk, typeof(this))) canWalkDie();
+		static if(isAssignable!(Fibered, typeof(this))) fiberedDie();			
 	}
 
 	override void updateInterfaceInfo()
@@ -481,12 +489,15 @@ mixin template _CompsEventHandlers()
 				float currentHP, maxHP;
 			}
 			auto info = Info(this.currentHP, this.maxHP);
-			performInterfaceOp(GrObjOperation.UpdateInfo, &info);
+			performInterfaceOp(EntityOperation.UpdateInfo, &info);
 		}		
 	}
 }
 
-interface CanWalk {}
+interface CanWalk 
+{
+}
+
 mixin template _CanWalk(uint maxPathLen)
 {
 	static assert(isAssignable!(CanWalk, typeof(this)));
@@ -499,22 +510,27 @@ mixin template _CanWalk(uint maxPathLen)
 	uint blockedCost;
 	bool onTileCenter;
 	float speed, invSpeed, distToNextTile;
-	bool isWalkBlocked;
+	bool isWalkBlocked, isWalking;
 	float walkBlockedTime;
 	bool shouldRecalcPath;
 	bool shouldStopNearDest;
 
-	void walkSpawnInit(HexXY pos)
+	void canWalkSpawn(HexXY pos)
 	{
 		prevTile = pos;
 		distToNextTile = 1;
 		onTileCenter = true;
-		isWalkBlocked = false;
+		isWalkBlocked = isWalking = false;
 		worldBlock.pfBlockedMap[pos.x][pos.y] = true;
 		pfBlockedTile = pos;
 	}	
 
-	void walk(float dt)
+	void canWalkDie()
+	{
+		worldBlock.pfBlockedMap[pfBlockedTile.x][pfBlockedTile.y] = false;
+	}
+
+	void canWalkUpdate(float dt)
 	{		
 		if(onTileCenter && shouldRecalcPath)
 		{
@@ -529,7 +545,11 @@ mixin template _CanWalk(uint maxPathLen)
 			if(shouldStopNearDest && path.length == 1)
 			{
 				path.length = 0;
-				performInterfaceOp(GrObjOperation.Stop, &pos);
+				if(isWalking)
+				{
+					performInterfaceOp(EntityOperation.Stop, &pos);
+					isWalking = false;
+				}
 			}
 			isWalkBlocked = false;			
 		}
@@ -548,9 +568,10 @@ mixin template _CanWalk(uint maxPathLen)
 			{
 				if(!isWalkBlocked)
 				{
-					isWalkBlocked = true;
+					isWalkBlocked = true;					
 					walkBlockedTime = 0;
-					performInterfaceOp(GrObjOperation.Stop, &pos); 
+					isWalking = false;
+					performInterfaceOp(EntityOperation.Stop, &pos); 
 				}				
 				walkBlockedTime += dt;				
 				return; 
@@ -563,7 +584,9 @@ mixin template _CanWalk(uint maxPathLen)
 			//Animate movement
 			struct TCbArgs { HexXY dest; float time; } 
 			TCbArgs cbArgs = { nextTile, distToNextTile * invSpeed };			
-			performInterfaceOp(GrObjOperation.Move, &cbArgs);
+			performInterfaceOp(EntityOperation.Move, &cbArgs);
+
+			isWalking = true;
 		}
 
 		float timeLeft = distToNextTile * invSpeed;
@@ -581,12 +604,13 @@ mixin template _CanWalk(uint maxPathLen)
 
 			if(path.length > (shouldStopNearDest ? 1 : 0))
 			{
-				walk(dt - timeLeft);			
+				canWalkUpdate(dt - timeLeft);			
 			}
 			else
 			{
-				performInterfaceOp(GrObjOperation.Stop, &prevTile);	
+				performInterfaceOp(EntityOperation.Stop, &prevTile);	
 				if(shouldStopNearDest) path.length = 0;
+				isWalking = false;
 			}			
 		}
 	}
@@ -623,16 +647,27 @@ mixin template _HasHP()
 	{
 		currentHP = max(0, currentHP - dmg);
 	}
+
+	bool hasHPUpdate(float dt)
+	{
+		if(currentHP == 0)
+		{
+			die();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}	
 }
-
-
 
 class Mob : Entity, CanWalk, Fibered, HasHP
 {
 	mixin Freelist;
-	mixin _BoundFibers;
+	mixin _ComponentsEventHandlers;
 
-	mixin _CompsEventHandlers;
+	mixin _BoundFibers;	
 	mixin _CanWalk!64;	
 	mixin _HasHP;
 
@@ -641,7 +676,8 @@ class Mob : Entity, CanWalk, Fibered, HasHP
 
 	void construct(MobData mobData)
 	{		
-		Entity.construct(mobData.grType);
+		Entity.construct(EntityClass.Character, mobData.characterType);
+
 		setSpeed(mobData.speed);
 		attackDmgAppDelay = mobData.attackDmgAppDelay;
 		attackDur = mobData.attackDur;
@@ -668,19 +704,24 @@ class Mob : Entity, CanWalk, Fibered, HasHP
 			}
 
 			//Attack
-			if(onTileCenter && HexXY.dist(pos, player.pos) == 1)
+			if(!isWalking && HexXY.dist(pos, player.pos) == 1)
 			{
 				isAttacking = true;
-				performInterfaceOp(GrObjOperation.Attack, &player.pos);
+				performInterfaceOp(EntityOperation.Attack, &player.pos);
 				startFiber(() 
-				{					
+				{
 					with(fibCtx)
-					{						
-						mixin(fibDelay!q{attackDmgAppDelay});
-						//Apply dmg						
-						float dmg = attackDamage;
-						player.performInterfaceOp(GrObjOperation.Damage, &dmg);
-						//TODO: refresh bar including new dot speed? (same with dotheal)
+					{	
+						auto oldPlayerPos = player.pos;
+						mixin(fibDelay!q{attackDmgAppDelay});						
+						if(player.pos == oldPlayerPos)
+						{
+							//Apply dmg						
+							float dmg = attackDamage;
+							player.performInterfaceOp(EntityOperation.Damage, &dmg);
+							//TODO: refresh bar including new dot speed? (same with dotheal)
+						}
+						
 						mixin(fibDelay!q{attackDur - attackDmgAppDelay});						
 						isAttacking = false;
 					}
@@ -694,34 +735,61 @@ class Mob : Entity, CanWalk, Fibered, HasHP
 
 class Player : Entity, CanWalk
 {
-	mixin _CompsEventHandlers;
+	mixin _ComponentsEventHandlers;
 	mixin _CanWalk!64;
 
 	float spellGcd;
-	Nullable!SpellData nextSpellData;
+	Nullable!SpellType nextSpellType;
 	HexXY nextSpellPos;
+	
+	float runePlacingTime, runePlacingTimeLeft;
+	bool isRunePlacing;
+	RuneType runePlacingType;
+	HexXY runePlacingPosition;
 
 	this()
 	{
-		Entity.construct(GrObjType.Player);
+		Entity.construct(EntityClass.Character, CharacterType.Player);
+
 		setSpeed(2);
 		spellGcd = 0;
 	}
 
 	override void update(float dt)
 	{		
-		if(onTileCenter)
+		if(!isWalking)
 		{
-			if(!nextSpellData.isNull() && spellGcd == 0)	
+			if(!nextSpellType.isNull() && spellGcd == 0)	
 			{
-				if(nextSpellData.canCast(this, nextSpellPos))				
+				if(spells.canCastSpell(this, nextSpellType, nextSpellPos))				
 				{					
-					spells.castSpell(this, nextSpellPos, nextSpellData.mainFiber);	
+					spells.castSpell(this, nextSpellType, nextSpellPos);	
 					spellGcd = 0.5f;
 				}
 
-				nextSpellData.nullify();
+				nextSpellType.nullify();
 			}
+		}
+
+		if(isRunePlacing)
+		{
+			if(isWalking)
+			{
+				//reset rune placing
+				isRunePlacing = false;
+				runePlacingTimeLeft = 0;
+			}
+			else
+			{
+				runePlacingTimeLeft = max(0, runePlacingTimeLeft - dt);
+				if(runePlacingTimeLeft == 0)
+				{
+					isRunePlacing = false;
+					runes.place(runePlacingType, runePlacingPosition);
+				}
+			}
+
+			interfacing.guiData.cooldownBarValue = runePlacingTimeLeft / runePlacingTime;
 		}
 
 		spellGcd = max(0, spellGcd - dt);
@@ -731,10 +799,21 @@ class Player : Entity, CanWalk
 
 	void castSpell(HexXY p)
 	{			
-		if(nextSpellData.isNull())
+		if(nextSpellType.isNull())
 		{
-			nextSpellData = spellDatas["lineOfFire"];
+			nextSpellType = SpellType.LineOfFire;
 			nextSpellPos = p;			
 		}		
+	}
+
+	bool placeRune(RuneType rune, HexXY p)
+	{
+		if(isWalking || HexXY.dist(pos, p) != 1) return false;
+		isRunePlacing = true;
+		runePlacingType = rune;
+		runePlacingPosition = p;
+		runePlacingTime = runePlacingTimeLeft = data.runeDatas[rune].placingTime;
+		interfacing.guiData.cooldownBarValue = 1;
+		return true;
 	}
 }

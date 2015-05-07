@@ -3,14 +3,24 @@ using System.Collections.Generic;
 
 public class GUI : MonoBehaviour
 {
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public struct GUIData
+    {
+        public float cooldownBarValue;
+    }
+
+    GUIData guiData;
     Canvas canvas;
+    
 
     string hpBarPrefabName = "Prefabs/UI/HPBar";
     List<GameObject> hpBars = new List<GameObject>();    
+
     public bool showHPBars;
     public float hpBarsWidth;
+    public GameObject cooldown;
 
-	void Start ()
+    void Start ()
     {
         canvas = GetComponent<Canvas>();
         //
@@ -21,17 +31,18 @@ public class GUI : MonoBehaviour
 	
 	void Update ()
     {
+        #region HP bars
         if (Input.GetKeyDown(KeyCode.U))
         {
             showHPBars = !showHPBars;
         }
-
+        
         if (showHPBars)
         {
             int barIdx = 0;
-            foreach (var eg in EntityGraphics.activeEntities)
+            foreach (var eg in CharacterGraphics.activeCharacters)
             {
-                if (eg.grObjType == GrObjType.Player) continue;
+                if (eg.entityType == (int)CharacterType.Player) continue;
 
                 Vector3 worldBarPosition = new Vector3(eg.transform.position.x, eg.transform.position.y + eg.hpBarUpDistance, eg.transform.position.z);
                 Vector3 screenBarPosition = Camera.main.WorldToScreenPoint(worldBarPosition);
@@ -70,6 +81,11 @@ public class GUI : MonoBehaviour
                 GObjFreelist.I.Put(bar, hpBarPrefabName);
 
             hpBars.Clear();
-        }       
+        }
+        #endregion
+
+        guiData = D.getGuiData();
+        cooldown.SetActive(guiData.cooldownBarValue != 0);
+        cooldown.GetComponent<UnityEngine.UI.Slider>().value = guiData.cooldownBarValue;
     }
 }

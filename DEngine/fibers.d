@@ -149,12 +149,12 @@ mixin template _BoundFibers()
 		fiber.call();		
 	}
 
-	void updateFibers(float dt)
+	void fiberedUpdate(float dt)
 	{
 		updateFibersInList(fibList, dt);
 	}
 
-	void deallocateRunningFibers()
+	void fiberedDie()
 	{		
 		fibIsDestroyed = true;
 		foreach(fib; fibList.els())	
@@ -170,5 +170,17 @@ mixin template _BoundFibers()
 				fib.deallocate();	
 		}		
 	}
+}
+
+// Test unsafe reset in hold state
+unittest
+{
+    auto fib = new Fiber(function {ubyte[2048] buf = void; Fiber.yield();}, 4096);
+    foreach (_; 0 .. 10)
+    {
+        fib.call();
+        assert(fib.state == Fiber.State.HOLD);
+        fib.reset();
+    }
 }
 

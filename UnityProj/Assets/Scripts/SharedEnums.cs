@@ -11,22 +11,36 @@ public enum EffectType
     BlueBlast
 }
 
-public enum GrObjClass
-{
-    Entity
+public enum SpellType
+{    
+    LineOfFire,
+    ColdCircle        
 }
 
-public enum GrObjType
+public enum EntityClass
 {
+    Character,
+    Rune
+}
+
+public enum CharacterType
+{    
     Pyramid,
     Sphere,
     Cube,
     Player,
-    Spider
+    Spider,    
 }
 
-public enum GrObjOperation
+public enum RuneType
 {
+    CRune,
+    FRune,
+}
+
+public enum EntityOperation
+{
+    //Entities
     Spawn,
     Move,
     Stop,

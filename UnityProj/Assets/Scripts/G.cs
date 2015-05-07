@@ -19,16 +19,20 @@ public class G : MonoBehaviour
 
     public static readonly Plane gamePlane = new Plane(new Vector3(0, 1, 0), 0);
 
-    static readonly int grObjsClassesCount = Enum.GetValues(typeof(GrObjClass)).Length;
+    static readonly int entitiesClassesCount = Enum.GetValues(typeof(EntityClass)).Length;
 
-    static uint[] grObjsCountByClass;
-    static Dictionary<D.GrObjHandle, GameObject> grObjs;
+    static uint[] entitiesCountByClass;
+    static Dictionary<D.EntityHandle, GameObject> entities;
+
+    public static bool isTimeStopped;
+
+    public float timeStopMultiplier;
 
 
     unsafe void Awake()
     {
-        grObjs = new Dictionary<D.GrObjHandle, GameObject>();
-        grObjsCountByClass = new uint[grObjsClassesCount];
+        entities = new Dictionary<D.EntityHandle, GameObject>();
+        entitiesCountByClass = new uint[entitiesClassesCount];
 
         if (g != null)
         {
@@ -39,11 +43,10 @@ public class G : MonoBehaviour
 
         D.setLogging(D.GetCallbackPointer((D.PtrToVoid)Log));
         D.SetCallback("showEffectOnTile", (D.TShowEffectOnTile)ShowEffectOnTile);
-        D.SetCallback("createGrObj", (D.TCreateGrObj)CreateGrObj);
-        D.SetCallback("performOpOnGrObj", (D.TPerformOpOnGrObj)PerformOpOnGrObj);
+        D.SetCallback("createEntity", (D.TCreateEntity)CreateEntity);
+        D.SetCallback("performOpOnEntity", (D.TPerformOpOnEntity)PerformOpOnEntity);
+        D.SetCallback("stopOrResumeTime", (D.BoolToVoid)StopOrResumeTime);
         D.onStart();
-      
-
 
         var wbhandle = D.queryWorld(); 
 
@@ -53,8 +56,17 @@ public class G : MonoBehaviour
     }
   
     void Update()
-    {   
-        D.update(Time.deltaTime);        
+    {
+        if (isTimeStopped)
+        {
+            Time.timeScale = timeStopMultiplier;
+        }
+        else
+        {
+            Time.timeScale = 1;
+        }
+        //if(!isTimeStopped)
+            D.update(Time.deltaTime);        
     }
 
     static void Log(IntPtr msgPtr)
@@ -62,31 +74,36 @@ public class G : MonoBehaviour
         Debug.Log(D.GetStringFromPointer(msgPtr));
     }
 
-    static D.GrObjHandle CreateGrObj(GrObjClass objClass, GrObjType objType)
-    {        
-        string prefabPath = "Prefabs/" + objClass.ToString() + "/" + objType.ToString();
+    static D.EntityHandle CreateEntity(EntityClass objClass, int objType)
+    {
+        string prefabPath = "Prefabs/" + objClass.ToString() + "/";
+        switch (objClass)
+        {
+            case EntityClass.Character: prefabPath += ((CharacterType)objType).ToString(); break;
+            case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
+        }
+        
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
         obj.SetActive(false);
         
-        D.GrObjHandle handle = new D.GrObjHandle() { objClass = objClass, idx = grObjsCountByClass[(int)objClass]++ };
-        if (objClass == GrObjClass.Entity)
-        {
-            var ent = obj.GetComponent<EntityGraphics>();
-            ent.grObjType = objType;
-            ent.grObjHandle = handle;
-        }
-        grObjs.Add(handle, obj);
+        D.EntityHandle handle = new D.EntityHandle() { objClass = objClass, idx = entitiesCountByClass[(int)objClass]++ };
+      
+        var objGr = obj.GetComponent<EntityGraphics>();
+        objGr.entityType = objType;
+        objGr.entityHandle = handle;
+        
+        entities.Add(handle, obj);
        
         return handle;
     }
 
-    unsafe static void PerformOpOnGrObj(D.GrObjHandle objHandle, GrObjOperation op, void* args)
-    {
-        
-        GameObject obj = grObjs[objHandle];
+    unsafe static void PerformOpOnEntity(D.EntityHandle objHandle, EntityOperation op, void* args)
+    {        
+        GameObject obj = entities[objHandle];
         switch (objHandle.objClass)
         {
-            case GrObjClass.Entity: obj.GetComponent<EntityGraphics>().DispatchOp(op, args); break;
+            case EntityClass.Character: obj.GetComponent<CharacterGraphics>().DispatchOp(op, args); break;
+            case EntityClass.Rune: obj.GetComponent<RuneGraphics>().DispatchOp(op, args); break;
         }       
     }
 
@@ -98,6 +115,11 @@ public class G : MonoBehaviour
         Vector2 planeCoord = pos.ToPlaneCoordinates();
         obj.transform.position = new Vector3(planeCoord.x, 0.2f, planeCoord.y);
         //obj.GetComponent<IHasDuration>().SetDuration(durSecs);
+    }
+
+    static void StopOrResumeTime(bool isStop)
+    {
+        isTimeStopped = isStop;
     }
     
     //Bench for 100 100x100 world blocks was 0.44 sec

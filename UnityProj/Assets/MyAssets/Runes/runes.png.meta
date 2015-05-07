@@ -1,0 +1,341 @@
+fileFormatVersion: 2
+guid: 4517e03000b97fa49976be97cb8445a7
+timeCreated: 1430944409
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: runes_0
+    21300002: runes_1
+    21300004: runes_2
+    21300006: runes_3
+    21300008: runes_4
+    21300010: runes_5
+    21300012: runes_6
+    21300014: runes_7
+    21300016: runes_8
+    21300018: runes_9
+    21300020: runes_10
+    21300022: runes_11
+    21300024: runes_12
+    21300026: runes_13
+    21300028: runes_14
+    21300030: runes_15
+    21300032: runes_16
+    21300034: runes_17
+    21300036: runes_18
+    21300038: runes_19
+    21300040: runes_20
+    21300042: runes_21
+    21300044: runes_22
+    21300046: runes_23
+    21300048: runes_24
+    21300050: runes_25
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: .25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 8
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: runes_0
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 262
+        width: 32
+        height: 65
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_1
+      rect:
+        serializedVersion: 2
+        x: 92
+        y: 266
+        width: 47
+        height: 62
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_2
+      rect:
+        serializedVersion: 2
+        x: 183
+        y: 262
+        width: 38
+        height: 65
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_3
+      rect:
+        serializedVersion: 2
+        x: 268
+        y: 261
+        width: 42
+        height: 66
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_4
+      rect:
+        serializedVersion: 2
+        x: 356
+        y: 262
+        width: 33
+        height: 65
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_5
+      rect:
+        serializedVersion: 2
+        x: 427
+        y: 271
+        width: 65
+        height: 46
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_6
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 263
+        width: 33
+        height: 63
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_7
+      rect:
+        serializedVersion: 2
+        x: 599
+        y: 272
+        width: 66
+        height: 40
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_8
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 266
+        width: 24
+        height: 62
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_9
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 149
+        width: 66
+        height: 64
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_10
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 149
+        width: 36
+        height: 65
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_11
+      rect:
+        serializedVersion: 2
+        x: 189
+        y: 150
+        width: 51
+        height: 65
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_12
+      rect:
+        serializedVersion: 2
+        x: 282
+        y: 149
+        width: 30
+        height: 63
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_13
+      rect:
+        serializedVersion: 2
+        x: 365
+        y: 149
+        width: 33
+        height: 64
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_14
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 148
+        width: 42
+        height: 65
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_15
+      rect:
+        serializedVersion: 2
+        x: 522
+        y: 156
+        width: 54
+        height: 58
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_16
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 149
+        width: 41
+        height: 64
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_17
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 151
+        width: 31
+        height: 65
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_18
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 39
+        width: 29
+        height: 62
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_19
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 35
+        width: 51
+        height: 66
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_20
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 47
+        width: 22
+        height: 35
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_21
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 23
+        width: 43
+        height: 77
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_22
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 44
+        width: 64
+        height: 47
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_23
+      rect:
+        serializedVersion: 2
+        x: 485
+        y: 44
+        width: 62
+        height: 57
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_24
+      rect:
+        serializedVersion: 2
+        x: 593
+        y: 56
+        width: 41
+        height: 41
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: runes_25
+      rect:
+        serializedVersion: 2
+        x: 689
+        y: 34
+        width: 42
+        height: 66
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
