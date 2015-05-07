@@ -8,6 +8,8 @@ import logger;
 import std.string;
 import std.ascii : toLower;
 import std.traits : EnumMembers;
+import data;
+import std.algorithm : min, max;
 
 //TODO: group (Entity ent, HexXY target)
 
@@ -16,56 +18,108 @@ SLList!(Spell, Spell.listNext) allSpells;
 class Spell : Fibered
 {
 	mixin Freelist;
-	mixin _BoundFibers;
-
 	Spell listNext;
 
 	SpellType type;
 	Entity ent;
 	HexXY target;
+	bool isLaunched, isInterrupted;
+	float launchTime, launchTimeLeft;
+
+private:
+	mixin _BoundFibers;		
 
 	void construct(Entity ent, SpellType type, HexXY target)
 	{
 		this.type = type;
 		this.ent = ent;
 		this.target = target;
+		this.isLaunched = false;
+	}
+
+	void castIt()
+	{
+		launchTime = launchTimeLeft = data.spellDatas[type].launchTime;
+		startLaunchFiber();
+	}
+
+	static string emitFiberSwitch(string fiberType)() 
+	{
+		string code;
+		foreach(spellType; EnumMembers!SpellType)
+		{
+			immutable sst = to!string(spellType);			
+			immutable string fiberFunc = sst[0].toLower ~ sst[1..$] ~ fiberType;			
+			static if(__traits(compiles, mixin(fiberFunc ~ "()")))
+				code ~= q{case SpellType.} ~ sst ~ q{: startFiber(&} ~ fiberFunc ~ q{); break; } ~ "\n";
+		}
+		return code;			
+	}
+
+	void startLaunchFiber()
+	{
+		pragma(msg, emitFiberSwitch!"LaunchFiber");
+
+		switch(type)
+		{
+			mixin(emitFiberSwitch!"LaunchFiber");
+			default: break;
+		}
 	}
 
 	void startMainFiber()
 	{
-		static string emitSwitchBody() 
-		{
-			string code;
-			foreach(spellType; EnumMembers!SpellType)
-			{
-				auto sst = to!string(spellType);
-				code ~= q{case SpellType.} ~ sst ~ q{: startFiber(&} ~ sst[0].toLower ~ sst[1..$] ~ q{MainFiber); break; } ~ "\n";
-			}
-			return code;			
-		}
+		pragma(msg, emitFiberSwitch!"MainFiber");	
 
-		//pragma(msg, emitSwitchBody);
-		
 		switch(type)
 		{
-			mixin(emitSwitchBody);
+			mixin(emitFiberSwitch!"MainFiber");
 			default: assert(false);
 		}		
 	}	
-}
 
-
-
-void update(float dt)
-{
-	foreach(sp; allSpells.els())
+	void update(float dt)
 	{
-		sp.fiberedUpdate(dt);
-		if(sp.fibList.isEmpty())
+		if(isInterrupted)
 		{
-			sp.deallocate();
-			allSpells.remove(sp);
+			if(!isLaunched)
+			{
+				(cast(SpellCaster)ent).spellFinishedCasting();
+			}
+
+			//TODO: interruption fiber (all explodes!!!)? 
+			fiberedDie();
+			allSpells.remove(this);
+			deallocate();
+			return;
 		}
+
+		fiberedUpdate(dt);		
+
+		if(!isLaunched)
+		{
+			launchTimeLeft = max(0, launchTimeLeft - dt);
+			if(launchTimeLeft == 0)
+			{
+				isLaunched = true;
+				(cast(SpellCaster)ent).spellFinishedCasting();
+				startMainFiber();
+			}
+		}
+		else
+		{
+			if(fibList.isEmpty())
+			{
+				allSpells.remove(this);
+				deallocate();
+			}
+		}
+	}
+
+public:
+	void interrupt()
+	{
+		isInterrupted = true;
 	}
 }
 
@@ -95,10 +149,18 @@ Spell castSpell(Entity ent, SpellType type, HexXY target)
 {
 	Spell sp = Spell.allocate(ent, type, target);
 	allSpells.insert(sp);
-	sp.startMainFiber();
+	sp.castIt();
 	return sp;
 }
 
+
+void update(float dt)
+{
+	foreach(sp; allSpells.els())
+		sp.update(dt);
+}
+
+private:
 bool canCastByDistance(Entity ent, HexXY target, uint minDist, uint maxDist)
 {
 	uint dist = HexXY.dist(ent.pos, target);
@@ -106,11 +168,6 @@ bool canCastByDistance(Entity ent, HexXY target, uint minDist, uint maxDist)
 }
 
 bool lineOfFireCanCast(Entity ent, HexXY target)
-{
-	return canCastByDistance(ent, target, 1, 1);
-}	
-
-bool coldCircleCanCast(Entity ent, HexXY target)
 {
 	return canCastByDistance(ent, target, 1, 1);
 }	
@@ -144,6 +201,11 @@ void lineOfFireMainFiber()
 			mixin(fibDelay!q{0.1});
 		}				
 	}
+}
+
+bool coldCircleCanCast(Entity ent, HexXY target)
+{
+	return canCastByDistance(ent, target, 1, 1);
 }
 
 void coldCircleMainFiber()

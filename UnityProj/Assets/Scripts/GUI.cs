@@ -7,6 +7,7 @@ public class GUI : MonoBehaviour
     public struct GUIData
     {
         public float cooldownBarValue;
+        public int fireGemsCount;
     }
 
     GUIData guiData;
@@ -19,6 +20,7 @@ public class GUI : MonoBehaviour
     public bool showHPBars;
     public float hpBarsWidth;
     public GameObject cooldown;
+    public GameObject[] gemCounts;
 
     void Start ()
     {
@@ -87,5 +89,7 @@ public class GUI : MonoBehaviour
         guiData = D.getGuiData();
         cooldown.SetActive(guiData.cooldownBarValue != 0);
         cooldown.GetComponent<UnityEngine.UI.Slider>().value = guiData.cooldownBarValue;
+
+        gemCounts[0].GetComponent<UnityEngine.UI.Text>().text = guiData.fireGemsCount.ToString();
     }
 }

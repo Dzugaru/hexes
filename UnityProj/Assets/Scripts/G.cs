@@ -80,7 +80,8 @@ public class G : MonoBehaviour
         switch (objClass)
         {
             case EntityClass.Character: prefabPath += ((CharacterType)objType).ToString(); break;
-            case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
+            case EntityClass.Inanimate: prefabPath += ((InanimateType)objType).ToString(); break;
+            case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
         }
         
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
@@ -102,8 +103,14 @@ public class G : MonoBehaviour
         GameObject obj = entities[objHandle];
         switch (objHandle.objClass)
         {
-            case EntityClass.Character: obj.GetComponent<CharacterGraphics>().DispatchOp(op, args); break;
-            case EntityClass.Rune: obj.GetComponent<RuneGraphics>().DispatchOp(op, args); break;
+            case EntityClass.Character:
+                obj.GetComponent<CharacterGraphics>().DispatchOp(op, args);
+                break;
+
+            case EntityClass.Collectible:
+            case EntityClass.Inanimate:
+                obj.GetComponent<InanimateGraphics>().DispatchOp(op, args);
+                break;            
         }       
     }
 

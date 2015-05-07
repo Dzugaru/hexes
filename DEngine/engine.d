@@ -66,7 +66,7 @@ bool isTimeStopped = false;
 
 void stopOrResumeTime()
 {
-	bool shouldStop = !player.isWalking && !player.isRunePlacing && spells.allSpells.isEmpty();
+	bool shouldStop = !player.isWalking && spells.allSpells.isEmpty();
 
 	if(isTimeStopped != shouldStop)
 	{
@@ -733,87 +733,109 @@ class Mob : Entity, CanWalk, Fibered, HasHP
 	}
 }
 
-class Player : Entity, CanWalk
+interface SpellCaster
+{	
+	void spellFinishedCasting();
+}
+
+class Player : Entity, CanWalk, SpellCaster
 {
 	mixin _ComponentsEventHandlers;
 	mixin _CanWalk!64;
 
-	float spellGcd;
-	Nullable!SpellType nextSpellType;
-	HexXY nextSpellPos;
-	
-	float runePlacingTime, runePlacingTimeLeft;
-	bool isRunePlacing;
-	RuneType runePlacingType;
-	HexXY runePlacingPosition;
+	Spell castingSpell;		
+	void spellFinishedCasting()
+	{
+		castingSpell = null;
+	}
+
+	uint[EnumMembers!CollectibleType.length] gatheredCollectibles;
 
 	this()
 	{
 		Entity.construct(EntityClass.Character, CharacterType.Player);
 
-		setSpeed(2);
-		spellGcd = 0;
+		setSpeed(2);		
 	}
 
 	override void update(float dt)
 	{		
-		if(!isWalking)
-		{
-			if(!nextSpellType.isNull() && spellGcd == 0)	
-			{
-				if(spells.canCastSpell(this, nextSpellType, nextSpellPos))				
-				{					
-					spells.castSpell(this, nextSpellType, nextSpellPos);	
-					spellGcd = 0.5f;
-				}
-
-				nextSpellType.nullify();
-			}
-		}
-
-		if(isRunePlacing)
+		//Spell casting
+		if(castingSpell)
 		{
 			if(isWalking)
 			{
-				//reset rune placing
-				isRunePlacing = false;
-				runePlacingTimeLeft = 0;
+				castingSpell.interrupt();
 			}
 			else
 			{
-				runePlacingTimeLeft = max(0, runePlacingTimeLeft - dt);
-				if(runePlacingTimeLeft == 0)
-				{
-					isRunePlacing = false;
-					runes.place(runePlacingType, runePlacingPosition);
-				}
+				interfacing.guiData.cooldownBarValue = castingSpell.launchTimeLeft / castingSpell.launchTime;
 			}
-
-			interfacing.guiData.cooldownBarValue = runePlacingTimeLeft / runePlacingTime;
+		}
+		else
+		{
+			interfacing.guiData.cooldownBarValue = 0;
 		}
 
-		spellGcd = max(0, spellGcd - dt);
+		//Collectible gather
+		if(isWalkBlocked)
+		{
+			foreach(ent; worldBlock.entityMap[path[0].x][path[0].y].els())
+			{
+				Collectible coll = cast(Collectible)ent;
+				if(coll !is null)
+				{
+					coll.die();
+					++gatheredCollectibles[coll.entityType];
+				}
+			}
+		}
+
+		//Update collectibles number in GUI
+		guiData.fGemsCount = gatheredCollectibles[CollectibleType.FireGem];
 
 		Entity.update(dt);
 	}
 
-	void castSpell(HexXY p)
+	bool castSpell(SpellType type, HexXY p)
 	{			
-		if(nextSpellType.isNull())
-		{
-			nextSpellType = SpellType.LineOfFire;
-			nextSpellPos = p;			
-		}		
+		bool isSuccess = !isWalking && !castingSpell && spells.canCastSpell(this, type, p);		
+		if(isSuccess)
+			castingSpell = spells.castSpell(this, type, p);
+		return isSuccess;		
+	}
+}
+
+class Inanimate : Entity
+{
+	mixin Freelist;
+	mixin _ComponentsEventHandlers;
+
+	void construct(InanimateType type)
+	{		
+		Entity.construct(EntityClass.Inanimate, type);
+	}	
+
+	override void spawn(HexXY p)
+	{
+		Entity.spawn(p);
+		worldBlock.pfBlockedMap[p.x][p.y] = true;
 	}
 
-	bool placeRune(RuneType rune, HexXY p)
+	override void die()
 	{
-		if(isWalking || HexXY.dist(pos, p) != 1) return false;
-		isRunePlacing = true;
-		runePlacingType = rune;
-		runePlacingPosition = p;
-		runePlacingTime = runePlacingTimeLeft = data.runeDatas[rune].placingTime;
-		interfacing.guiData.cooldownBarValue = 1;
-		return true;
+		Entity.die();
+		worldBlock.pfBlockedMap[pos.x][pos.y] = false;
+	}
+}
+
+class Collectible : Inanimate
+{
+	mixin Freelist;
+	mixin _ComponentsEventHandlers;
+
+	void construct(CollectibleType type)
+	{		
+		Entity.construct(EntityClass.Collectible, type);
 	}
 }

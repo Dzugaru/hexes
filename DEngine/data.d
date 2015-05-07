@@ -4,7 +4,9 @@ import spells;
 import engine;
 
 static immutable MobData[string] mobDatas;
-static immutable RuneData[RuneType] runeDatas;
+
+//TODO: make a complex key (SpellType, Level)?
+static immutable SpellData[SpellType] spellDatas;
 
 immutable struct MobData
 {
@@ -16,17 +18,17 @@ immutable struct MobData
 	float attackDamage;
 }
 
-immutable struct RuneData
+immutable struct SpellData
 {
-	float placingTime;
+	float launchTime;
 }
 
 static this()
 {
 	//											Graphics				HP		Speed	DmgDelay	AtkDuration		AtkDmg
-	mobDatas["spider"]				= MobData(	CharacterType.Spider,		10,		1,		0.5,		1.0,			1		);
+	mobDatas["spider"]				= MobData(	CharacterType.Spider,	10,		2.5,	0.5,		1.0,			1		);
 		
-	//											Placing time
-	runeDatas[RuneType.FRune]		= RuneData( 1.0f					);
-	runeDatas[RuneType.CRune]		= RuneData( 1.0f					);
+	//
+	spellDatas[SpellType.LineOfFire] = SpellData(0.25f);
+	spellDatas[SpellType.ColdCircle] = SpellData(1.0f);
 }

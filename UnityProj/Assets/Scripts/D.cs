@@ -55,7 +55,7 @@ public unsafe class D : MonoBehaviour
     public delegate void HexXYToVoid(Engine.HexXY p);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void TPlayerPlaceRune(Engine.HexXY p, int runeType);
+    public delegate void TPlayerCastSpell(SpellType spellType, Engine.HexXY p);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void BoolToVoid(bool b);
@@ -83,7 +83,7 @@ public unsafe class D : MonoBehaviour
     public static TUpdate update;
     public static VoidToPtr queryWorld;    
     public static HexXYToVoid playerMove;
-    public static TPlayerPlaceRune playerPlaceRune;
+    public static TPlayerCastSpell playerCastSpell;
     public static TGetGuiData getGuiData;
 
 

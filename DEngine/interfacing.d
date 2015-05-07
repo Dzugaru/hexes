@@ -12,7 +12,6 @@ import enums;
 import std.array : replaceFirst;
 import std.string : startsWith;
 import core.exception;
-import runes;
 
 /**
 * Callbacks wrapper
@@ -117,9 +116,10 @@ struct GUIData
 {
 align:
 	float cooldownBarValue;
+	uint fGemsCount;
 }
 
-GUIData guiData = { 0 };
+GUIData guiData = { 0, 0 };
 
 extern(C) export GUIData getGuiData()
 {
@@ -203,14 +203,11 @@ extern(C) export void playerMove(HexXY p)
 	}		
 }
 
-extern(C) export void playerPlaceRune(HexXY p, RuneType runeType)
+extern(C) export void playerCastSpell(SpellType type, HexXY p)
 {
 	try
-	{	
-		bool result = player.placeRune(runeType, p);
-		if(!result) log("CANT PLACE RUNE");
-		//player.castSpell(p);
-		//runes.place(runeType, p);
+	{			
+		player.castSpell(type, p);
 	}
 	catch(Throwable th)
 	{

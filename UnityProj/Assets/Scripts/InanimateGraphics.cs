@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using Engine;
 
-class RuneGraphics : EntityGraphics
+class InanimateGraphics : EntityGraphics
 {
     unsafe public void DispatchOp(EntityOperation op, void* args)
     {

@@ -20,7 +20,8 @@ public enum SpellType
 public enum EntityClass
 {
     Character,
-    Rune
+    Inanimate,
+    Collectible
 }
 
 public enum CharacterType
@@ -32,10 +33,15 @@ public enum CharacterType
     Spider,    
 }
 
-public enum RuneType
+public enum InanimateType
 {
     CRune,
-    FRune,
+    FRune,   
+}
+
+public enum CollectibleType
+{
+    FireGem
 }
 
 public enum EntityOperation

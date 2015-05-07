@@ -418,7 +418,6 @@
   <File path="math.d" />
   <File path="noise.d" />
   <File path="overseer.d" />
-  <File path="runes.d" />
   <File path="spells.d" />
   <File path="utils.d" />
  </Folder>
