@@ -104,6 +104,30 @@ align {	int x, y; }
 	Vector2 toPlaneCoordinates() const
 	{
 		return x * ex + y * ey;
+	}	
+
+	HexXY rotRight(HexXY center) const
+	{
+		int x = this.x - center.x;
+		int y = this.y - center.y;
+		HexXY nd;
+		if(y == 0) nd = HexXY(0, -x);			 
+		else if(x == 0) nd = HexXY(y, y);
+		else if(x == y)	nd = HexXY(x, 0);		
+		else assert(false);
+		return center + nd;
+	}
+
+	HexXY rotLeft(HexXY center) const
+	{
+		int x = this.x - center.x;
+		int y = this.y - center.y;
+		HexXY nd;
+		if(y == 0) nd = HexXY(x, x);			 
+		else if(x == 0)	nd = HexXY(-y, 0);
+		else if(x == y) nd = HexXY(0, y);		
+		else assert(false);
+		return center + nd;
 	}
 
 	HexXY opBinary(string op)(HexXY rhs) const
@@ -122,7 +146,7 @@ align {	int x, y; }
 	bool opEquals(in HexXY rhs) const
 	{
 		return x == rhs.x && y == rhs.y;
-	}
+	}	
 }
 	//throw and gc
 	string toString()
@@ -386,6 +410,14 @@ unittest
 	assert(path is null);
 }
 
+void damageEveryone(HexXY pos, float damage)
+{
+	foreach(ent; worldBlock.entityMap[pos.x][pos.y].els())				
+	{
+		HasHP hpEnt = cast(HasHP)ent;
+		if(hpEnt !is null)	hpEnt.damage(damage);		
+	}
+}
 
 /***************************************************************************************************
 * Something, that is physically present on a hex grid
@@ -405,6 +437,7 @@ public:
 	abstract void componentsOnSpawn(HexXY pos);
 	abstract void componentsOnUpdate(float dt);	
 	abstract void componentsOnDie();
+	abstract void componentsOnUpdateInterface();
 
 	void construct(EntityClass cls, int type)
 	{
@@ -438,7 +471,7 @@ public:
 		componentsOnSpawn(p);
 
 		performInterfaceOp(EntityOperation.Spawn, &pos);
-		updateInterfaceInfo();		
+		updateInterface();		
 	}
 
 	void die()
@@ -451,12 +484,15 @@ public:
 		performInterfaceOp(EntityOperation.Die, null);
 	}
 
+	void updateInterface() 
+	{
+		componentsOnUpdateInterface();
+	}
+
 	void performInterfaceOp(EntityOperation op, void* args)
 	{
 		interfacing.cb.performOpOnEntity(entityHandle, op, args);
 	}
-
-	void updateInterfaceInfo() {}
 }
 
 mixin template _ComponentsEventHandlers()
@@ -479,7 +515,7 @@ mixin template _ComponentsEventHandlers()
 		static if(isAssignable!(Fibered, typeof(this))) fiberedDie();			
 	}
 
-	override void updateInterfaceInfo()
+	override void componentsOnUpdateInterface()
 	{
 		static if(isAssignable!(HasHP, typeof(this)))
 		{
@@ -646,6 +682,8 @@ mixin template _HasHP()
 	void damage(float dmg)
 	{
 		currentHP = max(0, currentHP - dmg);
+		performInterfaceOp(EntityOperation.Damage, &dmg);
+		updateInterface();
 	}
 
 	bool hasHPUpdate(float dt)
@@ -786,7 +824,7 @@ class Player : Entity, CanWalk, SpellCaster
 				if(coll !is null)
 				{
 					coll.die();
-					++gatheredCollectibles[coll.entityType];
+					gatheredCollectibles[coll.entityType] += coll.amount;
 				}
 			}
 		}
@@ -834,8 +872,39 @@ class Collectible : Inanimate
 	mixin Freelist;
 	mixin _ComponentsEventHandlers;
 
-	void construct(CollectibleType type)
+	uint amount;
+
+	void construct(CollectibleType type, uint amount)
 	{		
 		Entity.construct(EntityClass.Collectible, type);
+		this.amount = amount;
+	}
+}
+
+class Rune : Inanimate
+{
+	mixin Freelist;
+	mixin _ComponentsEventHandlers;
+
+	float power;
+
+	void construct(RuneType type)
+	{		
+		Entity.construct(EntityClass.Rune, type);
+	}
+
+	override void spawn(HexXY p)
+	{
+		Entity.spawn(p);		
+	}
+
+	override void die()
+	{
+		Entity.die();		
+	}
+
+	override void updateInterface()
+	{	
+		performInterfaceOp(EntityOperation.UpdateInfo, &power);
 	}
 }

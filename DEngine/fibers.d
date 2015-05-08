@@ -119,6 +119,12 @@ string fibDelay(string delayExpr)()
 	return fibDelayWithoutBreak!delayExpr ~ q{ if(fibIsDestroyed) return; };
 }
 
+string fibYield()
+{
+	return q{ Fiber.yield(); if(fibIsDestroyed) return; };
+}
+
+
 interface Fibered {}
 
 mixin template _BoundFibers()

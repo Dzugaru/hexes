@@ -12,7 +12,7 @@ import std.stdio;
 void start()
 {
 	rndGen.seed(1);
-	foreach(i; 0..5)
+	foreach(i; 0..50)
 	{
 
 		HexXY p;
@@ -31,7 +31,7 @@ void start()
 	//auto mob = Mob.allocate(data.mobDatas["spider"]);
 	//mob.spawn(HexXY(2,2));
 
-	auto gem = Collectible.allocate(CollectibleType.FireGem);
+	auto gem = Collectible.allocate(CollectibleType.FireGem, 5);
 	gem.spawn(HexXY(2,2));	
 	
 

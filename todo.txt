@@ -1,3 +1,8 @@
+CODE DESIGN
+- Remove freelist and heavily use inheritance?
+- Remove with(Spell.fibCtx), use delegate to Spell member func
+
+GAMEPLAY
 - More tactical combat - add resource so the player thinks what he does, maybe slower or autopause
 - Proper stress test on a D engine at all times is a must!
 - WEADZX controls (hexes ftw)

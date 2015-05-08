@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Engine
 {
-    public abstract class Entity
+    interface IEntityComponent
     {
-        public HexXY pos;
+        void OnSpawn();
+        void OnUpdate(float dt);
+        void OnDie();
     }
 }

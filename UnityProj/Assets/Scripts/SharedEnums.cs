@@ -8,19 +8,22 @@ public enum TerrainCellType
 public enum EffectType
 {
     YellowBlast,
-    BlueBlast
+    BlueBlast,
+    FireBlast
 }
 
 public enum SpellType
 {    
     LineOfFire,
-    ColdCircle        
+    ColdCircle,
+    FireTurret 
 }
 
 public enum EntityClass
 {
     Character,
     Inanimate,
+    Rune,
     Collectible
 }
 
@@ -34,6 +37,12 @@ public enum CharacterType
 }
 
 public enum InanimateType
+{
+    Stone,
+    Tree
+}
+
+public enum RuneType
 {
     CRune,
     FRune,   

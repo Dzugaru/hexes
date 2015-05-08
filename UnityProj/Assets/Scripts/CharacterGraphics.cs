@@ -42,7 +42,13 @@ class CharacterGraphics : EntityGraphics
     Coroutine flashHighlightAnimation; //These don't support state view (exec, term), wtf
     bool isflashHighlightAnimationRunning;
 
-  
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Info
+    {
+        public float currentHP;
+        public float maxHP;
+    }
 
     public Info info;
 
@@ -69,36 +75,7 @@ class CharacterGraphics : EntityGraphics
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    struct MoveArgs
-    {
-        public HexXY pos;
-        public float timeToGetThere;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Info
-    {
-        public float currentHP;
-        public float maxHP;
-    }
-
-    unsafe public void DispatchOp(EntityOperation op, void* args)
-    {
-        //Debug.Log(op);
-        switch (op)
-        {
-            case EntityOperation.Spawn: Spawn(*(HexXY*)args); break;
-            case EntityOperation.Move: Move(*(MoveArgs*)args); break;
-            case EntityOperation.Stop: Stop(*(HexXY*)args); break;
-            case EntityOperation.Attack: Attack(*(HexXY*)args); break;
-            case EntityOperation.Damage: Damage(*(float*)args); break;
-            case EntityOperation.UpdateInfo: UpdateInfo(*(Info*)args); break;
-            case EntityOperation.Die: Die(); break;
-        }
-    }  
-
-    void Spawn(HexXY pos)
+    protected override void Spawn(HexXY pos)
     {
         //if(entityHandle.idx == 7) Debug.Log(entityHandle + " spawn " + pos);
         Vector2 planeCoord = pos.ToPlaneCoordinates();
@@ -113,7 +90,7 @@ class CharacterGraphics : EntityGraphics
         activeCharacters.Add(this);
     }
 
-    void Move(MoveArgs args)
+    protected override void Move(MoveArgs args)
     {
         //Debug.Log(entityHandle + " move " + args.pos);      
         state = State.Walk;
@@ -128,7 +105,7 @@ class CharacterGraphics : EntityGraphics
         else if(animationsType == AnimationsType.Mecanim) mecanimAnimator.SetBool("IsWalking", true);
     }
 
-    void Stop(HexXY pos)
+    protected override void Stop(HexXY pos)
     {
         //Debug.Log(entityHandle + " stop " + walkDest);
         state = State.Stand;
@@ -139,7 +116,7 @@ class CharacterGraphics : EntityGraphics
         else if (animationsType == AnimationsType.Mecanim) mecanimAnimator.SetBool("IsWalking", false);
     }
 
-    void Attack(HexXY pos)
+    protected override void Attack(HexXY pos)
     {        
         if (attackCor != null)        
             StopCoroutine(attackCor);
@@ -147,17 +124,17 @@ class CharacterGraphics : EntityGraphics
         attackCor = StartCoroutine(CorAttack(pos));
     }
 
-    void Damage(float dmg)
+    protected override void Damage(float dmg)
     {        
         AnimateFlashHighlight(Color.white, 0.15f, 0.5f);
     }
 
-    void UpdateInfo(Info info)
+    unsafe protected override void UpdateInfo(void* args)
     {
-        this.info = info;
+        this.info = *(Info*)args;
     }
 
-    void Die()
+    protected override void Die()
     {
         Destroy(gameObject);
         activeCharacters.Remove(this);

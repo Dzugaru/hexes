@@ -3,6 +3,7 @@ using System.Collections;
 
 //TODO: This should be ObjGraphics too
 
+[ExecuteInEditMode]
 public class EffectGraphics : MonoBehaviour
 {
     float startTime;
@@ -32,7 +33,7 @@ public class EffectGraphics : MonoBehaviour
             if (renderer)
             {
                 renderer.lengthScale *= scale;
-                renderer.velocityScale *= scale;
+                renderer.velocityScale *= scale;                
             }
         }
     }

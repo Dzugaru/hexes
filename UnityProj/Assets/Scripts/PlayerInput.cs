@@ -29,7 +29,7 @@ class PlayerInput : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            D.playerCastSpell(SpellType.LineOfFire, getMouseOverTile());
+            D.playerCastSpell(SpellType.FireTurret, getMouseOverTile());            
         }
 
         //if (Input.GetKeyDown(KeyCode.Space))

@@ -1,4 +1,6 @@
+- Can't change material color from native-managed callback
+
 - Player walks on place very rarely (and sometimes walking animation doesnt start, mecanim problems?)
-- Excessive stop commands
+
 - If path is null - stop calculating it every frame (for mob)
 - Mob walks from one tile to another while spell moves from another tile to prev one - no damage

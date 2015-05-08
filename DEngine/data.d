@@ -26,9 +26,10 @@ immutable struct SpellData
 static this()
 {
 	//											Graphics				HP		Speed	DmgDelay	AtkDuration		AtkDmg
-	mobDatas["spider"]				= MobData(	CharacterType.Spider,	10,		2.5,	0.5,		1.0,			1		);
+	mobDatas["spider"]				= MobData(	CharacterType.Spider,	10,		1,	0.5,		1.0,			1		);
 		
 	//
 	spellDatas[SpellType.LineOfFire] = SpellData(0.25f);
 	spellDatas[SpellType.ColdCircle] = SpellData(1.0f);
+	spellDatas[SpellType.FireTurret] = SpellData(2.0f);
 }

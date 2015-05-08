@@ -80,7 +80,7 @@ public class G : MonoBehaviour
         switch (objClass)
         {
             case EntityClass.Character: prefabPath += ((CharacterType)objType).ToString(); break;
-            case EntityClass.Inanimate: prefabPath += ((InanimateType)objType).ToString(); break;
+            case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
             case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
         }
         
@@ -100,18 +100,8 @@ public class G : MonoBehaviour
 
     unsafe static void PerformOpOnEntity(D.EntityHandle objHandle, EntityOperation op, void* args)
     {        
-        GameObject obj = entities[objHandle];
-        switch (objHandle.objClass)
-        {
-            case EntityClass.Character:
-                obj.GetComponent<CharacterGraphics>().DispatchOp(op, args);
-                break;
-
-            case EntityClass.Collectible:
-            case EntityClass.Inanimate:
-                obj.GetComponent<InanimateGraphics>().DispatchOp(op, args);
-                break;            
-        }       
+        GameObject obj = entities[objHandle];       
+        obj.GetComponent<EntityGraphics>().DispatchOp(op, args);                
     }
 
     static void ShowEffectOnTile(HexXY pos, EffectType effectType)

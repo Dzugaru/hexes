@@ -40,40 +40,29 @@ private:
 	void castIt()
 	{
 		launchTime = launchTimeLeft = data.spellDatas[type].launchTime;
-		startLaunchFiber();
+		startMainFiber();
 	}
 
-	static string emitFiberSwitch(string fiberType)() 
+	static string emitFiberSwitch() 
 	{
 		string code;
 		foreach(spellType; EnumMembers!SpellType)
 		{
 			immutable sst = to!string(spellType);			
-			immutable string fiberFunc = sst[0].toLower ~ sst[1..$] ~ fiberType;			
-			static if(__traits(compiles, mixin(fiberFunc ~ "()")))
-				code ~= q{case SpellType.} ~ sst ~ q{: startFiber(&} ~ fiberFunc ~ q{); break; } ~ "\n";
+			immutable string fiberFunc = sst[0].toLower ~ sst[1..$] ~ "Fiber";			
+			//static if(__traits(compiles, mixin(fiberFunc ~ "()")))
+			code ~= q{case SpellType.} ~ sst ~ q{: startFiber(&} ~ fiberFunc ~ q{); break; } ~ "\n";
 		}
 		return code;			
 	}
 
-	void startLaunchFiber()
-	{
-		pragma(msg, emitFiberSwitch!"LaunchFiber");
-
-		switch(type)
-		{
-			mixin(emitFiberSwitch!"LaunchFiber");
-			default: break;
-		}
-	}
-
 	void startMainFiber()
 	{
-		pragma(msg, emitFiberSwitch!"MainFiber");	
+		pragma(msg, emitFiberSwitch);	
 
 		switch(type)
 		{
-			mixin(emitFiberSwitch!"MainFiber");
+			mixin(emitFiberSwitch);
 			default: assert(false);
 		}		
 	}	
@@ -94,6 +83,8 @@ private:
 			return;
 		}
 
+		bool prevIsLaunched = isLaunched;
+
 		fiberedUpdate(dt);		
 
 		if(!isLaunched)
@@ -102,8 +93,7 @@ private:
 			if(launchTimeLeft == 0)
 			{
 				isLaunched = true;
-				(cast(SpellCaster)ent).spellFinishedCasting();
-				startMainFiber();
+				(cast(SpellCaster)ent).spellFinishedCasting();				
 			}
 		}
 		else
@@ -167,31 +157,68 @@ bool canCastByDistance(Entity ent, HexXY target, uint minDist, uint maxDist)
 	return dist >= minDist && dist <= maxDist && worldBlock.pfIsPassable(target);
 }
 
+bool fireTurretCanCast(Entity ent, HexXY target)
+{
+	return canCastByDistance(ent, target, 1, 1);
+}
+
+void fireTurretFiber()
+{
+	with(Spell.fibCtx)
+	{	
+		float damage = 5;
+		HexXY dir = target - ent.pos;		
+
+		Rune rune = Rune.allocate(RuneType.FRune);	
+		rune.power = 0;	
+		rune.spawn(target);			
+		scope(exit) rune.die();
+
+		while(!isLaunched)
+		{
+			mixin(fibYield);
+			rune.power = 1 - launchTimeLeft / launchTime;
+			rune.updateInterface();
+		}		
+
+		HexXY[3] damagePos;
+		damagePos[0] = target + dir;
+		damagePos[1] = (target + dir).rotLeft(target);
+		damagePos[2] = (target + dir).rotRight(target);
+
+		do
+		{			
+			foreach(j; 0 .. 3)
+			{
+				if(!worldBlock.pfIsPassable(damagePos[j])) continue;
+				interfacing.cb.showEffectOnTile(damagePos[j], EffectType.FireBlast);
+				damageEveryone(damagePos[j], damage);
+			}
+			rune.power -= 0.1f;
+			rune.updateInterface();
+			mixin(fibDelay!"0.5");
+		} while(rune.power > 0);			
+	}
+}
+
 bool lineOfFireCanCast(Entity ent, HexXY target)
 {
 	return canCastByDistance(ent, target, 1, 1);
 }	
 
-void lineOfFireMainFiber()
+void lineOfFireFiber()
 {
 	with(Spell.fibCtx)
 	{
+		while(!isLaunched) mixin(fibYield); //TODO: setting to show that launch phase is empty and there is no sense in context switch
+
 		float damage = 5;
 		HexXY dir = target - ent.pos;
 		foreach(i; 0 .. 5)
 		{
-			interfacing.cb.showEffectOnTile(target, EffectType.BlueBlast);							
+			interfacing.cb.showEffectOnTile(target, EffectType.FireBlast);							
 
-			foreach(ent; worldBlock.entityMap[target.x][target.y].els())				
-			{
-				HasHP hpEnt = cast(HasHP)ent;
-				if(hpEnt !is null)		
-				{				        
-					hpEnt.damage(damage);				
-					ent.performInterfaceOp(EntityOperation.Damage, &damage);
-					ent.updateInterfaceInfo();
-				}
-			}
+			damageEveryone(target, damage);
 
 			target += dir;
 
@@ -208,26 +235,19 @@ bool coldCircleCanCast(Entity ent, HexXY target)
 	return canCastByDistance(ent, target, 1, 1);
 }
 
-void coldCircleMainFiber()
+void coldCircleFiber()
 {	
 	with(Spell.fibCtx)
 	{
+		while(!isLaunched) mixin(fibYield);
+
 		float damage = 5;
 		HexXY dir = target - ent.pos;
 		foreach(i; 0 .. 5)
 		{
 			interfacing.cb.showEffectOnTile(target, EffectType.BlueBlast);							
 
-			foreach(ent; worldBlock.entityMap[target.x][target.y].els())				
-			{
-				HasHP hpEnt = cast(HasHP)ent;
-				if(hpEnt !is null)		
-				{				        
-				    hpEnt.damage(damage);				
-				    ent.performInterfaceOp(EntityOperation.Damage, &damage);
-					ent.updateInterfaceInfo();
-				}
-			}
+			damageEveryone(target, damage);
 
 			target += dir;
 
