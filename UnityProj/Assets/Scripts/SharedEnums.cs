@@ -1,6 +1,7 @@
 public enum TerrainCellType
 {
     Empty = 0,
+    DryGround,
 	Grass,
 	Snow	
 }
@@ -44,8 +45,20 @@ public enum InanimateType
 
 public enum RuneType
 {
-    CRune,
-    FRune,   
+    Chain,
+    CursorDraw,
+    CursorDupDraw,
+    CursorMove,
+    Fire,
+    Number2,
+    Number3,
+    Number4,
+    Number5,
+    Number6,
+    Number7,
+    SkillGem,
+    Stone,
+    Wind            
 }
 
 public enum CollectibleType

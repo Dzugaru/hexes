@@ -36,7 +36,7 @@ void startTheWorld()
 {
 	worldBlock = new WorldBlock(HexXY(0,0));
 	worldBlock.generate(BinaryNoiseFunc(Vector2(100, 200), 0.25f, 0.6f), 
-						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.4f));
+						BinaryNoiseFunc(Vector2(200, 100), 0.25f, 0.0f));
 
 	player = new Player();
 	HexXY p = HexXY(0,0);
@@ -197,7 +197,13 @@ align
 	int nonEmptyCellsCount;
 }
 
-	auto cellType(in HexXY p) const { return cellTypes[p.x][p.y]; }
+	auto cellType(in HexXY p) const 
+	{ 
+		if(p.x >= 0 && p.x < sz && p.y >= 0 && p.y < sz)
+			return cellTypes[p.x][p.y];
+		else
+			return TerrainCellType.Empty;
+	}
 	
 	//Entities
 	SLList!(Entity, Entity.wbAllEntitiesNext) entityList;
@@ -264,7 +270,7 @@ align
 					}
 					else
 					{
-						type = TerrainCellType.Grass;
+						type = TerrainCellType.DryGround;
 					}
 					++nonEmptyCellsCount;
 				}

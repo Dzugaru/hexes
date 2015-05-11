@@ -169,7 +169,7 @@ void fireTurretFiber()
 		float damage = 5;
 		HexXY dir = target - ent.pos;		
 
-		Rune rune = Rune.allocate(RuneType.FRune);	
+		Rune rune = Rune.allocate(RuneType.Fire);	
 		rune.power = 0;	
 		rune.spawn(target);			
 		scope(exit) rune.die();

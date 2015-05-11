@@ -12,7 +12,7 @@ import std.stdio;
 void start()
 {
 	rndGen.seed(1);
-	foreach(i; 0..50)
+	foreach(i; 0..2)
 	{
 
 		HexXY p;
@@ -33,6 +33,14 @@ void start()
 
 	auto gem = Collectible.allocate(CollectibleType.FireGem, 5);
 	gem.spawn(HexXY(2,2));	
+
+	auto rune = Rune.allocate(RuneType.SkillGem);
+	rune.power = 1;
+	rune.spawn(HexXY(1,1));
+
+	rune = Rune.allocate(RuneType.Wind);
+	rune.power = 1;
+	rune.spawn(HexXY(2,2));
 	
 
 	static void disco()
