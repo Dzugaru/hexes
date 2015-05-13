@@ -1,0 +1,231 @@
+fileFormatVersion: 2
+guid: ccdd116789bd42d4a9a68cf35c34888c
+timeCreated: 1431552152
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: run2_0
+    21300002: run2_1
+    21300004: run2_2
+    21300006: run2_3
+    21300008: run2_4
+    21300010: run2_5
+    21300012: run2_6
+    21300014: run2_7
+    21300016: run2_8
+    21300018: run2_9
+    21300020: run2_10
+    21300022: run2_11
+    21300024: run2_12
+    21300026: run2_13
+    21300028: run2_14
+    21300030: run2_15
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: .25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 8
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: run2_0
+      rect:
+        serializedVersion: 2
+        x: 339
+        y: 858
+        width: 81
+        height: 114
+      alignment: 9
+      pivot: {x: .0811948404, y: .499741405}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_1
+      rect:
+        serializedVersion: 2
+        x: 492
+        y: 867
+        width: 72
+        height: 71
+      alignment: 9
+      pivot: {x: .0716760457, y: .496897519}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_2
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 654
+        width: 72
+        height: 71
+      alignment: 9
+      pivot: {x: .930841863, y: .493527681}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_3
+      rect:
+        serializedVersion: 2
+        x: 285
+        y: 645
+        width: 81
+        height: 114
+      alignment: 9
+      pivot: {x: .931794703, y: .490102679}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_4
+      rect:
+        serializedVersion: 2
+        x: 496
+        y: 645
+        width: 27
+        height: 146
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_5
+      rect:
+        serializedVersion: 2
+        x: 628
+        y: 661
+        width: 95
+        height: 130
+      alignment: 9
+      pivot: {x: .629947066, y: .492695034}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_6
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 480
+        width: 94
+        height: 104
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_7
+      rect:
+        serializedVersion: 2
+        x: 325
+        y: 480
+        width: 101
+        height: 122
+      alignment: 9
+      pivot: {x: .52893275, y: .43213442}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_8
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 480
+        width: 108
+        height: 122
+      alignment: 9
+      pivot: {x: .436865926, y: .436126709}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_9
+      rect:
+        serializedVersion: 2
+        x: 686
+        y: 502
+        width: 109
+        height: 85
+      alignment: 9
+      pivot: {x: .392362535, y: .540258765}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_10
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 498
+        width: 116
+        height: 85
+      alignment: 9
+      pivot: {x: .441643029, y: .548668742}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_11
+      rect:
+        serializedVersion: 2
+        x: 702
+        y: 353
+        width: 119
+        height: 99
+      alignment: 9
+      pivot: {x: .424215376, y: .504140556}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_12
+      rect:
+        serializedVersion: 2
+        x: 895
+        y: 340
+        width: 120
+        height: 104
+      alignment: 9
+      pivot: {x: .404350281, y: .480291814}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_13
+      rect:
+        serializedVersion: 2
+        x: 511
+        y: 324
+        width: 139
+        height: 140
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_14
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 196
+        width: 94
+        height: 154
+      alignment: 9
+      pivot: {x: .517989933, y: .417493761}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: run2_15
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 186
+        width: 94
+        height: 154
+      alignment: 9
+      pivot: {x: .530347466, y: .416766077}
+      border: {x: 0, y: 0, z: 0, w: 0}
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

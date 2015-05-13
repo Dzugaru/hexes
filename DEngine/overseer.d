@@ -12,7 +12,7 @@ import std.stdio;
 void start()
 {
 	rndGen.seed(1);
-	foreach(i; 0..2)
+	foreach(i; 0..0)
 	{
 
 		HexXY p;
@@ -31,16 +31,16 @@ void start()
 	//auto mob = Mob.allocate(data.mobDatas["spider"]);
 	//mob.spawn(HexXY(2,2));
 
-	auto gem = Collectible.allocate(CollectibleType.FireGem, 5);
-	gem.spawn(HexXY(2,2));	
-
-	auto rune = Rune.allocate(RuneType.SkillGem);
-	rune.power = 1;
-	rune.spawn(HexXY(1,1));
-
-	rune = Rune.allocate(RuneType.Wind);
-	rune.power = 1;
-	rune.spawn(HexXY(2,2));
+	//auto gem = Collectible.allocate(CollectibleType.FireGem, 5);
+	//gem.spawn(HexXY(2,2));	
+	//
+	//auto rune = Rune.allocate(RuneType.SkillGem, 0);
+	//rune.power = 1;
+	//rune.spawn(HexXY(1,1));
+	//
+	//rune = Rune.allocate(RuneType.Wind,  0);
+	//rune.power = 1;
+	//rune.spawn(HexXY(2,2));
 	
 
 	static void disco()
@@ -79,7 +79,7 @@ unittest
 	foreach(i; 0 .. 1000)
 	{
 		engine.update(0.1f);
-		playerCast(HexXY(1,1));
+		//playerCast(HexXY(1,1));
 	}
 	
 }

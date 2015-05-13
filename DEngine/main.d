@@ -36,6 +36,10 @@ void main()
 
 	logger.logImpl = (msg) { writeln(msg); };
 
+	startTheWorld();
+	interfacing.playerDrawRune(RuneType.SkillGem, HexXY(1,0));
+	
+
 	//FiberLeakTest();
 
 	writeln("All ok!");
@@ -87,10 +91,10 @@ void FiberLeakTest()
 				
 			});
 		}
-		a.updateFibers(1);
+		a.fiberedUpdate(1);
 
 
-		a.deallocateRunningFibers();
+		a.fiberedDie();
 		a.deallocate();
 
 		//writeln("Freelist fibers: " ~ to!string(A.TFiber._flCount));

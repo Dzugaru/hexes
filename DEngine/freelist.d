@@ -4,10 +4,11 @@
 */
 
 module freelist;
-import std.stdio;
+
 import std.conv : to;
 import std.math;
-public import std.traits : hasMember, BaseClassesTuple;
+import std.traits : hasMember, BaseClassesTuple;
+public import std.stdio;
 
 debug bool writelnLog = false;
 

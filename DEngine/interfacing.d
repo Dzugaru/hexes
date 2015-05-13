@@ -203,6 +203,23 @@ extern(C) export void playerMove(HexXY p)
 	}		
 }
 
+extern(C) export void playerDrawOrEraseRune(RuneType type, HexXY p, bool isErase)
+{
+	try
+	{			
+		if(isErase)		
+			player.eraseRune(p);
+		else
+			player.drawRune(type, p);
+	}
+	catch(Throwable th)
+	{
+		log(format("Exception thrown: %s", th));
+		updatesDisabledDueToError = true;
+	}	
+}
+
+
 extern(C) export void playerCastSpell(SpellType type, HexXY p)
 {
 	try

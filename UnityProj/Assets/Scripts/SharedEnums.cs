@@ -45,20 +45,40 @@ public enum InanimateType
 
 public enum RuneType
 {
-    Chain,
-    CursorDraw,
-    CursorDupDraw,
-    CursorMove,
-    Fire,
+    Compile,
+
+    Arrow0,
+    ArrowCross,
+    ArrowL60,
+    ArrowL120,
+    ArrowR60,
+    ArrowR120,
+    
+    Avatar,
+    AvatarWalkDir,
+    AvatarWalkDirDraw,
+    AvatarForward,
+    AvatarForwardDraw,
+    AvatarForwardDupDraw,
+    AvatarLeft,
+    AvatarRight, 
+   
+    If,
+    PredicateAvatarRef,
+    PredicateTileEmpty,
+    PredicateTileWall,
+    PredicateTileMonster,
+
+    Flame,
+    Stone,
+    Wind,
+
     Number2,
     Number3,
     Number4,
     Number5,
     Number6,
-    Number7,
-    SkillGem,
-    Stone,
-    Wind            
+    Number7,    
 }
 
 public enum CollectibleType

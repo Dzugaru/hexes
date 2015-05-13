@@ -21,6 +21,7 @@ public import enums;
 public import freelist;
 public import fibers;
 public import spells;
+public import runes;
 
 /***************************************************************************************************
 * Sandbox
@@ -59,7 +60,7 @@ void update(float dt)
 	fibers.updateFree(dt);
 	spells.update(dt);	
 
-	stopOrResumeTime();
+	//stopOrResumeTime();
 }
 
 bool isTimeStopped = false;
@@ -86,8 +87,8 @@ nothrow
 @nogc
 {
 	static immutable Vector2 ex = Vector2(sqrt(3f) * 0.5f, 0.5f);
-	static immutable Vector2 ey = Vector2(-sqrt(3f) * 0.5f, 0.5f);
-	static immutable HexXY[6] neighbours = [HexXY(1,0), HexXY(1,1), HexXY(0,1), HexXY(-1,0), HexXY(-1,-1), HexXY(0,-1)];
+	static immutable Vector2 ey = Vector2(-sqrt(3f) * 0.5f, 0.5f);	
+	static immutable HexXY[] dirs = [HexXY(1,1), HexXY(1,0), HexXY(0,-1), HexXY(-1,-1), HexXY(-1,0), HexXY(0,1)];
 
 align {	int x, y; }
 
@@ -320,7 +321,7 @@ HexXY[] findPath(in HexXY from, in HexXY to, HexXY[] pathStorage, in uint blocke
 		}
 	}
 
-	static immutable Step[6] steps = [Step(1,0,3), Step(1,1,4), Step(0,1,5), Step(-1,0,0), Step(-1,-1,1), Step(0,-1,2)];
+	static immutable Step[] steps = [Step(1,0,3), Step(1,1,4), Step(0,1,5), Step(-1,0,0), Step(-1,-1,1), Step(0,-1,2)];
 
 	static struct XYCost
 	{ 
@@ -525,11 +526,7 @@ mixin template _ComponentsEventHandlers()
 	{
 		static if(isAssignable!(HasHP, typeof(this)))
 		{
-			static struct Info
-			{
-			align:
-				float currentHP, maxHP;
-			}
+			static struct Info { align: float currentHP, maxHP;	}
 			auto info = Info(this.currentHP, this.maxHP);
 			performInterfaceOp(EntityOperation.UpdateInfo, &info);
 		}		
@@ -848,6 +845,20 @@ class Player : Entity, CanWalk, SpellCaster
 			castingSpell = spells.castSpell(this, type, p);
 		return isSuccess;		
 	}
+
+	bool drawRune(RuneType type, HexXY p)
+	{
+		bool isSuccess = !isWalking && canDrawRune(this, type, p);
+		if(isSuccess) runes.drawRune(this, type, p);
+		return isSuccess;
+	}
+
+	bool eraseRune(HexXY p)
+	{
+		bool isSuccess = !isWalking && canEraseRune(this, p);
+		if(isSuccess) runes.eraseRune(p);
+		return isSuccess;
+	}
 }
 
 class Inanimate : Entity
@@ -887,30 +898,4 @@ class Collectible : Inanimate
 	}
 }
 
-class Rune : Inanimate
-{
-	mixin Freelist;
-	mixin _ComponentsEventHandlers;
 
-	float power;
-
-	void construct(RuneType type)
-	{		
-		Entity.construct(EntityClass.Rune, type);
-	}
-
-	override void spawn(HexXY p)
-	{
-		Entity.spawn(p);		
-	}
-
-	override void die()
-	{
-		Entity.die();		
-	}
-
-	override void updateInterface()
-	{	
-		performInterfaceOp(EntityOperation.UpdateInfo, &power);
-	}
-}

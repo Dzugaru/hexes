@@ -110,7 +110,11 @@ if(is(T == class))
 
 			}
 			return result;
-		}	
+		}
+
+		@property T front() { return c; }
+		void popFront() { c = mixin(q{c.} ~ next); }
+		@property bool empty() { return c is null; }
 	}
 }
 

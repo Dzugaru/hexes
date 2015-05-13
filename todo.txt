@@ -12,6 +12,7 @@ GAMEPLAY
 IDEAS:
 - Light spheres (of different colors?) drifting above give magic power - (same - near tree - tree magic, near stone - stone magic,
 after some uses tree withers)
+- Darken cell with rune, so it's ok visible
 
 
 

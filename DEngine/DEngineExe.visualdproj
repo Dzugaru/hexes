@@ -14,7 +14,7 @@
   <verbose>0</verbose>
   <vtls>0</vtls>
   <vgc>0</vgc>
-  <symdebug>2</symdebug>
+  <symdebug>1</symdebug>
   <optimize>0</optimize>
   <cpu>0</cpu>
   <isX86_64>0</isX86_64>
@@ -418,6 +418,7 @@
   <File path="math.d" />
   <File path="noise.d" />
   <File path="overseer.d" />
+  <File path="runes.d" />
   <File path="spells.d" />
   <File path="utils.d" />
  </Folder>
