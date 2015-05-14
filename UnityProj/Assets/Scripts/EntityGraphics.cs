@@ -9,39 +9,17 @@ using System.Runtime.InteropServices;
 public abstract class EntityGraphics : MonoBehaviour
 {
     [HideInInspector]
-    public int entityType;
+    public uint entityType;
 
     [HideInInspector]
-    public D.EntityHandle entityHandle;
+    public Interfacing.EntityHandle entityHandle;  
 
-    [StructLayout(LayoutKind.Sequential)]
-    protected struct MoveArgs
-    {
-        public HexXY pos;
-        public float timeToGetThere;
-    }
-
-    unsafe public void DispatchOp(EntityOperation op, void* args)
-    {
-        //Debug.Log(op);
-        switch (op)
-        {
-            case EntityOperation.Spawn: Spawn(*(HexXY*)args); break;
-            case EntityOperation.Move: Move(*(MoveArgs*)args); break;
-            case EntityOperation.Stop: Stop(*(HexXY*)args); break;
-            case EntityOperation.Attack: Attack(*(HexXY*)args); break;
-            case EntityOperation.Damage: Damage(*(float*)args); break;
-            case EntityOperation.UpdateInfo: UpdateInfo(args); break;
-            case EntityOperation.Die: Die(); break;
-        }
-    }
-
-    protected virtual void Spawn(HexXY p) { }
-    protected virtual void Move(MoveArgs args) { }
-    protected virtual void Stop(HexXY p) { }
-    protected virtual void Attack(HexXY p) { }
-    protected virtual void Damage(float dmg) { }
-    unsafe protected virtual void UpdateInfo(void* args) { }
-    protected virtual void Die() { }
+    public virtual void Spawn(HexXY p) { }
+    public virtual void Move(HexXY pos, float timeToGetThere) { }
+    public virtual void Stop(HexXY p) { }
+    public virtual void Attack(HexXY p) { }
+    public virtual void Damage(float dmg) { }
+    public virtual void Die() { }
+    public virtual void UpdateHP(float currentHP, float maxHP) { }
 }
 

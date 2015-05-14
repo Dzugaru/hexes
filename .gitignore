@@ -28,5 +28,6 @@ sysinfo.txt
 DEngine/Debug/
 **/bin/Debug/
 **/Release/
+**/Unittest/
 trace.def
 *.dll_cv

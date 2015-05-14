@@ -1,6 +1,7 @@
 module runes;
 import engine;
 import std.algorithm;
+import std.container.dlist;
 
 class Rune : Inanimate
 {
@@ -32,13 +33,6 @@ class Rune : Inanimate
 		auto info = Info(power, dir);
 		performInterfaceOp(EntityOperation.UpdateInfo, &info);
 	}
-}
-
-class CompiledRune
-{
-	RuneType type;
-	uint dir;
-	CompiledRune[6] neighs;
 }
 
 bool canDrawRune(Entity ent, RuneType rune, HexXY pos)
@@ -75,4 +69,28 @@ void eraseRune(HexXY pos)
 	auto entList = worldBlock.entityMap[pos.x][pos.y];
 	auto rune = entList.els().find!(el => cast(Rune)el !is null).front;
 	rune.die();
+}
+
+
+/*****************************************************
+* Spell Compilation
+*/
+class CompiledRune
+{
+	RuneType type;
+	HexXY relPos;
+	uint dir;
+	CompiledRune[6] neighs;
+}
+
+
+void compileSpell(Rune compileRune, HexXY compileRunePos)
+{	
+	auto frontRunes = DList!CompileRune;
+	frontRunes.insertBack(compileRune);
+
+	//do
+	//{
+	//
+	//}while(frontRunes.c
 }

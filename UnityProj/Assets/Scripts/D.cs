@@ -63,9 +63,6 @@ public unsafe class D : MonoBehaviour
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void BoolToVoid(bool b);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate GUI.GUIData TGetGuiData();
-
 
     public struct EntityHandle
     {
@@ -87,8 +84,7 @@ public unsafe class D : MonoBehaviour
     public static VoidToPtr queryWorld;    
     public static HexXYToVoid playerMove;
     public static TPlayerCastSpell playerCastSpell;
-    public static TPlayerDrawOrEraseRune playerDrawOrEraseRune;
-    public static TGetGuiData getGuiData;
+    public static TPlayerDrawOrEraseRune playerDrawOrEraseRune;    
 
 
     public static IntPtr GetCallbackPointer(Delegate d)

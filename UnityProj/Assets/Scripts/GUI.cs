@@ -2,15 +2,7 @@
 using System.Collections.Generic;
 
 public class GUI : MonoBehaviour
-{
-    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public struct GUIData
-    {
-        public float cooldownBarValue;
-        public int fireGemsCount;
-    }
-
-    GUIData guiData;
+{   
     Canvas canvas;
     
 
@@ -65,7 +57,7 @@ public class GUI : MonoBehaviour
 
                     var rect = bar.GetComponent<RectTransform>();
                     rect.anchoredPosition = new Vector3(screenBarPosition.x - hpBarsWidth * 0.5f, screenBarPosition.y - Screen.height, -1);
-                    rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (eg.info.currentHP / eg.info.maxHP) * hpBarsWidth);
+                    rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (eg.currentHP / eg.maxHP) * hpBarsWidth);
 
                     ++barIdx;
                 }
@@ -85,11 +77,10 @@ public class GUI : MonoBehaviour
             hpBars.Clear();
         }
         #endregion
+       
+        cooldown.SetActive(Engine.GUIData.cooldownBarValue != 0);
+        cooldown.GetComponent<UnityEngine.UI.Slider>().value = Engine.GUIData.cooldownBarValue;
 
-        guiData = D.getGuiData();
-        cooldown.SetActive(guiData.cooldownBarValue != 0);
-        cooldown.GetComponent<UnityEngine.UI.Slider>().value = guiData.cooldownBarValue;
-
-        gemCounts[0].GetComponent<UnityEngine.UI.Text>().text = guiData.fireGemsCount.ToString();
+        gemCounts[0].GetComponent<UnityEngine.UI.Text>().text = Engine.GUIData.fireGemsCount.ToString();
     }
 }

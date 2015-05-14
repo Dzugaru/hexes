@@ -286,11 +286,11 @@ align
 
 		pfCalcStaticBlocking();
 
-		log(format("Block generated: %d non-empty cells", nonEmptyCellsCount));
-		foreach(i, c; cellTypeCounts)
-		{
-		    log(format("%s %d", to!string(cast(TerrainCellType)i), c));
-		}
+		//log(format("Block generated: %d non-empty cells", nonEmptyCellsCount));
+		//foreach(i, c; cellTypeCounts)
+		//{
+		//    log(format("%s %d", to!string(cast(TerrainCellType)i), c));
+		//}
 	}
 	void generateSolidFirstType()
 	{
@@ -599,7 +599,7 @@ mixin template _CanWalk(uint maxPathLen)
 		if(distToNextTile > 0.5)
 			pos = prevTile;
 		else
-			pos = path[0];
+			pos = nextTile;
 
 		if(onTileCenter)
 		{

@@ -65,16 +65,16 @@ class PlayerInput : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
         {
-            D.playerMove(getMouseOverTile());
+            Engine.Engine.PlayerMove(getMouseOverTile());
         }
 
 
         foreach (var kvp in runeKeys)        
             if (Input.GetKeyDown(kvp.Key))
-                D.playerDrawOrEraseRune(kvp.Value, getMouseOverTile(), false);
+                Engine.Engine.PlayerDrawRune(kvp.Value, getMouseOverTile());
 
         if (Input.GetKeyDown(KeyCode.Space))
-            D.playerDrawOrEraseRune(RuneType.Arrow0, getMouseOverTile(), true);
+            Engine.Engine.PlayerEraseRune(getMouseOverTile());
         
             
 

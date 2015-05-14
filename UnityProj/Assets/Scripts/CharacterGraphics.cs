@@ -43,14 +43,10 @@ class CharacterGraphics : EntityGraphics
     bool isflashHighlightAnimationRunning;
 
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Info
-    {
-        public float currentHP;
-        public float maxHP;
-    }
-
-    public Info info;
+   
+    public float currentHP;
+    public float maxHP;
+   
 
     public static List<CharacterGraphics> activeCharacters = new List<CharacterGraphics>();
 
@@ -75,7 +71,7 @@ class CharacterGraphics : EntityGraphics
         }
     }
 
-    protected override void Spawn(HexXY pos)
+    public override void Spawn(HexXY pos)
     {
         //if(entityHandle.idx == 7) Debug.Log(entityHandle + " spawn " + pos);
         Vector2 planeCoord = pos.ToPlaneCoordinates();
@@ -90,14 +86,14 @@ class CharacterGraphics : EntityGraphics
         activeCharacters.Add(this);
     }
 
-    protected override void Move(MoveArgs args)
+    public override void Move(HexXY pos, float timeToGetThere)
     {
         //Debug.Log(entityHandle + " move " + args.pos);      
         state = State.Walk;
-        Vector2 dest = args.pos.ToPlaneCoordinates();
+        Vector2 dest = pos.ToPlaneCoordinates();
         walkDest = dest;
         float dist = (new Vector2(transform.position.x, transform.position.z) - dest).magnitude;
-        walkSpeed = dist / args.timeToGetThere;
+        walkSpeed = dist / timeToGetThere;
         walkDir = (new Vector3(walkDest.x, 0, walkDest.y) - transform.position).normalized;
         RotateTo(walkDir);
 
@@ -105,7 +101,7 @@ class CharacterGraphics : EntityGraphics
         else if(animationsType == AnimationsType.Mecanim) mecanimAnimator.SetBool("IsWalking", true);
     }
 
-    protected override void Stop(HexXY pos)
+    public override void Stop(HexXY pos)
     {
         //Debug.Log(entityHandle + " stop " + walkDest);
         state = State.Stand;
@@ -116,7 +112,7 @@ class CharacterGraphics : EntityGraphics
         else if (animationsType == AnimationsType.Mecanim) mecanimAnimator.SetBool("IsWalking", false);
     }
 
-    protected override void Attack(HexXY pos)
+    public override void Attack(HexXY pos)
     {        
         if (attackCor != null)        
             StopCoroutine(attackCor);
@@ -124,17 +120,18 @@ class CharacterGraphics : EntityGraphics
         attackCor = StartCoroutine(CorAttack(pos));
     }
 
-    protected override void Damage(float dmg)
+    public override void Damage(float dmg)
     {        
         AnimateFlashHighlight(Color.white, 0.15f, 0.5f);
     }
 
-    unsafe protected override void UpdateInfo(void* args)
+    public override void UpdateHP(float currentHP, float maxHP)
     {
-        this.info = *(Info*)args;
+        this.currentHP = currentHP;
+        this.maxHP = maxHP;
     }
 
-    protected override void Die()
+    public override void Die()
     {
         Destroy(gameObject);
         activeCharacters.Remove(this);

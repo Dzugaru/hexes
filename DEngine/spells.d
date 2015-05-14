@@ -58,7 +58,7 @@ private:
 
 	void startMainFiber()
 	{
-		pragma(msg, emitFiberSwitch);	
+		//pragma(msg, emitFiberSwitch);	
 
 		switch(type)
 		{

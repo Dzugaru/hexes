@@ -37,7 +37,7 @@ void main()
 	logger.logImpl = (msg) { writeln(msg); };
 
 	startTheWorld();
-	interfacing.playerDrawRune(RuneType.SkillGem, HexXY(1,0));
+	interfacing.playerDrawOrEraseRune(RuneType.Compile, HexXY(1,0), false);
 	
 
 	//FiberLeakTest();
