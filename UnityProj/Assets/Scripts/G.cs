@@ -3,6 +3,7 @@ using UnityEngine;
 using Engine;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.IO;
 
 public class G : MonoBehaviour
 {    
@@ -40,7 +41,7 @@ public class G : MonoBehaviour
 
         g = this;
 
-        Engine.Logger.LogAction = msg => Debug.Log(msg);
+        Logger.LogAction = msg => Debug.Log(msg);
 
         Interfacing.CreateEntity = CreateEntity;
         Interfacing.PerformInterfaceAttack = PerformInterfaceAttack;
@@ -53,12 +54,21 @@ public class G : MonoBehaviour
         Interfacing.PerformInterfaceUpdateHP = PerformInterfaceUpdateHP;
         Interfacing.PerformInterfaceUpdateRune = PerformInterfaceUpdateRune;
 
-        Engine.Engine.Start();
+        E.Start();
 
 
         GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);        
         ht.name = "Terrain";       
         ht.GetComponent<HexTerrain>().Generate(WorldBlock.S);
+
+        //DEBUG load saved spell
+        string spellFilePath = Path.Combine(Application.persistentDataPath, "spell");
+        if (File.Exists(spellFilePath))
+        {
+            //Debug.Log(spellFilePath);
+            using (var writer = new BinaryReader(File.OpenRead(spellFilePath)))
+                E.player.currentSpell = Spell.Load(writer);
+        }
     }
 
     void Update()
@@ -67,8 +77,8 @@ public class G : MonoBehaviour
             Time.timeScale = timeStopMultiplier;        
         else        
             Time.timeScale = 1;
-                        
-        Engine.Engine.Update(Time.deltaTime);
+
+        E.Update(Time.deltaTime);
     }
 
     static Interfacing.EntityHandle CreateEntity(EntityClass objClass, uint objType)

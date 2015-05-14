@@ -27,23 +27,23 @@ namespace Engine
             if (!isAttacking)
             {
                 //Simple walk to player
-                if (!walker.dest.HasValue || walker.dest != Engine.player.pos)
+                if (!walker.dest.HasValue || walker.dest != E.player.pos)
                 {
-                    walker.SetDest(Engine.player.pos, 0, true);
+                    walker.SetDest(E.player.pos, 0, true);
                 }
 
                 //Is we're blocked for some time try to find a way around other mobs	
                 if (walker.isWalkBlocked && walker.walkBlockedTime > 0.5f) //TODO: random time?
                 {
                     //log(format("%s %f", isWalkBlocked, walkBlockedTime));
-                    walker.SetDest(Engine.player.pos, 10, true);
+                    walker.SetDest(E.player.pos, 10, true);
                 }
 
                 //Attack
-                if (!walker.isWalking && HexXY.Dist(pos, Engine.player.pos) == 1)
+                if (!walker.isWalking && HexXY.Dist(pos, E.player.pos) == 1)
                 {
                     isAttacking = true;
-                    Interfacing.PerformInterfaceAttack(entityHandle, Engine.player.pos);
+                    Interfacing.PerformInterfaceAttack(entityHandle, E.player.pos);
                     fibered.StartFiber(AttackFiber());                    
                 }
             }
@@ -53,13 +53,13 @@ namespace Engine
 
         IEnumerator<float> AttackFiber()
         {
-            var oldPlayerPos = Engine.player.pos;
+            var oldPlayerPos = E.player.pos;
             yield return attackDmgAppDelay;
-            if (Engine.player.pos == oldPlayerPos)
+            if (E.player.pos == oldPlayerPos)
             {
                 //Apply dmg						
                 float dmg = attackDamage;
-                Interfacing.PerformInterfaceDamage(Engine.player.entityHandle, dmg);                
+                Interfacing.PerformInterfaceDamage(E.player.entityHandle, dmg);                
                 //TODO: refresh bar including new dot speed? (same with dotheal)
             }
 

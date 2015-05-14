@@ -31,7 +31,7 @@ namespace Engine
         public static bool CanErase(Entity ent, HexXY pos)
         {
             return
-                HexXY.Dist(ent.pos, pos) <= 1 &&
+                //HexXY.Dist(ent.pos, pos) <= 1 && //DEBUG
                 WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is Rune);
         }
 
@@ -54,6 +54,6 @@ namespace Engine
             var entList = WorldBlock.S.entityMap[pos.x, pos.y];
             var rune = entList.First(e => e is Rune);
             rune.Die();
-        }
+        }        
     }
 }

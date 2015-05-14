@@ -2,6 +2,7 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using System.IO;
 
 class PlayerInput : MonoBehaviour
 {
@@ -63,20 +64,35 @@ class PlayerInput : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1))
         {
-            Engine.Engine.PlayerMove(getMouseOverTile());
+            E.PlayerMove(getMouseOverTile());
         }
 
 
         foreach (var kvp in runeKeys)        
             if (Input.GetKeyDown(kvp.Key))
-                Engine.Engine.PlayerDrawRune(kvp.Value, getMouseOverTile());
+                E.PlayerDrawRune(kvp.Value, getMouseOverTile());
 
         if (Input.GetKeyDown(KeyCode.Space))
-            Engine.Engine.PlayerEraseRune(getMouseOverTile());
-        
-            
+            E.PlayerEraseRune(getMouseOverTile());
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            if (E.PlayerCompileSpell(getMouseOverTile()))
+            {
+                //DEBUG save it
+                using (var writer = new BinaryWriter(File.OpenWrite(Path.Combine(Application.persistentDataPath, "spell"))))
+                    E.player.currentSpell.Save(writer);
+            }
+        }
+
+        if (Input.GetMouseButtonDown(0))
+            E.PlayerCastSpell(getMouseOverTile());
+
+        //DEBUG redraw spell
+        if (Input.GetKeyDown(KeyCode.Backslash) && E.player.currentSpell != null)            
+            E.player.currentSpell.RedrawOnGround(E.player.currentSpell.root, E.player.pos);
 
         //if (Input.GetKeyDown(KeyCode.Space))
         //{

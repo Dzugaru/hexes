@@ -6,7 +6,9 @@ using System.Text;
 namespace Engine
 {
     public class Player : Entity, IWalker
-    {       
+    {
+        public Spell currentSpell;
+
         //Spell castingSpell;
         //void spellFinishedCasting()
         //{
@@ -18,11 +20,14 @@ namespace Engine
 	    public Player()
 	    {
 		    base.Construct(EntityClass.Character, (uint)CharacterType.Player);
-            walker.SetSpeed(2);
+            walker.SetSpeed(5);
         }
 
         public override void Update(float dt)
         {
+            if (currentSpell != null && currentSpell.isRunning)            
+                currentSpell.Update(dt);            
+
             //Collectible gather
             if (walker.isWalkBlocked)
             {
@@ -54,9 +59,26 @@ namespace Engine
         {
             bool isSuccess = !walker.isWalking && Rune.CanErase(this, p);
             if (isSuccess) Rune.EraseRune(p);
-            return isSuccess;
-            
+            return isSuccess;            
         }
+
+        public bool CompileSpell(HexXY p)
+        {
+            Rune compileRune =                                
+                (Rune)WorldBlock.S.entityMap[p.x, p.y].FirstOrDefault(e => e is Rune && (RuneType)e.entityType == RuneType.Compile);
+
+            bool isSuccess = (currentSpell == null || !currentSpell.isRunning) && compileRune != null ;
+            if (isSuccess) currentSpell = Spell.CompileSpell(compileRune, p);            
+            return isSuccess;
+        }
+
+        public bool CastCurrentSpell(HexXY p)
+        {
+            bool isSuccess = currentSpell != null && !currentSpell.isRunning && HexXY.Dist(pos, p) == 1;
+            if (isSuccess) currentSpell.Cast(this, (uint)HexXY.neighbours.IndexOf(p - pos));
+            return isSuccess;            
+        }       
     } 
 }
+
 
