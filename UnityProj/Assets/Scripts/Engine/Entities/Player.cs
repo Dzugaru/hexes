@@ -24,10 +24,7 @@ namespace Engine
         }
 
         public override void Update(float dt)
-        {
-            if (currentSpell != null && currentSpell.isRunning)            
-                currentSpell.Update(dt);            
-
+        {           
             //Collectible gather
             if (walker.isWalkBlocked)
             {
@@ -67,14 +64,14 @@ namespace Engine
             Rune compileRune =                                
                 (Rune)WorldBlock.S.entityMap[p.x, p.y].FirstOrDefault(e => e is Rune && (RuneType)e.entityType == RuneType.Compile);
 
-            bool isSuccess = (currentSpell == null || !currentSpell.isRunning) && compileRune != null ;
+            bool isSuccess = compileRune != null ;
             if (isSuccess) currentSpell = Spell.CompileSpell(compileRune, p);            
             return isSuccess;
         }
 
         public bool CastCurrentSpell(HexXY p)
         {
-            bool isSuccess = currentSpell != null && !currentSpell.isRunning && HexXY.Dist(pos, p) == 1;
+            bool isSuccess = currentSpell != null && HexXY.Dist(pos, p) == 1;
             if (isSuccess) currentSpell.Cast(this, (uint)HexXY.neighbours.IndexOf(p - pos));
             return isSuccess;            
         }       

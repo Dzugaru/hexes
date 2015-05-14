@@ -10,9 +10,6 @@ namespace Engine
     {
         public CompiledRune root;
         public List<CompiledRune> allRunes = new List<CompiledRune>();
-        public List<Avatar> avatars = new List<Avatar>();
-
-        public bool isRunning = false;
 
         public class CompiledRune
         {            
@@ -39,31 +36,34 @@ namespace Engine
 
         public void Cast(Entity ent, uint dir)
         {
-            Avatar avatar = new Avatar(this, 0, ent.pos, dir, root);
-            avatars.Add(avatar);
-            isRunning = true;
+            var spEx = new SpellExecuting(ent, this, ent.pos, dir);
+            spEx.SpawnAvatar(root, new HexXY(0,0), dir, null, false);
+            executingSpells.Add(spEx);
         }
 
-        public void Update(float dt)
+
+        static List<SpellExecuting> executingSpells = new List<SpellExecuting>();
+        public static void Update(float dt)
         {
-            for (int i = 0; i < avatars.Count; i++)
+            for (int i = 0; i < executingSpells.Count; i++)
             {
-                var av = avatars[i];
-                av.timeLeft -= dt;
-                if (av.timeLeft > 0) continue;
-                av.Interpret();
-                if (av.error != null)                
-                    avatars.RemoveAt(i--);                
-            }
-
-            if (avatars.Count == 0)            
-                isRunning = false;
+                var exSp = executingSpells[i];
+                if (!exSp.isExecuting)
+                    executingSpells.RemoveAt(i--);
+                else
+                    exSp.Update(dt);
+            }            
         }
+        
 
         static Queue<CompiledRune> compilationFront = new Queue<CompiledRune>();
-
+        static CompiledRune[,] compilationMap = new CompiledRune[WorldBlock.sz, WorldBlock.sz];
         public static Spell CompileSpell(Rune compileRune, HexXY compileRunePos)
         {
+            for (int x = 0; x < WorldBlock.sz; x++)
+                for (int y = 0; y < WorldBlock.sz; y++)
+                    compilationMap[x, y] = null;
+
             Spell spell = new Spell();
 
             HexXY refPos = compileRunePos;
@@ -72,37 +72,36 @@ namespace Engine
 
             compilationFront.Clear();
             compilationFront.Enqueue(spell.root);
-
-            ++WorldBlock.S.pfExpandMarker;
-            WorldBlock.S.pfExpandMap[compileRunePos.x, compileRunePos.y] = WorldBlock.S.pfExpandMarker;
+            compilationMap[compileRunePos.x, compileRunePos.y] = spell.root;         
 
             CompiledRune c;            
 
             do
             {
-                c = compilationFront.Dequeue();                
+                c = compilationFront.Dequeue();
 
-                for(int i = 0; i < 6; i++)
+                for (int i = 0; i < 6; i++)
                 {
                     var d = HexXY.neighbours[i];
                     var np = refPos + c.relPos + d;
-                    if (WorldBlock.S.pfExpandMap[np.x, np.y] < WorldBlock.S.pfExpandMarker)
-                    {
-                        Rune rune = (Rune)WorldBlock.S.entityMap[np.x, np.y].FirstOrDefault(ent => ent is Rune);
-                        if (rune == null) continue;
+                    Rune rune = (Rune)WorldBlock.S.entityMap[np.x, np.y].FirstOrDefault(ent => ent is Rune);
+                    if (rune == null) continue;
 
-                        WorldBlock.S.pfExpandMap[np.x, np.y] = WorldBlock.S.pfExpandMarker;
-                                                
-                        var nrune = new CompiledRune((RuneType)rune.entityType, c.relPos + d, rune.dir, (uint)spell.allRunes.Count);
-                        spell.allRunes.Add(nrune);
+                    var nrune = compilationMap[np.x, np.y];
+                    if (nrune != null)
+                    {                        
                         int reverseIdx = (i + 3) % 6;
-
                         c.neighs[i] = nrune;
-                        c.neighsListIdxs[i] = (int)nrune.listIdx;                        
+                        c.neighsListIdxs[i] = (int)nrune.listIdx;
                         nrune.neighs[reverseIdx] = c;
                         nrune.neighsListIdxs[reverseIdx] = (int)c.listIdx;
-
-                        compilationFront.Enqueue(nrune);                        
+                    }
+                    else
+                    {
+                        nrune = new CompiledRune((RuneType)rune.entityType, c.relPos + d, rune.dir, (uint)spell.allRunes.Count);
+                        spell.allRunes.Add(nrune);
+                        compilationFront.Enqueue(nrune);
+                        compilationMap[np.x, np.y] = nrune;
                     }
                 }
             } while (compilationFront.Count > 0);

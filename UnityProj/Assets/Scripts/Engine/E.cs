@@ -25,8 +25,9 @@ namespace Engine
         public static void Update(float dt)
         {
             foreach (var ent in WorldBlock.S.entityList)            
-                ent.Update(dt);            
+                ent.Update(dt);
 
+            Spell.Update(dt);
             //Overseer.Update();
         }
 
