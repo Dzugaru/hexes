@@ -11,6 +11,8 @@ public class Flame : MonoBehaviour
     float origCoreSpeed, origCinderEmitRate;
     Color origTint;
 
+    public float lightIntensity = 2.5f;
+    public float lightFlickerPart = 0.2f;
     public FloatVariable power = new FloatVariable(1);
 
 	void OnEnable()
@@ -30,8 +32,8 @@ public class Flame : MonoBehaviour
 	
 	
 	void Update()
-    {
-        light.intensity = Random.Range(0.5f, 0.9f);
+    {        
+        light.intensity = Mathf.Lerp(0.1f, 1f, power.value) * Random.Range(lightIntensity - lightIntensity * lightFlickerPart, lightIntensity);
 
         if (power.isNew)
         {

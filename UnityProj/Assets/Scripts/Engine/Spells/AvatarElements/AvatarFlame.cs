@@ -30,8 +30,11 @@ namespace Engine
             }
         }
 
+        //TODO: manage it by stack logic in SpellEffect!
         void SpawnFlameIfNotPresent(HexXY pos)
         {
+            if (pos == avatar.spell.refPos) return; //Don't kill the caster, lol
+
             bool isSomeEffectPresent = WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is SpellEffect);
             if (isSomeEffectPresent) return;
 

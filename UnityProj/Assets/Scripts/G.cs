@@ -12,7 +12,7 @@ public class G : MonoBehaviour
     public GameObject hexTerrainPrefab;
 
     //Some settings
-    public float hexInset = 0.9f;
+    public float hexInset = 0.975f;
     public float terrainTexScale = 0.1f;
     public float terrainFullness = 0.75f;
     public float terrainSnowiness = 0.1f;

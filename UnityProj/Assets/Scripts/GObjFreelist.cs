@@ -6,7 +6,7 @@ class GObjFreelist : MonoBehaviour
 {
     public static GObjFreelist I { get; private set; }
 
-    Dictionary<string, List<GameObject>> listsByPrefabName = new Dictionary<string, List<GameObject>>();
+    Dictionary<string, Stack<GameObject>> listsByPrefabName = new Dictionary<string, Stack<GameObject>>();
 
     public GObjFreelist()
     {
@@ -15,18 +15,17 @@ class GObjFreelist : MonoBehaviour
 
     public GameObject Get(string prefabName)
     {
-        List<GameObject> list = null;
+        Stack<GameObject> list = null;
         if(!listsByPrefabName.TryGetValue(prefabName, out list))
         {
-            list = new List<GameObject>();
+            list = new Stack<GameObject>();
             listsByPrefabName.Add(prefabName, list);
         }
 
         GameObject obj;
         if (list.Count > 0)
         {
-            obj = list[list.Count - 1];
-            list.RemoveAt(list.Count - 1);            
+            obj = list.Pop();            
             obj.transform.SetParent(null, false);
         }
         else
@@ -39,8 +38,8 @@ class GObjFreelist : MonoBehaviour
 
     public void Put(GameObject obj, string prefabName)
     {
-        List<GameObject> list = listsByPrefabName[prefabName];
-        list.Add(obj);        
+        Stack<GameObject> list = listsByPrefabName[prefabName];
+        list.Push(obj);        
         obj.transform.SetParent(transform, false);
     }
 }
