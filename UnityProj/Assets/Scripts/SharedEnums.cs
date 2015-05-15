@@ -45,16 +45,15 @@ public enum InanimateType
 
 public enum RuneType
 {
-    Compile = 0,
+    Nop = 0,
 
     Arrow0 = 1,
     ArrowCross = 2,
     ArrowL60 = 3,
     ArrowL120 = 4,
     ArrowR60 = 5,
-    ArrowR120 = 6,
+    ArrowR120 = 6,    
     
-    Avatar = 100,
     AvatarWalkDir = 101,
     AvatarWalkDirDraw = 102,
     AvatarForward = 103,

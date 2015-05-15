@@ -5,7 +5,8 @@ using System.Text;
 
 namespace Engine
 {
-    public class AvatarWind : IAvatarBehavior
+    public interface IAvatarElement
     {
+        IAvatarElement Clone();
     }
 }

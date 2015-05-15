@@ -10,15 +10,14 @@ class PlayerInput : MonoBehaviour
 
     public PlayerInput()
     {
-        runeKeys.Add(KeyCode.Slash,         RuneType.Compile);
+        runeKeys.Add(KeyCode.X,             RuneType.Nop);
         runeKeys.Add(KeyCode.W,             RuneType.Arrow0);
         runeKeys.Add(KeyCode.A,             RuneType.ArrowL60);
         runeKeys.Add(KeyCode.D,             RuneType.ArrowR60);
         runeKeys.Add(KeyCode.Z,             RuneType.ArrowL120);
         runeKeys.Add(KeyCode.C,             RuneType.ArrowR120);
         runeKeys.Add(KeyCode.S,             RuneType.ArrowCross);
-
-        runeKeys.Add(KeyCode.G,             RuneType.Avatar);
+        
         runeKeys.Add(KeyCode.T,             RuneType.AvatarWalkDir);
         runeKeys.Add(KeyCode.R,             RuneType.AvatarWalkDirDraw);
         runeKeys.Add(KeyCode.Y,             RuneType.AvatarForward);
@@ -79,11 +78,15 @@ class PlayerInput : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            if (E.PlayerCompileSpell(getMouseOverTile()))
+            if (E.PlayerCompileSpell(E.player.pos))
             {
                 //DEBUG save it
                 using (var writer = new BinaryWriter(File.OpenWrite(Path.Combine(Application.persistentDataPath, "spell"))))
                     E.player.currentSpell.Save(writer);
+            }
+            else
+            {
+                Logger.Log("Can't compile this");
             }
         }
 

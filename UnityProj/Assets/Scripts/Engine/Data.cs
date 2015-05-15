@@ -64,7 +64,7 @@ namespace Engine
             spellDatas[SpellType.FireTurret] = new SpellData(2.0f);
 
             //													        Directional?
-            runeDatas[RuneType.Compile] =                   new RuneData(false);
+            runeDatas[RuneType.Nop] =                   new RuneData(false);
 
             runeDatas[RuneType.Arrow0] =                    new RuneData(true);
             runeDatas[RuneType.ArrowL60] =                  new RuneData(true);
@@ -72,8 +72,7 @@ namespace Engine
             runeDatas[RuneType.ArrowR60] =                  new RuneData(true);
             runeDatas[RuneType.ArrowR120] =                 new RuneData(true);
             runeDatas[RuneType.ArrowCross] =                new RuneData(true);
-
-            runeDatas[RuneType.Avatar] =                    new RuneData(false);
+            
             runeDatas[RuneType.AvatarWalkDir] =             new RuneData(true);
             runeDatas[RuneType.AvatarWalkDirDraw] =         new RuneData(true);
             runeDatas[RuneType.AvatarForward] =             new RuneData(false);

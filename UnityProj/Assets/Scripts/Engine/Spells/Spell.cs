@@ -37,7 +37,7 @@ namespace Engine
         public void Cast(Entity ent, uint dir)
         {
             var spEx = new SpellExecuting(ent, this, ent.pos, dir);
-            spEx.SpawnAvatar(root, new HexXY(0,0), dir, null, false);
+            spEx.SpawnAvatar(root, null, ent.pos, dir); //TODO: spawn at spell target? what to do with direction? make random if far?
             executingSpells.Add(spEx);
         }
 

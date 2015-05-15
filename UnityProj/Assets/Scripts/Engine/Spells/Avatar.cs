@@ -10,30 +10,32 @@ namespace Engine
         public SpellExecuting spell;
 
         public uint id;
+        
         public HexXY pos;
         public uint dir;
         public Spell.CompiledRune rune;
         public float timeLeft;
-        public FinishedState? error;
-        public uint splitGroup;
-        public IAvatarBehavior avatarBehavior;
+        public FinishedState? finishState;
+        public uint avatarElementRuneIdx;
+        public IAvatarElement avatarElement;
 
         bool isArrowCrossDirLeft;
 
         public enum FinishedState
         {
+            FlowFinished,
             DiedCauseTooWeak,
             RuneIsNull
         }
 
-        public Avatar(SpellExecuting spell, HexXY pos, uint dir, Spell.CompiledRune startRune, uint splitGroup, uint id)
+        public Avatar(SpellExecuting spell, IAvatarElement element, HexXY pos, uint dir, Spell.CompiledRune startRune, uint id)
         {
-            this.spell = spell;            
+            this.spell = spell;
+            this.avatarElement = element;
             this.pos = pos;
             this.dir = dir;
             this.rune = startRune;
-            this.timeLeft = 0;
-            this.splitGroup = splitGroup;
+            this.timeLeft = 0;            
             this.id = id;
         }
 
@@ -41,58 +43,64 @@ namespace Engine
         {
             if (rune == null)
             {
-                error = FinishedState.RuneIsNull;
+                finishState = FinishedState.RuneIsNull;
                 return;
             }
 
             if (SpellExecuting.isLogging)            
-                Logger.Log(id + "> interpret " + rune.type + " at " + rune.relPos);
+                Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> interpret " + rune.type + " at " + rune.relPos);
 
-            if (rune.type == RuneType.Compile ||
-                IsAvatarBehaviorRune(rune.type))
-            {
-                InterpretSplit();
-            }
-            else if (IsArrowRune(rune.type))
+            bool isArrow = IsArrowRune(rune.type);
+
+            if (isArrow)
             {
                 InterpretArrow();
+            }
+            else if (IsAvatarElementRune(rune.type))
+            {
+                InterpretChangeElement();
             }            
+            
+            if(!isArrow)
+                InterpretFlow();
         }
 
-        void InterpretSplit()
+        void InterpretChangeElement()
         {
-            uint splitCount = 0;
+            avatarElementRuneIdx = rune.listIdx;
+            avatarElement = CreateAvatarElement(rune.type); 
+            spell.UseElementRune(rune);
+
+            if (SpellExecuting.isLogging)
+                Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> change element to " + rune.type);
+        }
+
+        void InterpretFlow()
+        {
+            uint forkCount = 0;
+            Spell.CompiledRune nextRune = null;
             for(int i = 0; i < 6; i++)
             {
                 var nrune = rune.neighs[i];
+                if (nrune == null) continue;
+                
 
-                if (nrune == null || nrune.type == RuneType.Compile) continue;
-                if (IsPredicateRune(nrune.type)) continue;
-                if (IsNumberRune(nrune.type)) continue;
-                if (IsArrowRune(nrune.type) && !IsArrowFrom(nrune, (uint)i)) continue;
+                bool isArrow = IsArrowRune(nrune.type);
+                if (isArrow && !IsArrowFrom(nrune, (uint)i) || !isArrow && i != 0) continue;
 
-                if (IsAvatarBehaviorRune(nrune.type))
-                {
-                    var newAvatarBeh = CreateAvatarBehavior(nrune.type);
-                    if (avatarBehavior == null)
-                        avatarBehavior = newAvatarBeh;
-                    else
-                        spell.SpawnAvatar(nrune, nrune.relPos, spell.dir, avatarBehavior, true);
-                }
+                if (forkCount == 0)
+                    nextRune = nrune;
                 else
                 {
-                    if (splitCount == 0)
-                    {
-                        rune = nrune;
-                    }
-                    else
-                    {
-                        spell.SpawnAvatar(nrune, nrune.relPos, spell.dir, avatarBehavior, false);
-                    }
-
-                    ++splitCount;
+                    spell.SpawnAvatar(nrune, avatarElement.Clone(), pos, dir);
+                    spell.UseElementRune(spell.compiledSpell.allRunes[(int)avatarElementRuneIdx]);
                 }
+
+                ++forkCount;               
             }
+
+            if (forkCount == 0) finishState = FinishedState.FlowFinished;
+            else rune = nextRune;
         }
 
         void InterpretArrow()
@@ -115,7 +123,7 @@ namespace Engine
 
             rune = rune.neighs[toDir];          
 
-            //Process cross
+            //Cross arrow is special
             if (rune != null && rune.type == RuneType.ArrowCross)
             {
                 if (toDir == rune.dir)
@@ -125,9 +133,11 @@ namespace Engine
                 else
                     rune = null;
             }
+
+            //TODO: cant enter if rune from two of its directions too...
         }
 
-        static IAvatarBehavior CreateAvatarBehavior(RuneType type)
+        static IAvatarElement CreateAvatarElement(RuneType type)
         {
             switch (type)
             {
@@ -137,6 +147,11 @@ namespace Engine
             }
 
             throw new Tools.AssertException();
+        }
+
+        public void UpdateElement()
+        {
+            //TODO
         }
 
         static bool IsArrowFrom(Spell.CompiledRune arrow, uint dir)
@@ -194,7 +209,7 @@ namespace Engine
             }
         }
 
-        static bool IsAvatarBehaviorRune(RuneType type)
+        public static bool IsAvatarElementRune(RuneType type)
         {
             switch (type)
             {

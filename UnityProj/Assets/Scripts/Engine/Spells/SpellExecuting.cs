@@ -10,33 +10,32 @@ namespace Engine
         public const bool isLogging = true;
 
         public Entity caster;
-        public Spell spell;
+        public Spell compiledSpell;
         public HexXY refPos;
         public uint dir;
         public List<Avatar> avatars = new List<Avatar>();
-        public uint avatarLastSplitGroup, avatarLastID;
+        public uint avatarLastID;
         public bool isExecuting;
 
-        public SpellExecuting(Entity caster, Spell spell, HexXY refPos, uint dir)
+        public Dictionary<uint, int> elementsUsedCounts = new Dictionary<uint, int>();
+
+        public SpellExecuting(Entity caster, Spell compiledSpell, HexXY refPos, uint dir)
         {
             this.caster = caster;            
-            this.spell = spell;
+            this.compiledSpell = compiledSpell;
             this.refPos = refPos;
             this.dir = dir;
             this.isExecuting = true;
         }        
 
-        public void SpawnAvatar(Spell.CompiledRune rune, HexXY relPos, uint dir, IAvatarBehavior behavior, bool isNewSplitGroup)
-        {
-            if (isNewSplitGroup)
-                ++avatarLastSplitGroup;            
-
-            Avatar av = new Avatar(this, relPos + refPos, dir, rune, avatarLastSplitGroup, avatarLastID++);
-            av.avatarBehavior = behavior;
+        public void SpawnAvatar(Spell.CompiledRune rune, IAvatarElement element, HexXY pos, uint dir)
+        {             
+            Avatar av = new Avatar(this, element, pos, dir, rune, avatarLastID++);
+            av.avatarElement = element;
             avatars.Add(av);
 
             if (isLogging)
-                Logger.Log((avatarLastID - 1) + " avatar spawned at " + (relPos + refPos));
+                Logger.Log(av.id + " " + (av.avatarElement == null ? "[no element]" : av.avatarElement.GetType().Name) + " avatar spawned at " + pos);
         }
 
         public void Update(float dt)
@@ -46,13 +45,31 @@ namespace Engine
                 var av = avatars[i];
                 av.timeLeft -= dt;
                 if (av.timeLeft > 0) continue;
-                av.Interpret();
-                if (av.error != null)
+
+                if(av.finishState == null)
+                    av.Interpret();
+
+                if (av.finishState != null/* && av.finishState.Value != Avatar.FinishedState.FlowFinished*/)
                     avatars.RemoveAt(i--);
+
+                //TODO:
+                //if (av.finishState != null && av.finishState.Value == Avatar.FinishedState.FlowFinished)
+                //    av.UpdateElement();
             }
 
             if (avatars.Count == 0)
                 isExecuting = false;
+        }
+
+        public void UseElementRune(Spell.CompiledRune rune)
+        {
+            if (!elementsUsedCounts.ContainsKey(rune.listIdx))
+                elementsUsedCounts[rune.listIdx] = 1;
+            else
+                ++elementsUsedCounts[rune.listIdx];
+
+            //if (isLogging)
+            //    Logger.Log("Used elemental rune at " + rune.relPos + ", count: " + elementsUsedCounts[rune.listIdx]);
         }
     }
 }
