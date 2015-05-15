@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Engine
 {
+    //Set ground it passes aflame
     public class AvatarFlame : IAvatarElement
     {
         public IAvatarElement Clone()

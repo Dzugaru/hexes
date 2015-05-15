@@ -59,7 +59,11 @@ namespace Engine
             else if (IsAvatarElementRune(rune.type))
             {
                 InterpretChangeElement();
-            }            
+            }
+            else if (IsMovementCommandRune(rune.type))
+            {
+                InterpretMovementCommand();
+            }      
             
             if(!isArrow)
                 InterpretFlow();
@@ -73,6 +77,35 @@ namespace Engine
 
             if (SpellExecuting.isLogging)
                 Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> change element to " + rune.type);
+        }
+
+        void InterpretMovementCommand()
+        {
+            //TODO: use elemental rune in spell if drawing
+            switch (rune.type)
+            {
+                case RuneType.AvatarForward:
+                case RuneType.AvatarForwardDraw:
+                case RuneType.AvatarForwardDupDraw:
+                    pos += HexXY.neighbours[(spell.dir + dir) % 6];
+                    break;
+
+                case RuneType.AvatarLeft:
+                    dir = (dir + 5) % 6;
+                    break;
+
+                case RuneType.AvatarRight:
+                    dir = (dir + 1) % 6;
+                    break;
+
+                case RuneType.AvatarWalkDir:
+                case RuneType.AvatarWalkDirDraw:
+                    pos += HexXY.neighbours[(spell.dir + rune.dir) % 6];
+                    break;
+            }
+
+            if (SpellExecuting.isLogging)
+                Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> moved to " + pos);
         }
 
         void InterpretFlow()
@@ -203,6 +236,23 @@ namespace Engine
                 case RuneType.Number5:
                 case RuneType.Number6:
                 case RuneType.Number7:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        static bool IsMovementCommandRune(RuneType type)
+        {
+            switch (type)
+            {
+                case RuneType.AvatarForward:
+                case RuneType.AvatarForwardDraw:
+                case RuneType.AvatarForwardDupDraw:
+                case RuneType.AvatarLeft:
+                case RuneType.AvatarRight:
+                case RuneType.AvatarWalkDir:
+                case RuneType.AvatarWalkDirDraw:
                     return true;
                 default:
                     return false;

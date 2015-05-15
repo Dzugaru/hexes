@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Engine
 {
+    //Drops blocking stones from above
     public class AvatarStone : IAvatarElement
     {
         public IAvatarElement Clone()
