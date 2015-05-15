@@ -21,8 +21,8 @@ namespace Engine
         public TerrainCellType GetCellType(HexXY p) { return cellTypes[p.x, p.y]; }
 
         //Entities
-        public List<Entity> entityList = new List<Entity>();
-        public List<Entity>[,] entityMap = new List<Entity>[sz,sz];
+        public LList<Entity> entityList = new LList<Entity>();
+        public LList<Entity>[,] entityMap = new LList<Entity>[sz,sz];
 
         //Pathfinding support
         public int pfExpandMarker = 0;
@@ -58,7 +58,7 @@ namespace Engine
 
             for (int x = 0; x < sz; x++)
                 for (int y = 0; y < sz; y++)
-                    entityMap[x, y] = new List<Entity>();
+                    entityMap[x, y] = new LList<Entity>();
         }
 
         //TODO:

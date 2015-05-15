@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Engine
 {
-    public abstract class Entity
+    public abstract class Entity : IEquatable<Entity>
     {
         List<IEntityComponent> components;
 
@@ -83,6 +83,11 @@ namespace Engine
             WorldBlock.S.entityList.Remove(this);
             WorldBlock.S.entityMap[pos.x, pos.y].Remove(this);
             Interfacing.PerformInterfaceDie(entityHandle);
+        }
+
+        public bool Equals(Entity other)
+        {
+            return ReferenceEquals(this, other);
         }
     }
 }
