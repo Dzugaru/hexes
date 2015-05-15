@@ -7,9 +7,21 @@ namespace Engine
 {
     public class AvatarWind : IAvatarElement
     {
-        public IAvatarElement Clone()
+        public Avatar avatar;
+
+        public AvatarWind(Avatar avatar)
         {
-            return new AvatarWind();
+            this.avatar = avatar;
+        }
+
+        public void CopyTo(Avatar avatar)
+        {
+            avatar.avatarElement = new AvatarWind(avatar);
+        }
+
+        public void OnMove(HexXY from, HexXY to, bool isDrawing)
+        {
+            throw new NotImplementedException();
         }
     }
 }

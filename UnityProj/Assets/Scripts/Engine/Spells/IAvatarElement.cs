@@ -7,6 +7,7 @@ namespace Engine
 {
     public interface IAvatarElement
     {
-        IAvatarElement Clone();
+       void CopyTo(Avatar avatar);
+        void OnMove(HexXY from, HexXY to, bool isDrawing);
     }
 }

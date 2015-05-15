@@ -28,10 +28,9 @@ namespace Engine
             RuneIsNull
         }
 
-        public Avatar(SpellExecuting spell, IAvatarElement element, HexXY pos, uint dir, Spell.CompiledRune startRune, uint id)
+        public Avatar(SpellExecuting spell, HexXY pos, uint dir, Spell.CompiledRune startRune, uint id)
         {
-            this.spell = spell;
-            this.avatarElement = element;
+            this.spell = spell;            
             this.pos = pos;
             this.dir = dir;
             this.rune = startRune;
@@ -72,7 +71,7 @@ namespace Engine
         void InterpretChangeElement()
         {
             avatarElementRuneIdx = rune.listIdx;
-            avatarElement = CreateAvatarElement(rune.type); 
+            SetAvatarElement(rune.type); //TODO: keep avatar element "life"/"power" the same
             spell.UseElementRune(rune);
 
             if (SpellExecuting.isLogging)
@@ -82,13 +81,19 @@ namespace Engine
         void InterpretMovementCommand()
         {
             //TODO: use elemental rune in spell if drawing
+            //TODO: search number nearby
+
             switch (rune.type)
             {
                 case RuneType.AvatarForward:
                 case RuneType.AvatarForwardDraw:
                 case RuneType.AvatarForwardDupDraw:
-                    pos += HexXY.neighbours[(spell.dir + dir) % 6];
-                    break;
+                    {
+                        HexXY dpos = HexXY.neighbours[(spell.dir + dir) % 6];
+                        avatarElement.OnMove(pos, pos + dpos, rune.type == RuneType.AvatarForwardDraw);
+                        pos += dpos;
+                        break;
+                    } 
 
                 case RuneType.AvatarLeft:
                     dir = (dir + 5) % 6;
@@ -100,8 +105,12 @@ namespace Engine
 
                 case RuneType.AvatarWalkDir:
                 case RuneType.AvatarWalkDirDraw:
-                    pos += HexXY.neighbours[(spell.dir + rune.dir) % 6];
-                    break;
+                    {
+                        HexXY dpos = HexXY.neighbours[(spell.dir + rune.dir) % 6];
+                        avatarElement.OnMove(pos, pos + dpos, rune.type == RuneType.AvatarWalkDirDraw);
+                        pos += dpos;
+                        break;
+                    }
             }
 
             if (SpellExecuting.isLogging)
@@ -125,7 +134,7 @@ namespace Engine
                     nextRune = nrune;
                 else
                 {
-                    spell.SpawnAvatar(nrune, avatarElement.Clone(), pos, dir);
+                    spell.SpawnAvatar(nrune, this, pos, dir);
                     spell.UseElementRune(spell.compiledSpell.allRunes[(int)avatarElementRuneIdx]);
                 }
 
@@ -170,16 +179,15 @@ namespace Engine
             //TODO: cant enter if rune from two of its directions too...
         }
 
-        static IAvatarElement CreateAvatarElement(RuneType type)
+        void SetAvatarElement(RuneType type)
         {
             switch (type)
             {
-                case RuneType.Flame: return new AvatarFlame(); 
-                case RuneType.Wind: return new AvatarWind();
-                case RuneType.Stone: return new AvatarStone();
-            }
-
-            throw new Tools.AssertException();
+                case RuneType.Flame: avatarElement = new AvatarFlame(this); break;
+                case RuneType.Wind: avatarElement = new AvatarWind(this); break;
+                case RuneType.Stone: avatarElement = new AvatarStone(this); break;
+                default: throw new Tools.AssertException();
+            }            
         }
 
         public void UpdateElement()

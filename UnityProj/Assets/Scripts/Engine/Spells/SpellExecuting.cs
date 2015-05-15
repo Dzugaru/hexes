@@ -28,10 +28,11 @@ namespace Engine
             this.isExecuting = true;
         }        
 
-        public void SpawnAvatar(Spell.CompiledRune rune, IAvatarElement element, HexXY pos, uint dir)
-        {             
-            Avatar av = new Avatar(this, element, pos, dir, rune, avatarLastID++);
-            av.avatarElement = element;
+        public void SpawnAvatar(Spell.CompiledRune rune, Avatar from, HexXY pos, uint dir)
+        {                    
+            Avatar av = new Avatar(this, pos, dir, rune, avatarLastID++);
+            if(from != null)
+                from.avatarElement.CopyTo(av);            
             avatars.Add(av);
 
             if (isLogging)

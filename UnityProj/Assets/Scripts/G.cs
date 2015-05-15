@@ -89,6 +89,7 @@ public class G : MonoBehaviour
             case EntityClass.Character: prefabPath += ((CharacterType)objType).ToString(); break;
             case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
             case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
+            case EntityClass.SpellEffect: prefabPath += ((SpellEffectType)objType).ToString(); break;
         }
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));

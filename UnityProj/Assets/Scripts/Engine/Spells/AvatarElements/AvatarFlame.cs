@@ -8,9 +8,36 @@ namespace Engine
     //Set ground it passes aflame
     public class AvatarFlame : IAvatarElement
     {
-        public IAvatarElement Clone()
+        public Avatar avatar;
+
+        public AvatarFlame(Avatar avatar)
         {
-            return new AvatarFlame();
+            this.avatar = avatar;
+        }
+
+        public void CopyTo(Avatar avatar)
+        {
+            avatar.avatarElement = new AvatarFlame(avatar);
+        }
+
+        public void OnMove(HexXY from, HexXY to, bool isDrawing)
+        {
+            //Logger.Log("Flame moved from " + from + " to " + to + " isDrawing " + isDrawing);
+            if (isDrawing)
+            {
+                SpawnFlameIfNotPresent(from);
+                SpawnFlameIfNotPresent(to);
+            }
+        }
+
+        void SpawnFlameIfNotPresent(HexXY pos)
+        {
+            bool isSomeEffectPresent = WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is SpellEffect);
+            if (isSomeEffectPresent) return;
+
+            var spellEffect = Freelist<SpellEffect>.Allocate();
+            spellEffect.Construct(SpellEffectType.GroundFlame);
+            spellEffect.Spawn(pos);
         }
     }
 }

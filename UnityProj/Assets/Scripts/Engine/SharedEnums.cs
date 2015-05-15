@@ -25,7 +25,8 @@ public enum EntityClass
     Character,
     Inanimate,
     Rune,
-    Collectible
+    Collectible,
+    SpellEffect
 }
 
 public enum CharacterType
@@ -41,6 +42,11 @@ public enum InanimateType
 {
     Stone,
     Tree
+}
+
+public enum SpellEffectType
+{
+    GroundFlame
 }
 
 public enum RuneType

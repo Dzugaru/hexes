@@ -8,9 +8,21 @@ namespace Engine
     //Drops blocking stones from above
     public class AvatarStone : IAvatarElement
     {
-        public IAvatarElement Clone()
+        public Avatar avatar;
+
+        public AvatarStone(Avatar avatar)
         {
-            return new AvatarStone();
+            this.avatar = avatar;
+        }
+
+        public void CopyTo(Avatar avatar)
+        {
+            avatar.avatarElement = new AvatarStone(avatar);
+        }
+
+        public void OnMove(HexXY from, HexXY to, bool isDrawing)
+        {
+            throw new NotImplementedException();
         }
     }
 }

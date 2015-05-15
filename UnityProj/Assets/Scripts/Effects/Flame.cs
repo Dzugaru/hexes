@@ -24,14 +24,7 @@ public class Flame : MonoBehaviour
         cinderParticles = transform.GetChild(2).GetComponent<ParticleSystem>();
 
         origCoreSpeed = coreParticles.startSpeed;
-        //Dont spawn a separate material if we're in edit scene mode
-#if !UNITY_EDITOR
-        coreRenderer.material = new Material(coreRenderer.sharedMaterial);
-#else
-        if(UnityEditor.EditorApplication.isPlaying)
-            coreRenderer.material = new Material(coreRenderer.sharedMaterial);
-#endif
-        origTint = coreRenderer.material.GetColor("_TintColor");
+        origTint = coreRenderer.sharedMaterial.GetColor("_TintColor");
         origCinderEmitRate = cinderParticles.emissionRate;
     }
 	
@@ -45,7 +38,15 @@ public class Flame : MonoBehaviour
             coreParticles.startSpeed = Mathf.Lerp(0.25f, 1f, power.value) * origCoreSpeed;
             Color c = origTint;
             c = new Color(c.r, c.g, c.b, Mathf.Lerp(0.25f, 1f, power.value) * c.a);
-            coreRenderer.material.SetColor("_TintColor", c);
+
+            //Instantiate in editor only if playing not editing
+#if UNITY_EDITOR
+            if(UnityEditor.EditorApplication.isPlaying)
+                coreRenderer.material.SetColor("_TintColor", c);
+            else
+#endif
+            coreRenderer.sharedMaterial.SetColor("_TintColor", c);
+
             cinderParticles.emissionRate = Mathf.Lerp(0, 1f, power.value) * origCinderEmitRate;        
         }
 	}

@@ -1,27 +1,33 @@
 ﻿using UnityEngine;
+using Engine;
 using System.Collections;
 
-//TODO: This should be ObjGraphics too
-
 [ExecuteInEditMode]
-public class EffectGraphics : MonoBehaviour
+public class SpellEffectGraphics : EntityGraphics
 {
-    float startTime;
-
-    public float scale = 1;
-    public float duration = 1;
+    public float scale = 1;    
     public bool isInfinite = false;
 
     void Start()
     {
-        ScaleParticleSystems();
-        startTime = Time.time;
+        ScaleParticleSystems();        
     }
 
     void Update()
     {
-        if (!isInfinite && Time.time - startTime > duration)
-            Destroy(gameObject);
+        
+    }
+
+    public override void Spawn(HexXY pos)
+    {
+        Vector2 planeCoord = pos.ToPlaneCoordinates();
+        transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
+        gameObject.SetActive(true);
+    }
+
+    public override void Die()
+    {
+        Destroy(gameObject);
     }
 
     void ScaleParticleSystems()
