@@ -10,6 +10,7 @@ public class EffectGraphics : MonoBehaviour
 
     public float scale = 1;
     public float duration = 1;
+    public bool isInfinite = false;
 
     void Start()
     {
@@ -19,7 +20,7 @@ public class EffectGraphics : MonoBehaviour
 
     void Update()
     {
-        if (Time.time - startTime > duration)
+        if (!isInfinite && Time.time - startTime > duration)
             Destroy(gameObject);
     }
 
