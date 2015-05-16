@@ -17,10 +17,9 @@ namespace Engine
 
         //uint[EnumMembers!CollectibleType.length] gatheredCollectibles;
 
-	    public Player()
-	    {
-		    base.Construct(EntityClass.Character, (uint)CharacterType.Player);
-            walker.SetSpeed(5);
+	    public Player() : base(EntityClass.Character, (uint)CharacterType.Player)
+        {		    
+            walker.SetSpeed(2);
         }
 
         public override void Update(float dt)

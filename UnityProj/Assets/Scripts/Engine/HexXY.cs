@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Engine
 {
-    public struct HexXY
+    public struct HexXY : IEquatable<HexXY>
     {
         static readonly Vector2 ex = new Vector2(Mathf.Sqrt(3f) * 0.5f, 0.5f);
         static readonly Vector2 ey = new Vector2(-Mathf.Sqrt(3f) * 0.5f, 0.5f);
@@ -59,6 +60,24 @@ namespace Engine
             }
         }
 
+        public HexXY RotateRight(HexXY center)
+        {
+            int x = this.x - center.x;
+            int y = this.y - center.y;
+            int nx = y;
+            int ny = y - x;
+            return new HexXY(nx + center.x, ny + center.y);
+        }
+
+        public HexXY RotateLeft(HexXY center)
+        {
+            int x = this.x - center.x;
+            int y = this.y - center.y;
+            int nx = x - y;
+            int ny = x;
+            return new HexXY(nx + center.x, ny + center.y);
+        }
+
         public static HexXY operator +(HexXY lhs, HexXY rhs)
         {
             return new HexXY(lhs.x + rhs.x, lhs.y + rhs.y);
@@ -67,6 +86,11 @@ namespace Engine
         public static HexXY operator -(HexXY lhs, HexXY rhs)
         {
             return new HexXY(lhs.x - rhs.x, lhs.y - rhs.y);
+        }
+
+        public bool Equals(HexXY other)
+        {
+            return this == other;
         }
 
         public override bool Equals(object obj)
@@ -93,6 +117,6 @@ namespace Engine
         public override string ToString()
         {
             return string.Format("({0},{1})", x, y);
-        }
+        }       
     }
 }

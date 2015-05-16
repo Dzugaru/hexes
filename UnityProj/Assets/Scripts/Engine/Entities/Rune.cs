@@ -9,9 +9,8 @@ namespace Engine
     {
         public uint dir;
 
-        public void Construct(RuneType type, uint dir)
-        {
-            base.Construct(EntityClass.Rune, (uint)type);
+        public Rune(RuneType type, uint dir) : base(EntityClass.Rune, (uint)type)
+        {            
             this.dir = dir;
         }
 
@@ -44,8 +43,7 @@ namespace Engine
             else
                 dirIdx = 0;
 
-            var rune = Freelist<Rune>.Allocate();
-            rune.Construct(type, dirIdx);           
+            var rune = new Rune(type, dirIdx);            
             rune.Spawn(pos);
         }
 

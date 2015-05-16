@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Engine
 {
@@ -9,38 +10,51 @@ namespace Engine
     public class AvatarFlame : IAvatarElement
     {
         public Avatar avatar;
+        public uint elementRuneIdx;
 
-        public AvatarFlame(Avatar avatar)
+        public AvatarFlame(Avatar avatar, uint elementRuneIdx)
         {
             this.avatar = avatar;
+            this.elementRuneIdx = elementRuneIdx;
         }
 
-        public void CopyTo(Avatar avatar)
+        public bool CanAvatarFork()
+        {          
+            return avatar.spell.GetElementalPower(elementRuneIdx) > 0;
+        }
+
+        public void ForkTo(Avatar to)
         {
-            avatar.avatarElement = new AvatarFlame(avatar);
+            avatar.spell.UseElementalPower(elementRuneIdx, 0.1f);
+            to.avatarElement = new AvatarFlame(to, elementRuneIdx);            
         }
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
         {
-            //Logger.Log("Flame moved from " + from + " to " + to + " isDrawing " + isDrawing);
-            if (isDrawing)
+            float powerLeft = avatar.spell.GetElementalPower(elementRuneIdx);
+            if (powerLeft == 0)
             {
-                SpawnFlameIfNotPresent(from);
-                SpawnFlameIfNotPresent(to);
+                avatar.finishState = Avatar.FinishedState.DiedCauseTooWeak;
+                return;
             }
-        }
 
-        //TODO: manage it by stack logic in SpellEffect!
-        void SpawnFlameIfNotPresent(HexXY pos)
-        {
-            if (pos == avatar.spell.refPos) return; //Don't kill the caster, lol
+            if (!isDrawing)
+            {
+                avatar.spell.UseElementalPower(elementRuneIdx, 0.01f);
+            }
+            else
+            {
+                float powerMax = 0.1f;
+                float powerLowThresh = 0.2f;
+                float powerUse = powerLeft > powerLowThresh ?
+                    powerMax :
+                    Mathf.Lerp(powerMax, powerMax * 0.1f, (powerLowThresh - powerLeft) / powerLowThresh);
 
-            bool isSomeEffectPresent = WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is SpellEffect);
-            if (isSomeEffectPresent) return;
+                avatar.spell.UseElementalPower(elementRuneIdx, powerUse);
 
-            var spellEffect = Freelist<SpellEffects.GroundFlame>.Allocate();
-            spellEffect.Construct();
-            spellEffect.Spawn(pos);
-        }
+                var spellEffect = new SpellEffects.GroundFlame(powerUse / powerMax);                
+                spellEffect.StackOn(to);
+            }
+        }     
     }
 }

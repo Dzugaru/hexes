@@ -17,12 +17,15 @@ namespace Engine
         public Interfacing.EntityHandle entityHandle;
         public uint entityType;
 
-        public Entity()
+        public Entity(EntityClass cls, uint type)
         {
             components = new List<IEntityComponent>();
             if (this is IHasHP) { hasHP = new HasHP(this); components.Add(hasHP); }
             if (this is IWalker) { walker = new Walker(this, 64); components.Add(walker); }
             if (this is IFibered) { fibered = new Fibered(); components.Add(fibered); }
+
+            entityHandle = Interfacing.CreateEntity(cls, type);
+            entityType = type;
         }
 
         public T GetComponent<T>() where T : IEntityComponent
@@ -31,13 +34,7 @@ namespace Engine
                 if (comp is T) return (T)comp;
 
             throw new Tools.AssertException("No such component");            
-        }
-
-        public void Construct(EntityClass cls, uint type)
-        {
-            entityHandle = Interfacing.CreateEntity(cls, type);
-            entityType = type;
-        }
+        }       
 
         public virtual void Update(float dt)
         {
@@ -82,7 +79,7 @@ namespace Engine
 
             WorldBlock.S.entityList.Remove(this);
             WorldBlock.S.entityMap[pos.x, pos.y].Remove(this);
-            Interfacing.PerformInterfaceDie(entityHandle);
+            Interfacing.PerformInterfaceDie(entityHandle);            
         }
 
         public bool Equals(Entity other)

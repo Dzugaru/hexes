@@ -10,10 +10,8 @@ namespace Engine
         float attackDmgAppDelay, attackDur, attackDamage;
         bool isAttacking;
 
-        public void Construct(MobData mobData)
+        public Mob(MobData mobData) : base(EntityClass.Character, (uint)mobData.characterType)
         {
-            Construct(EntityClass.Character, (uint)mobData.characterType);
-
             walker.SetSpeed(mobData.speed);
             attackDmgAppDelay = mobData.attackDmgAppDelay;
             attackDur = mobData.attackDur;

@@ -171,8 +171,7 @@ namespace Engine
             HexXY pos = refPos + rune.relPos;
             if (WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is Rune)) return;
 
-            Rune groundRune = Freelist<Rune>.Allocate();
-            groundRune.Construct(rune.type, rune.dir);
+            Rune groundRune = new Rune(rune.type, rune.dir);            
             groundRune.Spawn(pos);
 
             for (int i = 0; i < 6; i++)

@@ -9,10 +9,9 @@ namespace Engine.SpellEffects
     {
         public float power;
 
-        public void Construct()
+        public GroundFlame(float power) : base(SpellEffectType.GroundFlame)
         {
-            power = 1;
-            base.Construct(SpellEffectType.GroundFlame);
+            this.power = power;              
         }
 
         public override void Update(float dt)
@@ -27,6 +26,22 @@ namespace Engine.SpellEffects
         public override void UpdateInterface()
         {
             Interfacing.PerformInterfaceUpdateSpellEffect(entityHandle, power);            
+        }
+
+        public override void StackOn(HexXY pos)
+        {
+            bool isExistsOther = WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is SpellEffect && !(e is GroundFlame));
+            if (isExistsOther) return;
+            var existingFlame = (GroundFlame)WorldBlock.S.entityMap[pos.x, pos.y].FirstOrDefault(e => e is GroundFlame);
+            if (existingFlame != null)
+            {
+                if (existingFlame.power < power)
+                    existingFlame.power = power;
+            }
+            else
+            {
+                Spawn(pos);
+            }
         }
     }
 }

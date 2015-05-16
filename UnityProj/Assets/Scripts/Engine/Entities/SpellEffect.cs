@@ -5,11 +5,13 @@ using System.Text;
 
 namespace Engine
 {
-    public class SpellEffect : Entity, IFibered
+    public abstract class SpellEffect : Entity, IFibered
     {
-        public void Construct(SpellEffectType type)
+        public SpellEffect(SpellEffectType type) : base(EntityClass.SpellEffect, (uint)type)
         {
-            base.Construct(EntityClass.SpellEffect, (uint)type);            
+            
         }
+
+        public abstract void StackOn(HexXY pos);
     }
 }

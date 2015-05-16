@@ -6,8 +6,9 @@ using System.Text;
 namespace Engine
 {
     public interface IAvatarElement
-    {
-       void CopyTo(Avatar avatar);
+    {        
         void OnMove(HexXY from, HexXY to, bool isDrawing);
+        bool CanAvatarFork();
+        void ForkTo(Avatar to);
     }
 }

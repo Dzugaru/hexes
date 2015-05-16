@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Engine
 {
     public class SpellExecuting
     {
-        public const bool isLogging = true;
+        public const bool isLogging = false;
 
         public Entity caster;
         public Spell compiledSpell;
@@ -17,7 +18,7 @@ namespace Engine
         public uint avatarLastID;
         public bool isExecuting;
 
-        public Dictionary<uint, int> elementsUsedCounts = new Dictionary<uint, int>();
+        Dictionary<uint, float> elementalPower = new Dictionary<uint, float>();
 
         public SpellExecuting(Entity caster, Spell compiledSpell, HexXY refPos, uint dir)
         {
@@ -28,11 +29,13 @@ namespace Engine
             this.isExecuting = true;
         }        
 
-        public void SpawnAvatar(Spell.CompiledRune rune, Avatar from, HexXY pos, uint dir)
-        {                    
+        public void SpawnAvatar(Spell.CompiledRune rune, Avatar forkFrom, HexXY pos, uint dir)
+        {
+            if (forkFrom != null && !forkFrom.avatarElement.CanAvatarFork()) return;
+
             Avatar av = new Avatar(this, pos, dir, rune, avatarLastID++);
-            if(from != null)
-                from.avatarElement.CopyTo(av);            
+            if (forkFrom != null)
+                forkFrom.avatarElement.ForkTo(av);
             avatars.Add(av);
 
             if (isLogging)
@@ -62,15 +65,21 @@ namespace Engine
                 isExecuting = false;
         }
 
-        public void UseElementRune(Spell.CompiledRune rune)
+        public float GetElementalPower(uint idx)
         {
-            if (!elementsUsedCounts.ContainsKey(rune.listIdx))
-                elementsUsedCounts[rune.listIdx] = 1;
-            else
-                ++elementsUsedCounts[rune.listIdx];
+            float pow;
+            if (!elementalPower.TryGetValue(idx, out pow)) return 1;
+            else return pow;
+        }
 
-            //if (isLogging)
-            //    Logger.Log("Used elemental rune at " + rune.relPos + ", count: " + elementsUsedCounts[rune.listIdx]);
+        public void UseElementalPower(uint idx, float amount)
+        {
+            if (!elementalPower.ContainsKey(idx))
+                elementalPower[idx] = Mathf.Max(0, 1 - amount);
+            else
+                elementalPower[idx] = Mathf.Max(0, elementalPower[idx] - amount);
+
+            //Debug.Log("power used: " + amount + ", left: " + elementalPower[idx]);
         }
     }
 }

@@ -15,8 +15,7 @@ namespace Engine
         public uint dir;
         public Spell.CompiledRune rune;
         public float timeLeft;
-        public FinishedState? finishState;
-        public uint avatarElementRuneIdx;
+        public FinishedState? finishState;        
         public IAvatarElement avatarElement;
 
         bool isArrowCrossDirLeft;
@@ -24,8 +23,8 @@ namespace Engine
         public enum FinishedState
         {
             FlowFinished,
-            DiedCauseTooWeak,
-            RuneIsNull
+            DiedCauseTooWeak,            
+            PredicateParseError           
         }
 
         public Avatar(SpellExecuting spell, HexXY pos, uint dir, Spell.CompiledRune startRune, uint id)
@@ -42,18 +41,19 @@ namespace Engine
         {
             if (rune == null)
             {
-                finishState = FinishedState.RuneIsNull;
+                finishState = FinishedState.FlowFinished;
                 return;
             }
 
-            if (SpellExecuting.isLogging)            
+            if (SpellExecuting.isLogging)
                 Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> interpret " + rune.type + " at " + rune.relPos);
 
-            bool isArrow = IsArrowRune(rune.type);
+            bool needsFlow = true;
 
-            if (isArrow)
+            if (IsArrowRune(rune.type))
             {
-                InterpretArrow();
+                rune = InterpretArrowSeq(rune);
+                needsFlow = false;
             }
             else if (IsAvatarElementRune(rune.type))
             {
@@ -62,17 +62,106 @@ namespace Engine
             else if (IsMovementCommandRune(rune.type))
             {
                 InterpretMovementCommand();
-            }      
-            
-            if(!isArrow)
+            }
+            else if (rune.type == RuneType.If)
+            {
+                InterpretIf();
+                needsFlow = false;
+            }
+            else
+            {
+                finishState = FinishedState.FlowFinished;
+            }
+
+            if (needsFlow && finishState == null)
                 InterpretFlow();
+        }    
+
+        void InterpretFlow()
+        {
+            uint forkCount = 0;
+            Spell.CompiledRune nextRune = null;
+            for (int i = 0; i < 6; i++)
+            {
+                var nrune = rune.neighs[i];
+                if (nrune == null) continue;
+
+                bool isArrow = IsArrowRune(nrune.type);
+                if ((isArrow && !IsArrowFrom(nrune, (uint)i)) || (!isArrow && i != 0)) continue;
+                if (i == 0 && !IsFlowCorrect(rune, 0)) continue;
+
+                if (forkCount == 0)
+                    nextRune = nrune;
+                else                
+                    spell.SpawnAvatar(nrune, this, pos, dir); 
+
+                ++forkCount;
+            }
+
+            if (forkCount == 0) finishState = FinishedState.FlowFinished;
+            else rune = nextRune;
+        }
+
+        Spell.CompiledRune InterpretArrowSeq(Spell.CompiledRune r)
+        {
+            HashSet<HexXY> processed = new HashSet<HexXY>();
+
+            while(true)
+            {
+                if (processed.Contains(r.relPos)) return null; //Cycle detected
+                processed.Add(r.relPos);
+
+                uint fromDir = r.dir;
+
+                uint dirChange;
+                switch (r.type)
+                {
+                    case RuneType.Arrow0: dirChange = 0; break;
+                    case RuneType.ArrowR60: dirChange = 1; break;
+                    case RuneType.ArrowR120: dirChange = 2; break;
+                    case RuneType.ArrowL120: dirChange = 4; break;
+                    case RuneType.ArrowL60: dirChange = 5; break;
+                    case RuneType.ArrowCross: dirChange = isArrowCrossDirLeft ? 5u : 0u; break;
+                    default: throw new Tools.AssertException();
+                }
+
+                uint toDir = (fromDir + dirChange) % 6;
+                if (!IsFlowCorrect(r, toDir)) return null;
+                r = r.neighs[toDir];
+                if (r == null) return null;
+                if (!IsArrowRune(r.type)) return r;                
+            } 
+        }
+
+        bool IsFlowCorrect(Spell.CompiledRune from, uint toDir)
+        {
+            from = from.neighs[toDir];
+
+            //Cross arrow is special
+            if (rune != null && rune.type == RuneType.ArrowCross)
+            {
+                if (toDir == rune.dir)
+                    isArrowCrossDirLeft = false;
+                else if ((toDir + 1) % 6 == rune.dir)
+                    isArrowCrossDirLeft = true;
+                else
+                    return false;
+            }
+
+            //TODO: cant enter "if" rune from two of its directions too...
+
+            return true;
         }
 
         void InterpretChangeElement()
-        {
-            avatarElementRuneIdx = rune.listIdx;
-            SetAvatarElement(rune.type); //TODO: keep avatar element "life"/"power" the same
-            spell.UseElementRune(rune);
+        {            
+            switch (rune.type)
+            {
+                case RuneType.Flame: avatarElement = new AvatarFlame(this, rune.listIdx); break;
+                case RuneType.Wind: avatarElement = new AvatarWind(this, rune.listIdx); break;
+                case RuneType.Stone: avatarElement = new AvatarStone(this, rune.listIdx); break;
+                default: throw new Tools.AssertException();
+            }
 
             if (SpellExecuting.isLogging)
                 Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> change element to " + rune.type);
@@ -83,17 +172,17 @@ namespace Engine
             //TODO: use elemental rune in spell if drawing
             //TODO: search number nearby
 
+            HexXY dpos = new HexXY(0, 0);
+            bool isDraw = false;
+
             switch (rune.type)
             {
                 case RuneType.AvatarForward:
                 case RuneType.AvatarForwardDraw:
                 case RuneType.AvatarForwardDupDraw:
-                    {
-                        HexXY dpos = HexXY.neighbours[(spell.dir + dir) % 6];
-                        avatarElement.OnMove(pos, pos + dpos, rune.type == RuneType.AvatarForwardDraw);
-                        pos += dpos;
-                        break;
-                    } 
+                    dpos = HexXY.neighbours[dir];
+                    isDraw = rune.type == RuneType.AvatarForwardDraw;
+                    break;
 
                 case RuneType.AvatarLeft:
                     dir = (dir + 5) % 6;
@@ -105,95 +194,180 @@ namespace Engine
 
                 case RuneType.AvatarWalkDir:
                 case RuneType.AvatarWalkDirDraw:
+                    dpos = HexXY.neighbours[(spell.dir + rune.dir) % 6];
+                    isDraw = rune.type == RuneType.AvatarWalkDirDraw;
+                    break;
+            }
+
+            if (dpos != new HexXY(0, 0))
+            {
+                HexXY newPos = pos + dpos;
+                if (!WorldBlock.S.pfIsPassable(newPos))
+                {
+                    //finishState = FinishedState.CantMoveThere;
+                    //Do nothing
+                }
+                else
+                {
+                    avatarElement.OnMove(pos, newPos, isDraw);
+                    pos = newPos;
+
+                    if (SpellExecuting.isLogging)
+                        Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> moved to " + pos);
+                }
+            }
+        }
+
+        class InterpretPredicateRuneEqualityComparer : IEqualityComparer<Spell.CompiledRune>
+        {
+            public bool Equals(Spell.CompiledRune a, Spell.CompiledRune b)
+            {
+                return a.relPos == b.relPos;
+            }
+
+            public int GetHashCode(Spell.CompiledRune a)
+            {
+                return a.relPos.GetHashCode();
+            }
+        }
+
+        bool InterpretPredicate(Spell.CompiledRune predRune)
+        {
+            //Compute connected component and find avatar ref position
+            Spell.CompiledRune avatarRefRune = null;
+
+            Queue<Spell.CompiledRune> front = new Queue<Spell.CompiledRune>();
+            HashSet<Spell.CompiledRune> all = new HashSet<Spell.CompiledRune>(new InterpretPredicateRuneEqualityComparer());
+
+            front.Enqueue(predRune);
+            all.Add(predRune);
+
+            do
+            {
+                var c = front.Dequeue();
+                if (c.type == RuneType.PredicateAvatarRef)
+                {
+                    if (avatarRefRune != null)
                     {
-                        HexXY dpos = HexXY.neighbours[(spell.dir + rune.dir) % 6];
-                        avatarElement.OnMove(pos, pos + dpos, rune.type == RuneType.AvatarWalkDirDraw);
-                        pos += dpos;
-                        break;
+                        //Double avatar ref error
+                        finishState = FinishedState.PredicateParseError;
+                        return false;
                     }
+                    else
+                    {
+                        avatarRefRune = c;
+                    }
+                }
+
+                foreach (var n in c.neighs)
+                {
+                    if (n == null || !IsPredicateRune(n.type) || all.Contains(n)) continue;
+                    front.Enqueue(n);
+                    all.Add(n);
+                }
+            } while (front.Count > 0);
+
+            HexXY predRefPos;
+            if (avatarRefRune != null)
+            {
+                predRefPos = avatarRefRune.relPos;
+            }
+            else
+            {
+                if (all.Count > 1)
+                {
+                    //No avatar reference in predicate with more than one rune
+                    finishState = FinishedState.PredicateParseError;
+                    return false;
+                }
+                else
+                {
+                    predRefPos = all.First().relPos;
+                }
+            }
+
+            //Check predicate
+            bool isMatch = true;
+            foreach (var prune in all)
+            {
+                HexXY checkPos = prune.relPos - predRefPos;
+                for (int i = 0; i < dir; i++)
+                    checkPos = checkPos.RotateRight(new HexXY(0, 0));
+                checkPos += this.pos;
+
+                switch (prune.type)
+                {
+                    case RuneType.PredicateTileEmpty:
+                        if (!WorldBlock.S.pfIsPassable(checkPos))
+                            isMatch = false;
+                        break;
+                    case RuneType.PredicateTileWall:
+                        if (WorldBlock.S.pfIsPassable(checkPos))
+                            isMatch = false;
+                        break;
+                    case RuneType.PredicateTileMonster:
+                        if (!WorldBlock.S.entityMap[checkPos.x, checkPos.y].Any(e => e is Mob))
+                            isMatch = false;
+                        break;
+                }
+                if (!isMatch) break;                
             }
 
             if (SpellExecuting.isLogging)
-                Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> moved to " + pos);
+                Logger.Log("predicate at " + predRune.relPos + " is " + isMatch);
+
+            return isMatch;
         }
 
-        void InterpretFlow()
+        void InterpretIf()
         {
-            uint forkCount = 0;
-            Spell.CompiledRune nextRune = null;
-            for(int i = 0; i < 6; i++)
+            bool isTrue = false;
+
+            //Checking only separate patterns
+            //TODO: what if pattern is attached like this: (p) (if) (p) where (p)'s are connected elsewhere?
+            //it will be evaluated twice!
+            bool isPredAtZero = false, isPredAtPrev = false;
+
+            for (int i = 0; i < 6; i++)
             {
                 var nrune = rune.neighs[i];
-                if (nrune == null) continue;
-                
-
-                bool isArrow = IsArrowRune(nrune.type);
-                if (isArrow && !IsArrowFrom(nrune, (uint)i) || !isArrow && i != 0) continue;
-
-                if (forkCount == 0)
-                    nextRune = nrune;
-                else
+                if (i != 0 && i != 5 && nrune != null && IsArrowRune(nrune.type) && IsArrowFrom(nrune, (uint)i))
                 {
-                    spell.SpawnAvatar(nrune, this, pos, dir);
-                    spell.UseElementRune(spell.compiledSpell.allRunes[(int)avatarElementRuneIdx]);
+                    //Find following arrows
+                    nrune = InterpretArrowSeq(nrune);
+                    if (nrune == null || !IsPredicateRune(nrune.type)) continue;
+
+                    isTrue = isTrue || InterpretPredicate(nrune); //using OR
+                    isPredAtPrev = false;
                 }
-
-                ++forkCount;               
-            }
-
-            if (forkCount == 0) finishState = FinishedState.FlowFinished;
-            else rune = nextRune;
-        }
-
-        void InterpretArrow()
-        {
-            uint fromDir = rune.dir;
-
-            uint dirChange;
-            switch (rune.type)
-            {
-                case RuneType.Arrow0: dirChange = 0; break;
-                case RuneType.ArrowR60: dirChange = 1; break;
-                case RuneType.ArrowR120: dirChange = 2; break;
-                case RuneType.ArrowL120: dirChange = 4; break;
-                case RuneType.ArrowL60: dirChange = 5; break;
-                case RuneType.ArrowCross: dirChange = isArrowCrossDirLeft ? 5u : 0u; break;
-                default: throw new Tools.AssertException();
-            }
-
-            uint toDir = (fromDir + dirChange) % 6;            
-
-            rune = rune.neighs[toDir];          
-
-            //Cross arrow is special
-            if (rune != null && rune.type == RuneType.ArrowCross)
-            {
-                if (toDir == rune.dir)
-                    isArrowCrossDirLeft = false;
-                else if ((toDir + 1) % 6 == rune.dir)
-                    isArrowCrossDirLeft = true;
                 else
-                    rune = null;
+                {                   
+                    if (nrune == null || !IsPredicateRune(nrune.type))
+                    {
+                        isPredAtPrev = false;
+                        continue;
+                    }
+                    if (isPredAtPrev || (i == 5 && isPredAtZero)) continue;
+
+                    isTrue = isTrue || InterpretPredicate(nrune); //using OR
+
+                    if (i == 0)
+                        isPredAtZero = true;
+                    isPredAtPrev = true;
+                }               
             }
 
-            //TODO: cant enter if rune from two of its directions too...
-        }
+            uint toDir;
 
-        void SetAvatarElement(RuneType type)
-        {
-            switch (type)
-            {
-                case RuneType.Flame: avatarElement = new AvatarFlame(this); break;
-                case RuneType.Wind: avatarElement = new AvatarWind(this); break;
-                case RuneType.Stone: avatarElement = new AvatarStone(this); break;
-                default: throw new Tools.AssertException();
-            }            
-        }
+            if (isTrue)
+                toDir = rune.dir;
+            else
+                toDir = (rune.dir + 5) % 6;
 
-        public void UpdateElement()
-        {
-            //TODO
+            if (!IsFlowCorrect(rune, toDir)) rune = null;
+            else rune = rune.neighs[toDir];            
         }
+           
 
         static bool IsArrowFrom(Spell.CompiledRune arrow, uint dir)
         {
