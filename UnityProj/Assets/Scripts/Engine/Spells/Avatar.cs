@@ -24,7 +24,8 @@ namespace Engine
         {
             FlowFinished,
             DiedCauseTooWeak,            
-            PredicateParseError           
+            PredicateParseError,
+            CantMoveThere                          
         }
 
         public Avatar(SpellExecuting spell, HexXY pos, uint dir, Spell.CompiledRune startRune, uint id)
@@ -202,19 +203,19 @@ namespace Engine
             if (dpos != new HexXY(0, 0))
             {
                 HexXY newPos = pos + dpos;
-                if (!WorldBlock.S.pfIsPassable(newPos))
-                {
-                    //finishState = FinishedState.CantMoveThere;
-                    //Do nothing
-                }
-                else
-                {
+                //if (!WorldBlock.S.pfIsPassable(newPos))
+                //{
+                //    finishState = FinishedState.CantMoveThere;
+                //    //Do nothing
+                //}
+                //else
+                //{
                     avatarElement.OnMove(pos, newPos, isDraw);
                     pos = newPos;
 
                     if (SpellExecuting.isLogging)
                         Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> moved to " + pos);
-                }
+                //}
             }
         }
 

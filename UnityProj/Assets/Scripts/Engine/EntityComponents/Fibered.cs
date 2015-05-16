@@ -52,7 +52,7 @@ namespace Engine
                 }
             }
 
-            return false;
+            return true;
         }
 
         public void StartFiber(IEnumerator<float> enumerator)

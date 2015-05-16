@@ -38,12 +38,12 @@ namespace Engine
                 return;
             }
 
-            if (!isDrawing)
+            if (!isDrawing || !WorldBlock.S.pfIsPassable(to))
             {
                 avatar.spell.UseElementalPower(elementRuneIdx, 0.01f);
             }
             else
-            {
+            {               
                 float powerMax = 0.1f;
                 float powerLowThresh = 0.2f;
                 float powerUse = powerLeft > powerLowThresh ?

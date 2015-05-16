@@ -16,6 +16,9 @@ namespace Engine.SpellEffects
 
         public override void Update(float dt)
         {
+            foreach (var ent in WorldBlock.S.entityMap[pos.x, pos.y].OfType<Mob>())            
+                ent.hasHP.Damage(dt * 5.0f);            
+
             power -= 0.2f * dt;
             UpdateInterface();
             if (power <= 0) Die();

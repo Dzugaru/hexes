@@ -33,11 +33,11 @@ namespace Engine
             if (currentHP == 0)
             {
                 entity.Die();
-                return true;
+                return false;
             }
             else
             {
-                return false;
+                return true;
             }
         }
 

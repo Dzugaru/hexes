@@ -55,7 +55,7 @@ namespace Engine
                 if (!pathLen.HasValue)
                 {
                     //log("PATH NULL");
-                    return false;
+                    return true;
                 }
 
                 pathStart = 0;
@@ -74,7 +74,7 @@ namespace Engine
                 isWalkBlocked = false;
             }
 
-            if (pathStart == pathEnd) return false;
+            if (pathStart == pathEnd) return true;
             var nextTile = pathStorage[pathStart];
 
             if (distToNextTile > 0.5)
@@ -94,7 +94,7 @@ namespace Engine
                         Interfacing.PerformInterfaceStop(entity.graphicsHandle, entity.pos);
                     }
                     walkBlockedTime += dt;
-                    return false;
+                    return true;
                 }
                 isWalkBlocked = false;
                 WorldBlock.S.pfBlockedMap[nextTile.x, nextTile.y] = true;
@@ -130,7 +130,7 @@ namespace Engine
                 }
             }
 
-            return false;
+            return true;
         }
 	    
 	    public void SetDest(HexXY dest, uint blockedCost, bool shouldStopNearDest)
