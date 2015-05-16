@@ -5,18 +5,14 @@ using System.Collections;
 [ExecuteInEditMode]
 public class SpellEffectGraphics : EntityGraphics
 {
-    public float scale = 1;    
-    public bool isInfinite = false;
+    public float scale = 1;       
+    public FloatVariable power = new FloatVariable(1);
 
     void Start()
     {
         ScaleParticleSystems();        
     }
-
-    void Update()
-    {
-        
-    }
+    
 
     public override void Spawn(HexXY pos)
     {
@@ -28,6 +24,11 @@ public class SpellEffectGraphics : EntityGraphics
     public override void Die()
     {
         Destroy(gameObject);
+    }
+
+    public void UpdateInterface(float power)
+    {        
+        this.power.value = power;
     }
 
     void ScaleParticleSystems()

@@ -53,6 +53,7 @@ public class G : MonoBehaviour
 
         Interfacing.PerformInterfaceUpdateHP = PerformInterfaceUpdateHP;
         Interfacing.PerformInterfaceUpdateRune = PerformInterfaceUpdateRune;
+        Interfacing.PerformInterfaceUpdateSpellEffect = PerformInterfaceUpdateSpellEffect;
 
         E.Start();
 
@@ -152,6 +153,12 @@ public class G : MonoBehaviour
     {
         GameObject obj = entities[objHandle];
         obj.GetComponent<RuneGraphics>().UpdateInterface(dir);
+    }
+
+    static void PerformInterfaceUpdateSpellEffect(Interfacing.EntityHandle objHandle, float power)
+    {
+        GameObject obj = entities[objHandle];
+        obj.GetComponent<SpellEffectGraphics>().UpdateInterface(power);
     }
 
     //D engine

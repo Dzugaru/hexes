@@ -45,18 +45,16 @@ namespace Engine
             {
                 if (isReset)
                 {
-                    isReset = false;
-                    return node != null;
+                    isReset = false;                   
                 }
                 else
                 {
-
                     do
                     {
                         node = node.next;
-                    } while (node != null && node.isDead);
-                    return node != null;
+                    } while (node != null && node.isDead);                    
                 }
+                return node != null;
             }
 
             public void Reset()
@@ -102,7 +100,7 @@ namespace Engine
                 {
                     prev = curr;
                     curr = curr.next;
-                };
+                }
                 if (curr == null) return false;
                 prev.next = curr.next;
                 curr.isDead = true;

@@ -24,6 +24,7 @@ namespace Engine
 
         public static Action<EntityHandle, float, float> PerformInterfaceUpdateHP;
         public static Action<EntityHandle, uint> PerformInterfaceUpdateRune;
+        public static Action<EntityHandle, float> PerformInterfaceUpdateSpellEffect;
 
 
     }

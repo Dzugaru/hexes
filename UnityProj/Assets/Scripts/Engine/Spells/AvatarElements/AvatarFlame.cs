@@ -38,8 +38,8 @@ namespace Engine
             bool isSomeEffectPresent = WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is SpellEffect);
             if (isSomeEffectPresent) return;
 
-            var spellEffect = Freelist<SpellEffect>.Allocate();
-            spellEffect.Construct(SpellEffectType.GroundFlame);
+            var spellEffect = Freelist<SpellEffects.GroundFlame>.Allocate();
+            spellEffect.Construct();
             spellEffect.Spawn(pos);
         }
     }

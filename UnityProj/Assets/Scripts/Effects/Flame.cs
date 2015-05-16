@@ -2,7 +2,7 @@
 using System.Collections;
 
 [ExecuteInEditMode]
-public class Flame : MonoBehaviour
+public class Flame : SpellEffectGraphics
 {
     new Light light;
     ParticleSystem coreParticles, cinderParticles;
@@ -13,7 +13,7 @@ public class Flame : MonoBehaviour
 
     public float lightIntensity = 2.5f;
     public float lightFlickerPart = 0.2f;
-    public FloatVariable power = new FloatVariable(1);
+    
 
 	void OnEnable()
     {
@@ -32,14 +32,14 @@ public class Flame : MonoBehaviour
 	
 	
 	void Update()
-    {        
+    {          
         light.intensity = Mathf.Lerp(0.1f, 1f, power.value) * Random.Range(lightIntensity - lightIntensity * lightFlickerPart, lightIntensity);
 
         if (power.isNew)
-        {
+        {            
             coreParticles.startSpeed = Mathf.Lerp(0.25f, 1f, power.value) * origCoreSpeed;
             Color c = origTint;
-            c = new Color(c.r, c.g, c.b, Mathf.Lerp(0.25f, 1f, power.value) * c.a);
+            c = new Color(c.r, c.g, c.b, Mathf.Lerp(0.02f, 1f, power.value) * c.a);
 
             //Instantiate in editor only if playing not editing
 #if UNITY_EDITOR
