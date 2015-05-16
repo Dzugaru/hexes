@@ -14,7 +14,8 @@ namespace Engine
         public Fibered fibered;
 
         public HexXY pos;
-        public Interfacing.EntityHandle entityHandle;
+        public Interfacing.EntityHandle graphicsHandle;
+        public bool hasGraphicsHandle;
         public uint entityType;
 
         public Entity(EntityClass cls, uint type)
@@ -24,8 +25,9 @@ namespace Engine
             if (this is IWalker) { walker = new Walker(this, 64); components.Add(walker); }
             if (this is IFibered) { fibered = new Fibered(); components.Add(fibered); }
 
-            entityHandle = Interfacing.CreateEntity(cls, type);
             entityType = type;
+            graphicsHandle.objClass = cls;
+            hasGraphicsHandle = false;            
         }
 
         public T GetComponent<T>() where T : IEntityComponent
@@ -54,6 +56,9 @@ namespace Engine
 
         public void Spawn(HexXY p)
         {
+            if (!hasGraphicsHandle)            
+                graphicsHandle = Interfacing.CreateEntity(graphicsHandle.objClass, entityType);                            
+
             pos = p;
 
             WorldBlock.S.entityList.Add(this);
@@ -61,7 +66,7 @@ namespace Engine
 
             foreach (var comp in components) comp.OnSpawn(p);
 
-            Interfacing.PerformInterfaceSpawn(entityHandle, pos);
+            Interfacing.PerformInterfaceSpawn(graphicsHandle, pos);
             UpdateInterface();
         }
 
@@ -69,7 +74,7 @@ namespace Engine
         {            
             if (this is IHasHP)
 		    {
-                Interfacing.PerformInterfaceUpdateHP(entityHandle, hasHP.currentHP, hasHP.maxHP);
+                Interfacing.PerformInterfaceUpdateHP(graphicsHandle, hasHP.currentHP, hasHP.maxHP);
             }
         }
 
@@ -79,7 +84,7 @@ namespace Engine
 
             WorldBlock.S.entityList.Remove(this);
             WorldBlock.S.entityMap[pos.x, pos.y].Remove(this);
-            Interfacing.PerformInterfaceDie(entityHandle);            
+            Interfacing.PerformInterfaceDie(graphicsHandle);            
         }
 
         public bool Equals(Entity other)

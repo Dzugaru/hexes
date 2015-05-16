@@ -41,7 +41,7 @@ namespace Engine
                 if (!walker.isWalking && HexXY.Dist(pos, E.player.pos) == 1)
                 {
                     isAttacking = true;
-                    Interfacing.PerformInterfaceAttack(entityHandle, E.player.pos);
+                    Interfacing.PerformInterfaceAttack(graphicsHandle, E.player.pos);
                     fibered.StartFiber(AttackFiber());                    
                 }
             }
@@ -57,7 +57,7 @@ namespace Engine
             {
                 //Apply dmg						
                 float dmg = attackDamage;
-                Interfacing.PerformInterfaceDamage(E.player.entityHandle, dmg);                
+                Interfacing.PerformInterfaceDamage(E.player.graphicsHandle, dmg);                
                 //TODO: refresh bar including new dot speed? (same with dotheal)
             }
 

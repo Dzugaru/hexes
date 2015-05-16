@@ -16,7 +16,7 @@ namespace Engine
 
         public override void UpdateInterface()
         {
-            Interfacing.PerformInterfaceUpdateRune(entityHandle, dir);
+            Interfacing.PerformInterfaceUpdateRune(graphicsHandle, dir);
         }
 
         public static bool CanDraw(Entity ent, RuneType rune, HexXY pos)

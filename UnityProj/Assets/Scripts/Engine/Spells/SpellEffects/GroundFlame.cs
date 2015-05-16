@@ -25,7 +25,7 @@ namespace Engine.SpellEffects
 
         public override void UpdateInterface()
         {
-            Interfacing.PerformInterfaceUpdateSpellEffect(entityHandle, power);            
+            Interfacing.PerformInterfaceUpdateSpellEffect(graphicsHandle, power);            
         }
 
         public override void StackOn(HexXY pos)

@@ -24,7 +24,7 @@ namespace Engine
         public void Damage(float dmg)
         {
             currentHP = Math.Max(0, currentHP - dmg);
-            Interfacing.PerformInterfaceDamage(entity.entityHandle, dmg);
+            Interfacing.PerformInterfaceDamage(entity.graphicsHandle, dmg);
             entity.UpdateInterface();
         }
 

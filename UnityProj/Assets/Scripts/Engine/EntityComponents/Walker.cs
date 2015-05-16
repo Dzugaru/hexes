@@ -67,7 +67,7 @@ namespace Engine
                     pathEnd = 0;
                     if (isWalking)
                     {
-                        Interfacing.PerformInterfaceStop(entity.entityHandle, entity.pos);
+                        Interfacing.PerformInterfaceStop(entity.graphicsHandle, entity.pos);
                         isWalking = false;
                     }
                 }
@@ -91,7 +91,7 @@ namespace Engine
                         isWalkBlocked = true;
                         walkBlockedTime = 0;
                         isWalking = false;
-                        Interfacing.PerformInterfaceStop(entity.entityHandle, entity.pos);
+                        Interfacing.PerformInterfaceStop(entity.graphicsHandle, entity.pos);
                     }
                     walkBlockedTime += dt;
                     return false;
@@ -101,7 +101,7 @@ namespace Engine
                 WorldBlock.S.pfBlockedMap[prevTile.x, prevTile.y] = false;
                 pfBlockedTile = nextTile;
 
-                Interfacing.PerformInterfaceMove(entity.entityHandle, nextTile, distToNextTile * invSpeed);
+                Interfacing.PerformInterfaceMove(entity.graphicsHandle, nextTile, distToNextTile * invSpeed);
                 isWalking = true;
             }
 
@@ -124,7 +124,7 @@ namespace Engine
                 }
                 else
                 {
-                    Interfacing.PerformInterfaceStop(entity.entityHandle, prevTile);
+                    Interfacing.PerformInterfaceStop(entity.graphicsHandle, prevTile);
                     if (shouldStopNearDest) pathEnd = pathStart;
                     isWalking = false;
                 }
