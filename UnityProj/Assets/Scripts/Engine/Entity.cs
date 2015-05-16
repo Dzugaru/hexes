@@ -54,7 +54,7 @@ namespace Engine
             }
         }
 
-        public void Spawn(HexXY p)
+        public virtual void Spawn(HexXY p)
         {
             if (!hasGraphicsHandle)            
                 graphicsHandle = Interfacing.CreateEntity(graphicsHandle.objClass, entityType);                            
@@ -78,7 +78,7 @@ namespace Engine
             }
         }
 
-        public void Die()
+        public virtual void Die()
         {
             foreach (var comp in components) comp.OnDie();            
 

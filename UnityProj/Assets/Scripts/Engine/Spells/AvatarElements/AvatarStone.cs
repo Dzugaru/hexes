@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Engine
 {
@@ -30,7 +31,24 @@ namespace Engine
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
         {
-            throw new NotImplementedException();
+            float powerLeft = avatar.spell.GetElementalPower(elementRuneIdx);
+            if (powerLeft == 0)
+            {
+                avatar.finishState = Avatar.FinishedState.DiedCauseTooWeak;
+                return;
+            }
+
+            if (!isDrawing || !WorldBlock.S.pfIsPassable(to))
+            {
+                avatar.spell.UseElementalPower(elementRuneIdx, 0.01f);
+            }
+            else
+            {
+                avatar.spell.UseElementalPower(elementRuneIdx, 0.2f);
+
+                var spellEffect = new SpellEffects.Stone(1);
+                spellEffect.StackOn(to);
+            }
         }
     }
 }

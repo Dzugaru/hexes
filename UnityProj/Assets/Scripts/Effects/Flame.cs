@@ -13,6 +13,9 @@ public class Flame : SpellEffectGraphics
 
     public float lightIntensity = 2.5f;
     public float lightFlickerPart = 0.2f;
+    public float deathTime = 1;
+
+    float? deathTimeLeft;
     
 
 	void OnEnable()
@@ -32,8 +35,18 @@ public class Flame : SpellEffectGraphics
 	
 	
 	void Update()
-    {          
+    {     
         light.intensity = Mathf.Lerp(0.1f, 1f, power.value) * Random.Range(lightIntensity - lightIntensity * lightFlickerPart, lightIntensity);
+
+        if (deathTimeLeft.HasValue)
+        {
+            deathTimeLeft -= Time.deltaTime;
+            if (deathTimeLeft <= 0) Destroy(gameObject);
+            else
+            {
+                light.intensity *= deathTimeLeft.Value / deathTime;
+            }
+        }
 
         if (power.isNew)
         {            
@@ -52,4 +65,13 @@ public class Flame : SpellEffectGraphics
             cinderParticles.emissionRate = Mathf.Lerp(0, 1f, power.value) * origCinderEmitRate;        
         }
 	}
+
+    public override void Die()
+    {
+        deathTimeLeft = deathTime;
+        coreParticles.emissionRate = 0;
+        cinderParticles.emissionRate = 0;
+    }
+
+    
 }

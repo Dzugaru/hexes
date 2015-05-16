@@ -7,7 +7,7 @@ namespace Engine
 {
     public interface IAvatarElement
     {        
-        void OnMove(HexXY from, HexXY to, bool isDrawing);
+        void OnMove(HexXY from, HexXY to, bool isDrawing); //TODO: make this virtual with default "power" implementation?
         bool CanAvatarFork();
         void ForkTo(Avatar to);
     }

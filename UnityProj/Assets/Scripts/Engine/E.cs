@@ -47,7 +47,7 @@ namespace Engine
 
         public static void PlayerMove(HexXY p)
         {
-            if (WorldBlock.S.GetCellType(p) != TerrainCellType.Empty &&
+            if (WorldBlock.S.pfIsPassable(p) &&
                (!player.walker.dest.HasValue || p != player.walker.dest))
             {
                 player.walker.SetDest(p, 10, false);

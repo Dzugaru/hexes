@@ -46,7 +46,8 @@ public enum InanimateType
 
 public enum SpellEffectType
 {
-    GroundFlame
+    GroundFlame,
+    Stone
 }
 
 public enum RuneType

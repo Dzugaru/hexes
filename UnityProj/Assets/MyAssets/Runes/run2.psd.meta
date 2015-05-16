@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: ccdd116789bd42d4a9a68cf35c34888c
-timeCreated: 1431552152
+timeCreated: 1431818326
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -83,7 +83,7 @@ TextureImporter:
         width: 72
         height: 71
       alignment: 9
-      pivot: {x: .0716760457, y: .496897519}
+      pivot: {x: .159701884, y: .965114534}
       border: {x: 0, y: 0, z: 0, w: 0}
     - name: run2_2
       rect:
@@ -93,7 +93,7 @@ TextureImporter:
         width: 72
         height: 71
       alignment: 9
-      pivot: {x: .930841863, y: .493527681}
+      pivot: {x: .75810349, y: .951669633}
       border: {x: 0, y: 0, z: 0, w: 0}
     - name: run2_3
       rect:
