@@ -9,6 +9,9 @@ public class HexTerrain : MonoBehaviour
     static readonly float r3 = Mathf.Sqrt(3);
 
     GameObject wallPrefab;
+    GameObject wallsParent;
+
+    public bool enableWalls = true;
 
     static Vector2[] cellVertices = new Vector2[]
         {
@@ -31,7 +34,7 @@ public class HexTerrain : MonoBehaviour
     void Awake()
     {
         //Generate wall mesh for now, model later    
-        float wallHeight = 3;
+        float wallHeight = 1.5f;
         float topTexScale = 0.5f;
         float sideTexScale = 0.5f;
 
@@ -90,6 +93,11 @@ public class HexTerrain : MonoBehaviour
         meshFilter.mesh = mesh;
     }
 
+    void Update()
+    {
+        if (enableWalls != wallsParent.activeSelf)        
+            wallsParent.SetActive(enableWalls);
+    }
 
     public void GenerateMultiple(WorldBlock wb, float hexInset, float terrainTexScale)
     {
@@ -272,7 +280,8 @@ public class HexTerrain : MonoBehaviour
     {
         bool[,] used = new bool[WorldBlock.sz, WorldBlock.sz];
 
-        GameObject wallsParent = new GameObject("Walls");
+        wallsParent = new GameObject("Walls");
+        wallsParent.SetActive(enableWalls);
         wallsParent.transform.SetParent(transform, false);      
 
         for (int x = 0; x < WorldBlock.sz; x++)

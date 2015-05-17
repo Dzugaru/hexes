@@ -18,7 +18,7 @@ namespace Engine
             player = new Player();
             player.Spawn(new HexXY(16, 16));
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 0; i++)
             {
                 HexXY p;
                 do

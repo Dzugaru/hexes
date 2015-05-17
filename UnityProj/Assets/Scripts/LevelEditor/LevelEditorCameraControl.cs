@@ -54,19 +54,23 @@ public class LevelEditorCameraControl : MonoBehaviour
             //Scroll 
             else
             {
-                if (mousePos.x < scrollMargin)
+                //if (mousePos.x < scrollMargin)
+                if(Input.GetKey(KeyCode.A))
                     transform.position -= transform.right * scrollSpeed * Time.deltaTime;
 
-                if (mousePos.x > Screen.width - scrollMargin)
+                //if (mousePos.x > Screen.width - scrollMargin)
+                if (Input.GetKey(KeyCode.D))
                     transform.position += transform.right * scrollSpeed * Time.deltaTime;
 
                 Vector3 fwd = transform.forward;
                 fwd.y = 0;
 
-                if (mousePos.y < scrollMargin)
+                //if (mousePos.y < scrollMargin)
+                if (Input.GetKey(KeyCode.S))
                     transform.position -= fwd * scrollSpeed * Time.deltaTime;
 
-                if (mousePos.y > Screen.height - scrollMargin)
+                //if (mousePos.y > Screen.height - scrollMargin)
+                if (Input.GetKey(KeyCode.W))
                     transform.position += fwd * scrollSpeed * Time.deltaTime;
             }
         }
