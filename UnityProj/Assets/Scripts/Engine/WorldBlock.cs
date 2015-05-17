@@ -79,7 +79,7 @@ namespace Engine
         //}
 
         //Generation
-        public void Generate(BinaryNoiseFunc nonEmpty, BinaryNoiseFunc snow)
+        public void Generate(BinaryNoiseFunc nonEmpty, BinaryNoiseFunc snow, bool cutEdges)
         {
             nonEmptyCellsCount = 0;
             for (int i = 0; i < cellTypeCounts.Length; i++)
@@ -89,6 +89,8 @@ namespace Engine
             {
                 for (int x = 0; x < sz; x++)
                 {
+                    if (cutEdges && (x == 0 || y == 0 || x == sz - 1 || y == sz - 1)) continue;
+
                     HexXY c = position + new HexXY(x, y);
                     Vector2 p = c.ToPlaneCoordinates();
                     TerrainCellType type;

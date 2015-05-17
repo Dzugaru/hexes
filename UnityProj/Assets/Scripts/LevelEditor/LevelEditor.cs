@@ -12,7 +12,7 @@ public class LevelEditor : MonoBehaviour
     {
         WorldBlock.S = new WorldBlock(new HexXY(0, 0));
         WorldBlock.S.Generate(new BinaryNoiseFunc(new Vector2(100, 200), 0.25f, 0.7f),
-                            new BinaryNoiseFunc(new Vector2(200, 100), 0.25f, 0.3f));
+                            new BinaryNoiseFunc(new Vector2(200, 100), 0.25f, 0.3f), true);
 
         GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);
         ht.name = "Terrain";
