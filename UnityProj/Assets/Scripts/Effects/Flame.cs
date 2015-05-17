@@ -59,8 +59,11 @@ public class Flame : SpellEffectGraphics
             if(UnityEditor.EditorApplication.isPlaying)
                 coreRenderer.material.SetColor("_TintColor", c);
             else
+                coreRenderer.sharedMaterial.SetColor("_TintColor", c);
+#else
+            coreRenderer.material.SetColor("_TintColor", c);
 #endif
-            coreRenderer.sharedMaterial.SetColor("_TintColor", c);
+
 
             cinderParticles.emissionRate = Mathf.Lerp(0, 1f, power.value) * origCinderEmitRate;        
         }

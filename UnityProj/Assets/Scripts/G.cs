@@ -60,7 +60,7 @@ public class G : MonoBehaviour
 
         GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);        
         ht.name = "Terrain";       
-        ht.GetComponent<HexTerrain>().Generate(WorldBlock.S);
+        ht.GetComponent<HexTerrain>().GenerateMultiple(WorldBlock.S, hexInset, terrainTexScale);
 
         //DEBUG load saved spell
         string spellFilePath = Path.Combine(Application.persistentDataPath, "spell");

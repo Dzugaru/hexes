@@ -14,11 +14,11 @@ namespace Engine
         {
             WorldBlock.S = new WorldBlock(new HexXY(0, 0));
             WorldBlock.S.Generate(new BinaryNoiseFunc(new Vector2(100, 200), 0.25f, 0.7f),
-                                new BinaryNoiseFunc(new Vector2(200, 100), 0.25f, 0.0f));
+                                new BinaryNoiseFunc(new Vector2(200, 100), 0.25f, 0.3f));
             player = new Player();
             player.Spawn(new HexXY(16, 16));
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 0; i++)
             {
                 HexXY p;
                 do

@@ -18,7 +18,13 @@ namespace Engine
         public int[] cellTypeCounts = new int[terrainTypesCount];
         public int nonEmptyCellsCount;
 
-        public TerrainCellType GetCellType(HexXY p) { return cellTypes[p.x, p.y]; }
+        public TerrainCellType GetCellType(HexXY pos)
+        {
+            if (pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz)
+                return cellTypes[pos.x, pos.y];
+            else
+                return TerrainCellType.Empty;
+        }
 
         //Entities
         public LList<Entity> entityList = new LList<Entity>();
@@ -90,7 +96,7 @@ namespace Engine
                     {
                         if (snow.Get(p))
                         {
-                            type = TerrainCellType.Snow;
+                            type = TerrainCellType.Grass;
                         }
                         else
                         {
