@@ -50,7 +50,7 @@ public class TerrainController : MonoBehaviour
         Vector3 coord3d = viewRay.origin + viewRay.direction * dist;
         Vector2 coord2d = new Vector2(coord3d.x, coord3d.z);
 
-        HexXY centerBlockPos = E.level.GetBlockCoords(coord2d);
+        HexXY centerBlockPos = Level.GetBlockCoords(coord2d);
 
         //Destroy out of range
         List<HexXY> destroyList = new List<HexXY>();

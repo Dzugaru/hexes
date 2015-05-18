@@ -17,20 +17,24 @@ public class StickyButton : MonoBehaviour
     }
 
     public virtual void OnClick()
-    {        
+    {
         if (!isPressed)
         {
             foreach (var btn in GameObject.FindGameObjectsWithTag(gameObject.tag))
             {
-                if (btn.GetComponent<StickyButton>().isPressed)                
-                    btn.GetComponent<StickyButton>().SetPressed(false);                
+                if (btn.GetComponent<StickyButton>().isPressed)
+                    btn.GetComponent<StickyButton>().SetPressed(false);
             }
 
             SetPressed(true);
         }
+        else
+        {
+            SetPressed(false);
+        }
     }
 
-    public virtual void SetPressed(bool pressed)
+    public void SetPressed(bool pressed)
     {
         isPressed = pressed;
         if (isPressed) GetComponent<Image>().color = pressedColor;

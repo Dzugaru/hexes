@@ -8,13 +8,15 @@ public class TerrainTypeStickyButton : StickyButton
 {
     public TerrainCellType type;
 
-    public override void SetPressed(bool pressed)
+    public override void OnClick()
     {
-        base.SetPressed(pressed);
+        base.OnClick();
 
-        LevelEditor.S.brushCellType = type;
+        if (isPressed)
+            LevelEditor.S.brushCellType = type;
+        else
+            LevelEditor.S.brushCellType = null;
+        
     }
-
-    
 }
 

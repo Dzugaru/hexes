@@ -279,27 +279,28 @@ public class HexTerrain : MonoBehaviour
 
     public void GenerateWalls(WorldBlock wb)
     {
-        bool[,] used = new bool[WorldBlock.sz, WorldBlock.sz];
-
         wallsParent = new GameObject("Walls");
         wallsParent.SetActive(enableWalls);
         wallsParent.transform.SetParent(transform, false);
         wallsParent.transform.localPosition = Vector3.zero;    
 
-        for (int x = 0; x < WorldBlock.sz; x++)
+        for (int x = -1; x <= WorldBlock.sz; x++)
         {
-            for (int y = 0; y < WorldBlock.sz; y++)
+            for (int y = -1; y <= WorldBlock.sz; y++)
             {                
                 HexXY p = new HexXY(x, y);
                 Vector2 coords = p.ToPlaneCoordinates();
-                if (wb.GetCellType(p) != TerrainCellType.Empty ||
-                    used[x,y]) continue;
+                //Need to request other blocks in case we're drawing outside wall
+                if ((!wb.IsInRange(p) && E.level.GetCellType(p + new HexXY(wb.position.x * WorldBlock.sz, wb.position.y * WorldBlock.sz)) != TerrainCellType.Empty) ||
+                     wb.IsInRange(p) && wb.GetCellType(p) != TerrainCellType.Empty) continue;
 
                 bool hasNeigh = false;
                 for (int n = 0; n < 6; n++)
                 {
-                    HexXY np = p + HexXY.neighbours[n];
-                    if (wb.IsInRange(np) && wb.GetCellType(np) != TerrainCellType.Empty)
+                    HexXY np = p + HexXY.neighbours[n];                    
+                    if (!wb.IsInRange(np)) continue;
+
+                    if (wb.GetCellType(np) != TerrainCellType.Empty)
                     {
                         hasNeigh = true;
                         break;

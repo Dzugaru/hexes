@@ -10,10 +10,12 @@ public class LevelEditor : MonoBehaviour
     public static LevelEditor S { get; private set; }
     
     Canvas canvas;
+    
 
-    public TerrainCellType brushCellType;
+    public TerrainCellType? brushCellType;
     public int brushSize;
     public bool shouldPaintOnEmpty;
+    public GameObject sunLight;
 
     void Awake()
     {
@@ -28,7 +30,7 @@ public class LevelEditor : MonoBehaviour
     {
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) && brushCellType.HasValue)
         {
             HexXY p = getMouseOverTile();
 
@@ -44,14 +46,45 @@ public class LevelEditor : MonoBehaviour
                         if (HexXY.Dist(d) > brushSize - 1) continue;
                         HexXY pd = p + d;
 
-                        var cellType = E.level.GetCell(pd);
+                        var cellType = E.level.GetCellType(pd);
 
-                        if (cellType != brushCellType &&
-                            (shouldPaintOnEmpty || cellType != TerrainCellType.Empty || brushCellType == TerrainCellType.Empty))
+                        if (cellType != brushCellType.Value &&
+                            (shouldPaintOnEmpty || cellType != TerrainCellType.Empty || brushCellType.Value == TerrainCellType.Empty))
                         {
-                            var changedWb = E.level.SetCell(pd, brushCellType);
+                            var changedWb = E.level.SetCellType(pd, brushCellType.Value);
                             if(!changedBlocks.Contains(changedWb))
-                                changedBlocks.Add(changedWb);                       
+                                changedBlocks.Add(changedWb);
+
+                            HexXY locp = Level.GetLocalCoords(pd);
+
+                            //Other blocks possible walls fix
+                            if (locp.x == 0)
+                            {
+                                var nbl = E.level.GetBlock(changedWb.position - new HexXY(1, 0));
+                                if(nbl != null && !changedBlocks.Contains(nbl))
+                                    changedBlocks.Add(nbl);
+                            }
+
+                            if (locp.y == 0)
+                            {
+                                var nbl = E.level.GetBlock(changedWb.position - new HexXY(0, 1));
+                                if (nbl != null && !changedBlocks.Contains(nbl))
+                                    changedBlocks.Add(nbl);
+                            }
+
+                            if (locp.x == WorldBlock.sz - 1)
+                            {
+                                var nbl = E.level.GetBlock(changedWb.position + new HexXY(1, 0));
+                                if (nbl != null && !changedBlocks.Contains(nbl))
+                                    changedBlocks.Add(nbl);
+                            }
+
+                            if (locp.y == WorldBlock.sz - 1)
+                            {
+                                var nbl = E.level.GetBlock(changedWb.position + new HexXY(0, 1));
+                                if (nbl != null && !changedBlocks.Contains(nbl))
+                                    changedBlocks.Add(nbl);
+                            }
                         }
                     }
                 }
@@ -81,6 +114,14 @@ public class LevelEditor : MonoBehaviour
     public void OnShowWalls(bool val)
     {
         TerrainController.S.IsWallsEnabled = val;
+    }
+
+    public void OnEnableLight(bool val)
+    {
+        if (val)
+            sunLight.GetComponent<Light>().intensity = 1;
+        else
+            sunLight.GetComponent<Light>().intensity = 0f;
     }
 
     HexXY getMouseOverTile()

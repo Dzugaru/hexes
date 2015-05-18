@@ -67,14 +67,23 @@ namespace Engine
             return wbCache.GetNoCache(blockp);            
         }
 
-        public HexXY GetBlockCoords(HexXY p)
+        public static HexXY GetBlockCoords(HexXY p)
         {
             var blockX = p.x < 0 ? -((-p.x - 1) / WorldBlock.sz) - 1 : p.x / WorldBlock.sz;
             var blockY = p.y < 0 ? -((-p.y - 1) / WorldBlock.sz) - 1 : p.y / WorldBlock.sz;
             return new HexXY(blockX, blockY);
         }
 
-        public HexXY GetBlockCoords(Vector2 coord)
+        public static HexXY GetLocalCoords(HexXY p)
+        {
+            HexXY blockPos = GetBlockCoords(p);
+            HexXY localp = new HexXY(0, 0);
+            localp.x = p.x - blockPos.x * WorldBlock.sz;
+            localp.y = p.y - blockPos.y * WorldBlock.sz;
+            return localp;
+        }
+
+        public static HexXY GetBlockCoords(Vector2 coord)
         {            
             return GetBlockCoords(HexXY.FromPlaneCoordinates(coord));
         }
@@ -100,7 +109,7 @@ namespace Engine
             return block;            
         }
 
-        public WorldBlock SetCell(HexXY p, TerrainCellType type)
+        public WorldBlock SetCellType(HexXY p, TerrainCellType type)
         {
             HexXY localPos;
             WorldBlock block = GetBlockWithCell(p, true, out localPos);
@@ -108,14 +117,12 @@ namespace Engine
             return block;
         }
 
-        public TerrainCellType GetCell(HexXY p)
+        public TerrainCellType GetCellType(HexXY p)
         {
             HexXY localPos;
             WorldBlock block = GetBlockWithCell(p, false, out localPos);
             if (block == null) return TerrainCellType.Empty;
             else return block.GetCellType(localPos);
         }
-
-      
     }
 }
