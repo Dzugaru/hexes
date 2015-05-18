@@ -97,6 +97,11 @@ class PlayerInput : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Backslash) && E.player.currentSpell != null)            
             E.player.currentSpell.RedrawOnGround(E.player.currentSpell.root, E.player.pos);
 
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            Camera.main.GetComponent<CameraControl>().IsInRuneDrawingMode = !Camera.main.GetComponent<CameraControl>().IsInRuneDrawingMode;
+        }
+
         //if (Input.GetKeyDown(KeyCode.Space))
         //{
         //    G.g.isTimeStopped = !G.g.isTimeStopped;

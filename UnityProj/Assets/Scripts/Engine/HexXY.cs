@@ -19,14 +19,17 @@ namespace Engine
             this.y = y;
         }
 
+        public static uint Dist(HexXY a)
+        {
+            if ((a.x < 0) == (a.y < 0))
+                return (uint)Mathf.Max(Mathf.Abs(a.x), Mathf.Abs(a.y));
+            else
+                return (uint)Mathf.Abs(a.x - a.y);
+        }
+
         public static uint Dist(HexXY a, HexXY b)
         {
-            int x = a.x - b.x;
-            int y = a.y - b.y;
-            if ((x < 0) == (y < 0))
-                return (uint)Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
-            else
-                return (uint)Mathf.Abs(x - y);
+            return Dist(new HexXY(a.x - b.x, a.y - b.y));
         }
 
         public Vector2 ToPlaneCoordinates()

@@ -9,6 +9,7 @@ namespace Engine
     public static class E
     {
         public static Player player;
+        public static Level level = new Level();
 
         public static void Start()
         {

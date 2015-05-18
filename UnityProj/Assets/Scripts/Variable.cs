@@ -8,33 +8,33 @@ using UnityEngine;
 public class FloatVariable
 {
     [SerializeField]
-    float _value;
+    float value;
 
-    bool _isNew;
+    bool isNew;
 
     public FloatVariable(float v)
     {
-        _value = v;
-        _isNew = true;
+        value = v;
+        isNew = true;
     }
 
-    public float value
+    public float Value
     {
         get
         {
-            return _value;
+            return value;
         }
         set
         {
-            if (!_value.Equals(value))
+            if (!this.value.Equals(value))
             {
-                _isNew = true;
-                _value = value;
+                isNew = true;
+                this.value = value;
             }
         }
     }
 
-    public bool isNew
+    public bool IsNew
     {
         get
         {
@@ -42,8 +42,8 @@ public class FloatVariable
             if (!UnityEditor.EditorApplication.isPlaying) //Field editing in inspector updates field, not property, so everything should update every frame
                 return true;
 #endif
-            bool n = _isNew;
-            _isNew = false;
+            bool n = isNew;
+            isNew = false;
             return n;
         }
     }

@@ -8,12 +8,34 @@ public class CameraControl : MonoBehaviour
     public float scrollSpeed, scrollMargin, zoomSpeed, minZoomDist, maxZoomDist;
     public bool boundToPlayer;
     public float playerCatchupSpeed;
+    public float dipAngle;
 
     public GameObject player;
+
+
+    bool isInRuneDrawingMode;
+    public bool IsInRuneDrawingMode
+    {
+        get
+        {
+            return isInRuneDrawingMode;
+        }
+        set
+        {
+            if (isInRuneDrawingMode != value)
+            {
+                isInRuneDrawingMode = value;
+                runeDrawingChangeProgress = 1;
+            }
+        }
+    }
+
+    float runeDrawingChangeProgress;
 
     void Start()
     {
         camera = GetComponent<Camera>();
+        dipAngle = camera.transform.rotation.eulerAngles.x;
     }
 	
 	void Update ()
@@ -32,7 +54,7 @@ public class CameraControl : MonoBehaviour
             {
                 transform.position -= viewRay.direction * diff;
             }            
-        }
+        }        
 
         //Scroll
         if (!boundToPlayer)
@@ -65,6 +87,26 @@ public class CameraControl : MonoBehaviour
                 Vector3 catchupDir3D = new Vector3(catchupDir2D.x, 0, catchupDir2D.y);
                 camera.transform.position += catchupStep * catchupDir3D;
             }
+        }
+
+        //Rune draw rotate
+        if (runeDrawingChangeProgress != 0)
+        {
+            float delta;       
+            if (IsInRuneDrawingMode)
+            {
+                float oldAngle = Mathf.SmoothStep(90, dipAngle, runeDrawingChangeProgress);
+                runeDrawingChangeProgress -= Time.deltaTime;
+                delta = Mathf.SmoothStep(90, dipAngle, runeDrawingChangeProgress) - oldAngle;                
+            }
+            else
+            {
+                float oldAngle = Mathf.SmoothStep(dipAngle, 90, runeDrawingChangeProgress);
+                runeDrawingChangeProgress -= Time.deltaTime;
+                delta = Mathf.SmoothStep(dipAngle, 90, runeDrawingChangeProgress) - oldAngle;
+            }
+
+            camera.transform.RotateAround(transform.position + viewRay.direction * dist, camera.transform.right, delta);
         }
     }
 }

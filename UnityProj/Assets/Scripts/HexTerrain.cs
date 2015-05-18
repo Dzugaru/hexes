@@ -126,7 +126,7 @@ public class HexTerrain : MonoBehaviour
             {
                 for (int y = 0; y < WorldBlock.sz; y++)
                 {
-                    int ctype = (int)wb.cellTypes[x, y];
+                    int ctype = (int)wb.GetCellType(new HexXY(x, y));
                     if (ctype != k) continue;
 
                     //Main tile     
@@ -151,9 +151,9 @@ public class HexTerrain : MonoBehaviour
                     //    HexXY ngr = curr + HexXY.neighbours[(n + 1) % 6];
                     //    HexXY ngrn = ngr + HexXY.neighbours[n];
                     //    Vector2 ngCoord = ng.ToPlaneCoordinates();
-                    //    if (WorldBlock.S.GetCellType(ng) != TerrainCellType.Empty &&
-                    //       WorldBlock.S.GetCellType(ngr) == TerrainCellType.Empty &&
-                    //       WorldBlock.S.GetCellType(ngrn) == TerrainCellType.Empty)
+                    //    if (wb.GetCellType(ng) != TerrainCellType.Empty &&
+                    //       wb.GetCellType(ngr) == TerrainCellType.Empty &&
+                    //       wb.GetCellType(ngrn) == TerrainCellType.Empty)
                     //    {
                     //        Vector2 vert = cellVertices[(n + 1) % 6] + coord;
                     //        vertices.Add(new Vector3(vert.x, 0, vert.y));
@@ -207,13 +207,14 @@ public class HexTerrain : MonoBehaviour
             {
                 for (int y = 0; y < WorldBlock.sz; y++)
                 {
-                    var currType = wb.cellTypes[x, y];                    
+                    var currType = wb.GetCellType(new HexXY(x, y));
                     for (int n = 0; n < 3; n++)
                     {
                         HexXY curr = new HexXY(x, y);
                         HexXY ng = curr + HexXY.neighbours[n];
                         HexXY ngr = curr + HexXY.neighbours[(n + 1) % 6];
-                        if (WorldBlock.S.GetCellType(ng) == TerrainCellType.Empty && currType == TerrainCellType.Empty) continue;
+                        if (currType == TerrainCellType.Empty &&
+                            (!wb.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty)) continue;
 
                         Vector2 currCoord = curr.ToPlaneCoordinates();
                         Vector2 ngCoord = ng.ToPlaneCoordinates();
@@ -239,9 +240,9 @@ public class HexTerrain : MonoBehaviour
                         triangles.Add(vertices.Count - 4 + 3);
 
                         //Triangle between three
-                        if (WorldBlock.S.GetCellType(ngr) == TerrainCellType.Empty &&
-                            WorldBlock.S.GetCellType(ng) == TerrainCellType.Empty &&
-                            currType == TerrainCellType.Empty) continue;
+                        if (currType == TerrainCellType.Empty &&
+                            (!wb.IsInRange(ngr) || wb.GetCellType(ngr) == TerrainCellType.Empty) &&
+                            (!wb.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty)) continue;
                         Vector2 ngrCoord = ngr.ToPlaneCoordinates();
 
                         vert = cellVertices[(n + 1) % 6] * hexInset + currCoord;
@@ -282,7 +283,8 @@ public class HexTerrain : MonoBehaviour
 
         wallsParent = new GameObject("Walls");
         wallsParent.SetActive(enableWalls);
-        wallsParent.transform.SetParent(transform, false);      
+        wallsParent.transform.SetParent(transform, false);
+        wallsParent.transform.localPosition = Vector3.zero;    
 
         for (int x = 0; x < WorldBlock.sz; x++)
         {
@@ -290,13 +292,14 @@ public class HexTerrain : MonoBehaviour
             {                
                 HexXY p = new HexXY(x, y);
                 Vector2 coords = p.ToPlaneCoordinates();
-                if (WorldBlock.S.GetCellType(p) != TerrainCellType.Empty ||
+                if (wb.GetCellType(p) != TerrainCellType.Empty ||
                     used[x,y]) continue;
 
                 bool hasNeigh = false;
                 for (int n = 0; n < 6; n++)
                 {
-                    if (WorldBlock.S.GetCellType(p + HexXY.neighbours[n]) != TerrainCellType.Empty)
+                    HexXY np = p + HexXY.neighbours[n];
+                    if (wb.IsInRange(np) && wb.GetCellType(np) != TerrainCellType.Empty)
                     {
                         hasNeigh = true;
                         break;
@@ -305,9 +308,9 @@ public class HexTerrain : MonoBehaviour
 
                 if (!hasNeigh) continue;
 
-                var wall = Instantiate<GameObject>(wallPrefab);
+                var wall = Instantiate(wallPrefab);
                 wall.transform.SetParent(wallsParent.transform, false);
-                wall.transform.position = new Vector3(coords.x, 0, coords.y);
+                wall.transform.localPosition = new Vector3(coords.x, 0, coords.y);
                 wall.SetActive(true);
             }
         }                

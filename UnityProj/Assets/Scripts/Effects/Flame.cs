@@ -20,7 +20,7 @@ public class Flame : SpellEffectGraphics
 
 	void OnEnable()
     {
-        power.value = 1;
+        power.Value = 1;
 
         light = transform.GetChild(0).GetComponent<Light>();        
 
@@ -36,7 +36,7 @@ public class Flame : SpellEffectGraphics
 	
 	void Update()
     {     
-        light.intensity = Mathf.Lerp(0.1f, 1f, power.value) * Random.Range(lightIntensity - lightIntensity * lightFlickerPart, lightIntensity);
+        light.intensity = Mathf.Lerp(0.1f, 1f, power.Value) * Random.Range(lightIntensity - lightIntensity * lightFlickerPart, lightIntensity);
 
         if (deathTimeLeft.HasValue)
         {
@@ -48,11 +48,11 @@ public class Flame : SpellEffectGraphics
             }
         }
 
-        if (power.isNew)
+        if (power.IsNew)
         {            
-            coreParticles.startSpeed = Mathf.Lerp(0.25f, 1f, power.value) * origCoreSpeed;
+            coreParticles.startSpeed = Mathf.Lerp(0.25f, 1f, power.Value) * origCoreSpeed;
             Color c = origTint;
-            c = new Color(c.r, c.g, c.b, Mathf.Lerp(0.02f, 1f, power.value) * c.a);
+            c = new Color(c.r, c.g, c.b, Mathf.Lerp(0.02f, 1f, power.Value) * c.a);
 
             //Instantiate in editor only if playing not editing
 #if UNITY_EDITOR
@@ -65,7 +65,7 @@ public class Flame : SpellEffectGraphics
 #endif
 
 
-            cinderParticles.emissionRate = Mathf.Lerp(0, 1f, power.value) * origCinderEmitRate;        
+            cinderParticles.emissionRate = Mathf.Lerp(0, 1f, power.Value) * origCinderEmitRate;        
         }
 	}
 

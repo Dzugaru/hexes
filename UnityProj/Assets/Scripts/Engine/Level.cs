@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Engine
 {
@@ -20,6 +21,13 @@ namespace Engine
             CacheEntry[] cache = new CacheEntry[cacheMaxSz];
             int cacheSz = 0;
             Dictionary<HexXY, WorldBlock> all = new Dictionary<HexXY, WorldBlock>();
+
+            public WorldBlock GetNoCache(HexXY p)
+            {
+                WorldBlock block = null;
+                all.TryGetValue(p, out block);
+                return block;
+            }
 
             public WorldBlock Get(HexXY p)
             {
@@ -54,13 +62,27 @@ namespace Engine
             //TODO: update only active blocks (in radius?)
         }
 
+        public WorldBlock GetBlock(HexXY blockp)
+        {
+            return wbCache.GetNoCache(blockp);            
+        }
+
+        public HexXY GetBlockCoords(HexXY p)
+        {
+            var blockX = p.x < 0 ? -((-p.x - 1) / WorldBlock.sz) - 1 : p.x / WorldBlock.sz;
+            var blockY = p.y < 0 ? -((-p.y - 1) / WorldBlock.sz) - 1 : p.y / WorldBlock.sz;
+            return new HexXY(blockX, blockY);
+        }
+
+        public HexXY GetBlockCoords(Vector2 coord)
+        {            
+            return GetBlockCoords(HexXY.FromPlaneCoordinates(coord));
+        }
+
         WorldBlock GetBlockWithCell(HexXY p, bool shouldCreateIfNotFound, out HexXY localp)
         {
             localp = new HexXY(0, 0);
-
-            var blockX = p.x < 0 ? (-p.x - 1) / WorldBlock.sz - 1 : p.x / WorldBlock.sz;
-            var blockY = p.y < 0 ? (-p.y - 1) / WorldBlock.sz - 1 : p.y / WorldBlock.sz;
-            var blockPos = new HexXY(blockX, blockY);
+            HexXY blockPos = GetBlockCoords(p);
 
             WorldBlock block = wbCache.Get(blockPos);
             if (block == null)
@@ -73,14 +95,27 @@ namespace Engine
                 }
             }
 
-            localp.x = p.x - blockX * WorldBlock.sz;
-            localp.y = p.y - blockY * WorldBlock.sz;
+            localp.x = p.x - blockPos.x * WorldBlock.sz;
+            localp.y = p.y - blockPos.y * WorldBlock.sz;
             return block;            
         }
 
-        public void SetCell(HexXY p, TerrainCellType type)
+        public WorldBlock SetCell(HexXY p, TerrainCellType type)
         {
-
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, true, out localPos);
+            block.SetCellType(localPos, type);
+            return block;
         }
+
+        public TerrainCellType GetCell(HexXY p)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            if (block == null) return TerrainCellType.Empty;
+            else return block.GetCellType(localPos);
+        }
+
+      
     }
 }

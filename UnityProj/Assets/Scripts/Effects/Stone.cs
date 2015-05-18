@@ -29,9 +29,9 @@ public class Stone : SpellEffectGraphics
 
     void Update()
     {
-        if (power.isNew)
+        if (power.IsNew)
         {
-            transform.position = new Vector3(transform.position.x, Mathf.Lerp(origYPos, -0.3f, 1 - power.value), transform.position.z);
+            transform.position = new Vector3(transform.position.x, Mathf.Lerp(origYPos, -0.3f, 1 - power.Value), transform.position.z);
         }
     }    
 }

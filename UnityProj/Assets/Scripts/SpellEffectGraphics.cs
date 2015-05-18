@@ -28,7 +28,7 @@ public class SpellEffectGraphics : EntityGraphics
 
     public void UpdateInterface(float power)
     {        
-        this.power.value = power;
+        this.power.Value = power;
     }
 
     void ScaleParticleSystems()

@@ -3,7 +3,7 @@ using System.Collections;
 
 public class LevelEditorCameraControl : MonoBehaviour
 {
-    public static readonly Plane gamePlane = new Plane(new Vector3(0, 1, 0), 0);
+    static readonly Plane gamePlane = new Plane(new Vector3(0, 1, 0), 0);
 
     new Camera camera;
 

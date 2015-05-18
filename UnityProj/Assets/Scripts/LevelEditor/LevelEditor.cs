@@ -3,53 +3,24 @@ using System.Collections;
 using Engine;
 using System.Diagnostics;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class LevelEditor : MonoBehaviour
 {
     public static LevelEditor S { get; private set; }
-
-    public GameObject hexTerrainPrefab;
-    public float hexInset = 0.95f;
-    public float terrainTexScale = 0.2f;
-
-    GameObject terrain;
+    
     Canvas canvas;
 
     public TerrainCellType brushCellType;
     public int brushSize;
     public bool shouldPaintOnEmpty;
 
-    void Start ()
+    void Awake()
     {
-        S = this;
+        S = this;     
 
-        WorldBlock.S = new WorldBlock(new HexXY(0, 0));
-        WorldBlock.S.Generate(new BinaryNoiseFunc(new Vector2(100, 200), 0.25f, 0.7f),
-                            new BinaryNoiseFunc(new Vector2(200, 100), 0.25f, 0.3f), true);
-
-        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
-
-        RegenerateTerrain();
-    }
-
-    void RegenerateTerrain()
-    {
-        Stopwatch sw = new Stopwatch();
-
-        sw.Start();
-        bool wasWallsEnabled = false;
-        if (terrain != null)
-        {
-            wasWallsEnabled = terrain.GetComponent<HexTerrain>().enableWalls;
-            Destroy(terrain);
-        }
-
-        terrain = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);
-        terrain.GetComponent<HexTerrain>().enableWalls = wasWallsEnabled;
-        terrain.GetComponent<HexTerrain>().GenerateMultiple(WorldBlock.S, hexInset, terrainTexScale);        
-        sw.Stop();
-        UnityEngine.Debug.Log("Terrain regen in " + sw.ElapsedMilliseconds + " ms");
-    }
+        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();        
+    } 
 
     HexXY? brushOldMousePos;
 
@@ -63,30 +34,30 @@ public class LevelEditor : MonoBehaviour
 
             if (p != brushOldMousePos)
             {
-                bool isChanged = false;
+                var changedBlocks = new HashSet<WorldBlock>();
 
                 for (int x = -(brushSize - 1); x <= brushSize - 1; x++)
                 {
                     for (int y = -(brushSize - 1); y <= brushSize - 1; y++)
                     {
                         HexXY d = new HexXY(x, y);
-                        if (HexXY.Dist(new HexXY(0, 0), d) > brushSize - 1) continue;
-                        HexXY pd = p + d;                       
+                        if (HexXY.Dist(d) > brushSize - 1) continue;
+                        HexXY pd = p + d;
 
-                        if (pd.x >= 1 && pd.x < WorldBlock.sz - 1 && pd.y >= 1 && pd.y < WorldBlock.sz - 1)
+                        var cellType = E.level.GetCell(pd);
+
+                        if (cellType != brushCellType &&
+                            (shouldPaintOnEmpty || cellType != TerrainCellType.Empty || brushCellType == TerrainCellType.Empty))
                         {
-                            if (WorldBlock.S.cellTypes[pd.x, pd.y] != brushCellType &&
-                                (shouldPaintOnEmpty || WorldBlock.S.cellTypes[pd.x, pd.y] != TerrainCellType.Empty || brushCellType == TerrainCellType.Empty))
-                            {
-                                WorldBlock.S.cellTypes[pd.x, pd.y] = brushCellType;
-                                isChanged = true;
-                            }
+                            var changedWb = E.level.SetCell(pd, brushCellType);
+                            if(!changedBlocks.Contains(changedWb))
+                                changedBlocks.Add(changedWb);                       
                         }
                     }
                 }
 
-                if(isChanged)
-                    RegenerateTerrain();
+                foreach (var wb in changedBlocks)
+                    TerrainController.S.RecreateHexTerrain(wb);
             }
 
             brushOldMousePos = p;            
@@ -109,7 +80,7 @@ public class LevelEditor : MonoBehaviour
 
     public void OnShowWalls(bool val)
     {
-        terrain.GetComponent<HexTerrain>().enableWalls = val;
+        TerrainController.S.IsWallsEnabled = val;
     }
 
     HexXY getMouseOverTile()

@@ -7,7 +7,7 @@ using System.IO;
 
 public class G : MonoBehaviour
 {    
-    public static G g { get; private set; }
+    public static G S { get; private set; }
 
     public GameObject hexTerrainPrefab;
 
@@ -34,12 +34,12 @@ public class G : MonoBehaviour
         entities = new Dictionary<Interfacing.EntityHandle, GameObject>();
         entitiesCountByClass = new uint[entitiesClassesCount];
 
-        if (g != null)
+        if (S != null)
         {
             throw new InvalidProgramException("Two global objects");
         }
 
-        g = this;
+        S = this;
 
         Logger.LogAction = msg => Debug.Log(msg);
 
