@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Engine
@@ -15,8 +16,7 @@ namespace Engine
 
         //Terrain
         TerrainCellType[,] cellTypes = new TerrainCellType[sz, sz];
-        public int[] cellTypeCounts = new int[terrainTypesCount];
-        public int nonEmptyCellsCount;
+        public int[] cellTypeCounts = new int[terrainTypesCount];       
 
         public TerrainCellType GetCellType(HexXY pos)
         {
@@ -75,12 +75,47 @@ namespace Engine
             for (int x = 0; x < sz; x++)
                 for (int y = 0; y < sz; y++)
                     entityMap[x, y] = new LList<Entity>();
-        }       
+        }
 
-        //Generation
-        public void Generate(BinaryNoiseFunc nonEmpty, BinaryNoiseFunc snow, bool cutEdges)
+        public void SaveStaticPart(BinaryWriter writer)
         {
-            nonEmptyCellsCount = 0;
+            writer.Write(position.x);
+            writer.Write(position.y);
+            for (int x = 0; x < sz; x++)
+                for (int y = 0; y < sz; y++)
+                    writer.Write((byte)cellTypes[x, y]);
+        }
+
+        public static WorldBlock Load(BinaryReader reader)
+        {
+            var pos = new HexXY(reader.ReadInt32(), reader.ReadInt32()); 
+
+            var wb = new WorldBlock(pos);
+            for (int x = 0; x < sz; x++)
+                for (int y = 0; y < sz; y++)
+                {
+                    var type = (TerrainCellType)reader.ReadByte();
+                    wb.cellTypes[x, y] = type;
+                    ++wb.cellTypeCounts[(int)type];
+                }
+            return wb;
+        }
+
+        public void SaveDynamicPart(BinaryWriter writer)
+        {
+            //TODO: this should save entities and pfBlockedMap etc.
+            throw new NotImplementedException();
+        }
+
+        public void LoadDynamicPart(BinaryReader reader)
+        {
+            //TODO: this should load entities and pfBlockedMap etc.
+            throw new NotImplementedException();
+        }
+
+        //Procedural generation
+        public void Generate(BinaryNoiseFunc nonEmpty, BinaryNoiseFunc snow, bool cutEdges)
+        {           
             for (int i = 0; i < cellTypeCounts.Length; i++)
                 cellTypeCounts[i] = 0;
 
@@ -102,8 +137,7 @@ namespace Engine
                         else
                         {
                             type = TerrainCellType.DryGround;
-                        }
-                        ++nonEmptyCellsCount;
+                        }                       
                     }
                     else
                     {
@@ -115,19 +149,7 @@ namespace Engine
             }
 
             pfCalcStaticBlocking();
-        }
-
-        public void GenerateSolidFirstType()
-        {
-            for (int i = 0; i < cellTypeCounts.Length; i++)
-                cellTypeCounts[i] = 0;
-
-            nonEmptyCellsCount = cellTypeCounts[1] = sz * sz;
-
-            for (int y = 0; y < sz; y++)
-                for (int x = 0; x < sz; x++)
-                    cellTypes[x, y] = (TerrainCellType)1;
-        }
+        }      
     }
 }
 

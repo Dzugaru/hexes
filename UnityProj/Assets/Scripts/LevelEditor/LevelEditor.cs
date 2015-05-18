@@ -4,6 +4,8 @@ using Engine;
 using System.Diagnostics;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.IO;
+
 
 public class LevelEditor : MonoBehaviour
 {
@@ -17,11 +19,21 @@ public class LevelEditor : MonoBehaviour
     public bool shouldPaintOnEmpty;
     public GameObject sunLight;
 
+    public string levelSaveName;
+
     void Awake()
     {
         S = this;     
 
-        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();        
+        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+
+        if (File.Exists(Path.Combine(Application.persistentDataPath, levelSaveName)))
+        {
+            using (BinaryReader reader = new BinaryReader(File.OpenRead(Path.Combine(Application.persistentDataPath, levelSaveName))))
+            {
+                E.level = Level.Load(reader);
+            }
+        }
     } 
 
     HexXY? brushOldMousePos;
@@ -122,6 +134,14 @@ public class LevelEditor : MonoBehaviour
             sunLight.GetComponent<Light>().intensity = 1;
         else
             sunLight.GetComponent<Light>().intensity = 0f;
+    }
+
+    public void OnSave()
+    {
+        using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(Path.Combine(Application.persistentDataPath, levelSaveName))))
+        {
+            E.level.SaveStaticPart(writer);
+        }
     }
 
     HexXY getMouseOverTile()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace Engine
 
             CacheEntry[] cache = new CacheEntry[cacheMaxSz];
             int cacheSz = 0;
-            Dictionary<HexXY, WorldBlock> all = new Dictionary<HexXY, WorldBlock>();
+            public Dictionary<HexXY, WorldBlock> all = new Dictionary<HexXY, WorldBlock>();
 
             public WorldBlock GetNoCache(HexXY p)
             {
@@ -31,14 +32,14 @@ namespace Engine
 
             public WorldBlock Get(HexXY p)
             {
-                for (int i = 0; i < cacheSz; i++)                
+                for (int i = 0; i < cacheSz; i++)
                     if (cache[i].pos == p) return cache[i].worldBlock;
 
                 WorldBlock block = null;
                 all.TryGetValue(p, out block);
                 if (block != null)
                 {
-                    for (int i = 1; i < cacheMaxSz; i++)                    
+                    for (int i = 1; i < cacheMaxSz; i++)
                         cache[i] = cache[i - 1];
                     cache[0] = new CacheEntry() { pos = p, worldBlock = block };
                     cacheSz = Math.Min(cacheSz + 1, cacheMaxSz);
@@ -54,8 +55,8 @@ namespace Engine
         }
 
 
-        WorldBlocksCache wbCache = new WorldBlocksCache();       
-        
+        WorldBlocksCache wbCache = new WorldBlocksCache();
+
 
         public void Update(float dt)
         {
@@ -64,7 +65,7 @@ namespace Engine
 
         public WorldBlock GetBlock(HexXY blockp)
         {
-            return wbCache.GetNoCache(blockp);            
+            return wbCache.GetNoCache(blockp);
         }
 
         public static HexXY GetBlockCoords(HexXY p)
@@ -84,7 +85,7 @@ namespace Engine
         }
 
         public static HexXY GetBlockCoords(Vector2 coord)
-        {            
+        {
             return GetBlockCoords(HexXY.FromPlaneCoordinates(coord));
         }
 
@@ -106,7 +107,7 @@ namespace Engine
 
             localp.x = p.x - blockPos.x * WorldBlock.sz;
             localp.y = p.y - blockPos.y * WorldBlock.sz;
-            return block;            
+            return block;
         }
 
         public WorldBlock SetCellType(HexXY p, TerrainCellType type)
@@ -123,6 +124,25 @@ namespace Engine
             WorldBlock block = GetBlockWithCell(p, false, out localPos);
             if (block == null) return TerrainCellType.Empty;
             else return block.GetCellType(localPos);
+        }
+
+        public void SaveStaticPart(BinaryWriter writer)
+        {
+            writer.Write(wbCache.all.Count);
+            foreach (var wb in wbCache.all.Values)            
+                wb.SaveStaticPart(writer);
+        }
+
+        public static Level Load(BinaryReader reader)
+        {
+            var level = new Level();
+            int count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                var wb = WorldBlock.Load(reader);
+                level.wbCache.Add(wb.position, wb);
+            }
+            return level;
         }
     }
 }

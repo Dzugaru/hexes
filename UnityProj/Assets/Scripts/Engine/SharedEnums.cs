@@ -1,4 +1,4 @@
-public enum TerrainCellType
+public enum TerrainCellType : byte
 {
     Empty = 0,
     DryGround,
