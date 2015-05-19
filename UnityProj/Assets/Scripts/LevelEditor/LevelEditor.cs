@@ -5,113 +5,83 @@ using System.Diagnostics;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.IO;
-
+using UnityEditor;
 
 public class LevelEditor : MonoBehaviour
 {
     public static LevelEditor S { get; private set; }
     
     Canvas canvas;
-    
+    Stack<IUndo> undos = new Stack<IUndo>(), redos = new Stack<IUndo>();
+    Undos.TerrainPaint currentTerrainPaint;    
 
     public TerrainCellType? brushCellType;
     public int brushSize;
     public bool shouldPaintOnEmpty;
     public GameObject sunLight;
+    public GameObject envRoot;
 
-    public string levelSaveName;
+    public InputField levelNameField;
+
+    
 
     void Awake()
     {
-        S = this;     
+        S = this;
 
-        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
-
-        if (File.Exists(Path.Combine(Application.persistentDataPath, levelSaveName)))
-        {
-            using (BinaryReader reader = new BinaryReader(File.OpenRead(Path.Combine(Application.persistentDataPath, levelSaveName))))
-            {
-                E.level = Level.Load(reader);
-            }
-        }
+        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();                
     } 
 
     HexXY? brushOldMousePos;
 
-    void Update ()
+    void Update()
     {
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
 
+        HexXY p = getMouseOverTile();
+        canvas.transform.Find("StatsPanel").transform.Find("CursorCoordsText").GetComponent<Text>().text = p.x + " " + p.y;
+
         if (Input.GetMouseButton(0) && brushCellType.HasValue)
         {
-            HexXY p = getMouseOverTile();
-
             if (p != brushOldMousePos)
             {
-                var changedBlocks = new HashSet<WorldBlock>();
-
-                for (int x = -(brushSize - 1); x <= brushSize - 1; x++)
-                {
-                    for (int y = -(brushSize - 1); y <= brushSize - 1; y++)
-                    {
-                        HexXY d = new HexXY(x, y);
-                        if (HexXY.Dist(d) > brushSize - 1) continue;
-                        HexXY pd = p + d;
-
-                        var cellType = E.level.GetCellType(pd);
-
-                        if (cellType != brushCellType.Value &&
-                            (shouldPaintOnEmpty || cellType != TerrainCellType.Empty || brushCellType.Value == TerrainCellType.Empty))
-                        {
-                            var changedWb = E.level.SetCellType(pd, brushCellType.Value);
-                            if(!changedBlocks.Contains(changedWb))
-                                changedBlocks.Add(changedWb);
-
-                            HexXY locp = Level.GetLocalCoords(pd);
-
-                            //Other blocks possible walls fix
-                            if (locp.x == 0)
-                            {
-                                var nbl = E.level.GetBlock(changedWb.position - new HexXY(1, 0));
-                                if(nbl != null && !changedBlocks.Contains(nbl))
-                                    changedBlocks.Add(nbl);
-                            }
-
-                            if (locp.y == 0)
-                            {
-                                var nbl = E.level.GetBlock(changedWb.position - new HexXY(0, 1));
-                                if (nbl != null && !changedBlocks.Contains(nbl))
-                                    changedBlocks.Add(nbl);
-                            }
-
-                            if (locp.x == WorldBlock.sz - 1)
-                            {
-                                var nbl = E.level.GetBlock(changedWb.position + new HexXY(1, 0));
-                                if (nbl != null && !changedBlocks.Contains(nbl))
-                                    changedBlocks.Add(nbl);
-                            }
-
-                            if (locp.y == WorldBlock.sz - 1)
-                            {
-                                var nbl = E.level.GetBlock(changedWb.position + new HexXY(0, 1));
-                                if (nbl != null && !changedBlocks.Contains(nbl))
-                                    changedBlocks.Add(nbl);
-                            }
-                        }
-                    }
-                }
-
-                foreach (var wb in changedBlocks)
-                    TerrainController.S.RecreateHexTerrain(wb);
+                if (currentTerrainPaint == null) currentTerrainPaint = new Undos.TerrainPaint();
+                currentTerrainPaint.Paint(p, brushSize, shouldPaintOnEmpty, brushCellType.Value);
             }
 
-            brushOldMousePos = p;            
+            brushOldMousePos = p;
         }
         else
         {
             brushOldMousePos = null;
+            if (currentTerrainPaint != null)
+            {
+                undos.Push(currentTerrainPaint);
+                redos.Clear();
+                currentTerrainPaint = null;
+            }
         }
+
+
+
+        //Undo and redo
+
+        if (Input.GetKeyDown(KeyCode.BackQuote) && undos.Count > 0)
+        {
+            var op = undos.Pop();
+            op.Undo();
+            redos.Push(op);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha1) && redos.Count > 0)
+        {
+            var op = redos.Pop();
+            op.Redo();
+            undos.Push(op);
+        }
+
     }
+
+   
 
     public void OnBrushSizeChanged(float size)
     {
@@ -137,11 +107,45 @@ public class LevelEditor : MonoBehaviour
     }
 
     public void OnSave()
-    {
-        using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(Path.Combine(Application.persistentDataPath, levelSaveName))))
+    {   
+        using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(Path.Combine(Application.dataPath, "Resources/Levels/" + levelNameField.text + ".bytes"))))
         {
-            E.level.SaveStaticPart(writer);
+            Level.S.SaveStaticPart(writer);
+            Level.S.SaveDynamicPart(writer);
         }
+
+        AssetDatabase.Refresh();
+
+        string envPrefabPath = "Assets/Resources/Prefabs/Env/" + levelNameField.text + ".prefab";
+        var existingEnv = (GameObject)AssetDatabase.LoadAssetAtPath(envPrefabPath, typeof(GameObject));
+        if (existingEnv == null)        
+            PrefabUtility.CreatePrefab(envPrefabPath, envRoot);        
+        else        
+            PrefabUtility.ReplacePrefab(envRoot, existingEnv);
+
+        AssetDatabase.SaveAssets();
+    }
+
+    public void OnLoad()
+    {
+        var levelDataAsset = (TextAsset)Resources.Load("Levels/" + levelNameField.text);
+        if (levelDataAsset == null)
+        {
+            //TODO: level template?
+            new Level();
+            envRoot = new GameObject("Env");
+            UnityEngine.Debug.Log("Created new level");
+            return;
+        }
+
+        using (var reader = new BinaryReader(new MemoryStream(levelDataAsset.bytes)))
+        {
+            Level.Load(reader);
+            Level.S.LoadDynamicPart(reader);
+        }
+
+        envRoot = Instantiate(Resources.Load<GameObject>("Prefabs/Env/" + levelNameField.text));
+        envRoot.name = "Env";
     }
 
     HexXY getMouseOverTile()

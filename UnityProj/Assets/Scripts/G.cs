@@ -9,8 +9,6 @@ public class G : MonoBehaviour
 {    
     public static G S { get; private set; }
 
-    public GameObject hexTerrainPrefab;
-
     //Some settings
     public float hexInset = 0.975f;
     public float terrainTexScale = 0.1f;
@@ -27,6 +25,8 @@ public class G : MonoBehaviour
     public static bool isTimeStopped;
 
     public float timeStopMultiplier;
+
+    public string levelName = "L001_Tutor";
 
 
     void Awake()
@@ -55,12 +55,12 @@ public class G : MonoBehaviour
         Interfacing.PerformInterfaceUpdateRune = PerformInterfaceUpdateRune;
         Interfacing.PerformInterfaceUpdateSpellEffect = PerformInterfaceUpdateSpellEffect;
 
-        E.Start();
+        
+        E.LoadLevel(levelName);
+        var envRoot = Instantiate(Resources.Load<GameObject>("Prefabs/Env/" + levelName));
+        envRoot.name = "Env";
+        
 
-
-        GameObject ht = (GameObject)Instantiate(hexTerrainPrefab, Vector3.zero, Quaternion.identity);        
-        ht.name = "Terrain";       
-        ht.GetComponent<HexTerrain>().GenerateMultiple(WorldBlock.S, hexInset, terrainTexScale);
 
         //DEBUG load saved spell
         string spellFilePath = Path.Combine(Application.persistentDataPath, "spell");
@@ -70,6 +70,11 @@ public class G : MonoBehaviour
             using (var writer = new BinaryReader(File.OpenRead(spellFilePath)))
                 E.player.currentSpell = Spell.Load(writer);
         }
+    }
+
+    void Start()
+    {
+        Camera.main.GetComponent<CameraControl>().SetOnPlayerInstantly();
     }
 
     void Update()
@@ -160,85 +165,5 @@ public class G : MonoBehaviour
         GameObject obj = entities[objHandle];
         obj.GetComponent<SpellEffectGraphics>().UpdateInterface(power);
     }
-
-    //D engine
-
-    //void Update()
-    //{
-    //    if (isTimeStopped)
-    //    {
-    //        Time.timeScale = timeStopMultiplier;
-    //    }
-    //    else
-    //    {
-    //        Time.timeScale = 1;
-    //    }
-    //    //if(!isTimeStopped)
-    //        D.update(Time.deltaTime);        
-    //}
-
-    //static void Log(IntPtr msgPtr)
-    //{        
-    //    Debug.Log(D.GetStringFromPointer(msgPtr));
-    //}
-
-    //static D.EntityHandle CreateEntity(EntityClass objClass, int objType)
-    //{
-    //    string prefabPath = "Prefabs/" + objClass.ToString() + "/";
-    //    switch (objClass)
-    //    {
-    //        case EntityClass.Character: prefabPath += ((CharacterType)objType).ToString(); break;
-    //        case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
-    //        case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
-    //    }
-
-    //    GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
-    //    obj.SetActive(false);
-
-    //    D.EntityHandle handle = new D.EntityHandle() { objClass = objClass, idx = entitiesCountByClass[(int)objClass]++ };
-
-    //    var objGr = obj.GetComponent<EntityGraphics>();
-    //    objGr.entityType = objType;
-    //    objGr.entityHandle = handle;
-
-    //    entities.Add(handle, obj);
-
-    //    return handle;
-    //}
-
-    //unsafe static void PerformOpOnEntity(D.EntityHandle objHandle, EntityOperation op, void* args)
-    //{        
-    //    GameObject obj = entities[objHandle];       
-    //    obj.GetComponent<EntityGraphics>().DispatchOp(op, args);                
-    //}
-
-    //static void ShowEffectOnTile(HexXY pos, EffectType effectType)
-    //{        
-    //    string prefabPath = "Prefabs/Effects/" + effectType.ToString();        
-
-    //    GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
-    //    Vector2 planeCoord = pos.ToPlaneCoordinates();
-    //    obj.transform.position = new Vector3(planeCoord.x, 0.2f, planeCoord.y);
-    //    //obj.GetComponent<IHasDuration>().SetDuration(durSecs);
-    //}
-
-    //static void StopOrResumeTime(bool isStop)
-    //{
-    //    isTimeStopped = isStop;
-    //}
-
-    //static void DInit()
-    //{
-    //    D.setLogging(D.GetCallbackPointer((D.PtrToVoid)Log));
-    //    D.SetCallback("showEffectOnTile", (D.TShowEffectOnTile)ShowEffectOnTile);
-    //    D.SetCallback("createEntity", (D.TCreateEntity)CreateEntity);
-    //    D.SetCallback("performOpOnEntity", (D.TPerformOpOnEntity)PerformOpOnEntity);
-    //    D.SetCallback("stopOrResumeTime", (D.BoolToVoid)StopOrResumeTime);
-    //    D.onStart();
-
-    //    var wbhandle = D.queryWorld();
-    //}
-
-    //Bench for 100 100x100 world blocks was 0.44 sec
 }
 

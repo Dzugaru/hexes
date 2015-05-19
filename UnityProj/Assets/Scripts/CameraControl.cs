@@ -32,10 +32,25 @@ public class CameraControl : MonoBehaviour
 
     float runeDrawingChangeProgress;
 
-    void Start()
+    void Awake()
     {
         camera = GetComponent<Camera>();
         dipAngle = camera.transform.rotation.eulerAngles.x;
+    }
+
+    public void SetOnPlayerInstantly()
+    {
+        Ray viewRay = camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        float dist;
+        G.gamePlane.Raycast(viewRay, out dist);
+
+        Vector2 playerPlanePos = new Vector2(player.transform.position.x, player.transform.position.z);
+        Vector3 cameraPlaneLookPos3D = transform.position + viewRay.direction * dist;
+        Vector2 cameraPlaneLookPos = new Vector2(cameraPlaneLookPos3D.x, cameraPlaneLookPos3D.z);
+        float catchupDist = (playerPlanePos - cameraPlaneLookPos).magnitude;      
+        Vector2 catchupDir2D = (playerPlanePos - cameraPlaneLookPos).normalized;
+        Vector3 catchupDir3D = new Vector3(catchupDir2D.x, 0, catchupDir2D.y);
+        camera.transform.position += catchupDist * catchupDir3D;
     }
 	
 	void Update ()

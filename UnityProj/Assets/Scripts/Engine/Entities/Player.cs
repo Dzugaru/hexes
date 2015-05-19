@@ -61,7 +61,7 @@ namespace Engine
         public bool CompileSpell(HexXY p)
         {
             Rune compileRune =                                
-                (Rune)WorldBlock.S.entityMap[p.x, p.y].FirstOrDefault(e => e is Rune && Avatar.IsAvatarElementRune((RuneType)e.entityType));
+                (Rune)Level.S.GetEntities(p).FirstOrDefault(e => e is Rune && Avatar.IsAvatarElementRune((RuneType)e.entityType));
 
             bool isSuccess = compileRune != null;
             if (isSuccess) currentSpell = Spell.CompileSpell(compileRune, p);            

@@ -39,12 +39,12 @@ namespace Engine
             isWalkBlocked = isWalking = false;
             walkBlockedTime = 0;
             shouldRecalcPath = shouldStopNearDest = false;
-            WorldBlock.S.pfBlockedMap[pos.x,pos.y] = true;            
+            Level.S.SetPFBlockedMap(pos, WorldBlock.PFBlockType.DynamicBlocked);            
         }
 
         public void OnDie()
         {
-            WorldBlock.S.pfBlockedMap[pfBlockedTile.x, pfBlockedTile.y] = false;
+            Level.S.SetPFBlockedMap(pfBlockedTile, WorldBlock.PFBlockType.Unblocked);
         }
 
         public bool OnUpdate(float dt)
@@ -84,7 +84,7 @@ namespace Engine
 
             if (onTileCenter)
             {
-                if (WorldBlock.S.pfBlockedMap[nextTile.x, nextTile.y])
+                if (Level.S.GetPFBlockedMap(nextTile) == WorldBlock.PFBlockType.DynamicBlocked)
                 {
                     if (!isWalkBlocked)
                     {
@@ -97,8 +97,8 @@ namespace Engine
                     return true;
                 }
                 isWalkBlocked = false;
-                WorldBlock.S.pfBlockedMap[nextTile.x, nextTile.y] = true;
-                WorldBlock.S.pfBlockedMap[prevTile.x, prevTile.y] = false;
+                Level.S.SetPFBlockedMap(nextTile, WorldBlock.PFBlockType.DynamicBlocked);
+                Level.S.SetPFBlockedMap(prevTile, WorldBlock.PFBlockType.Unblocked);
                 pfBlockedTile = nextTile;
 
                 Interfacing.PerformInterfaceMove(entity.graphicsHandle, nextTile, distToNextTile * invSpeed);

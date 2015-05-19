@@ -214,7 +214,7 @@ public class HexTerrain : MonoBehaviour
                         HexXY ng = curr + HexXY.neighbours[n];
                         HexXY ngr = curr + HexXY.neighbours[(n + 1) % 6];
                         if (currType == TerrainCellType.Empty &&
-                            (!wb.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty)) continue;
+                            (!WorldBlock.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty)) continue;
 
                         Vector2 currCoord = curr.ToPlaneCoordinates();
                         Vector2 ngCoord = ng.ToPlaneCoordinates();
@@ -241,8 +241,8 @@ public class HexTerrain : MonoBehaviour
 
                         //Triangle between three
                         if (currType == TerrainCellType.Empty &&
-                            (!wb.IsInRange(ngr) || wb.GetCellType(ngr) == TerrainCellType.Empty) &&
-                            (!wb.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty)) continue;
+                            (!WorldBlock.IsInRange(ngr) || wb.GetCellType(ngr) == TerrainCellType.Empty) &&
+                            (!WorldBlock.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty)) continue;
                         Vector2 ngrCoord = ngr.ToPlaneCoordinates();
 
                         vert = cellVertices[(n + 1) % 6] * hexInset + currCoord;
@@ -291,14 +291,14 @@ public class HexTerrain : MonoBehaviour
                 HexXY p = new HexXY(x, y);
                 Vector2 coords = p.ToPlaneCoordinates();
                 //Need to request other blocks in case we're drawing outside wall
-                if ((!wb.IsInRange(p) && E.level.GetCellType(p + new HexXY(wb.position.x * WorldBlock.sz, wb.position.y * WorldBlock.sz)) != TerrainCellType.Empty) ||
-                     wb.IsInRange(p) && wb.GetCellType(p) != TerrainCellType.Empty) continue;
+                if ((!WorldBlock.IsInRange(p) && Level.S.GetCellType(p + new HexXY(wb.position.x * WorldBlock.sz, wb.position.y * WorldBlock.sz)) != TerrainCellType.Empty) ||
+                     WorldBlock.IsInRange(p) && wb.GetCellType(p) != TerrainCellType.Empty) continue;
 
                 bool hasNeigh = false;
                 for (int n = 0; n < 6; n++)
                 {
                     HexXY np = p + HexXY.neighbours[n];                    
-                    if (!wb.IsInRange(np)) continue;
+                    if (!WorldBlock.IsInRange(np)) continue;
 
                     if (wb.GetCellType(np) != TerrainCellType.Empty)
                     {

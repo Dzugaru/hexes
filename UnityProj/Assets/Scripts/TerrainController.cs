@@ -44,6 +44,8 @@ public class TerrainController : MonoBehaviour
 
     void Update()
     {
+        if (Level.S == null) return;
+
         Ray viewRay = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         float dist;
         gamePlane.Raycast(viewRay, out dist);
@@ -73,7 +75,7 @@ public class TerrainController : MonoBehaviour
                 var p = centerBlockPos + new HexXY(x, y);
                 if (!hexTerrains.ContainsKey(p))
                 {
-                    var wb = E.level.GetBlock(p);
+                    var wb = Level.S.GetBlock(p);
                     if (wb != null)
                     {
                         hexTerrains.Add(p, CreateHexTerrain(wb));

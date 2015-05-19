@@ -23,7 +23,7 @@ namespace Engine
         {
             return 
                 HexXY.Dist(ent.pos, pos) == 1 &&                
-                !WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is Rune);
+                !Level.S.GetEntities(pos).Any(e => e is Rune);
 
         }
 
@@ -31,7 +31,7 @@ namespace Engine
         {
             return
                 //HexXY.Dist(ent.pos, pos) <= 1 && //DEBUG
-                WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is Rune);
+                Level.S.GetEntities(pos).Any(e => e is Rune);
         }
 
         public static void DrawRune(Entity ent, RuneType type, HexXY pos)
@@ -48,9 +48,8 @@ namespace Engine
         }
 
         public static void EraseRune(HexXY pos)
-        {
-            var entList = WorldBlock.S.entityMap[pos.x, pos.y];
-            var rune = entList.First(e => e is Rune);
+        {   
+            var rune = Level.S.GetEntities(pos).First(e => e is Rune);
             rune.Die();
         }        
     }

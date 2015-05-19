@@ -299,15 +299,15 @@ namespace Engine
                 switch (prune.type)
                 {
                     case RuneType.PredicateTileEmpty:
-                        if (!WorldBlock.S.pfIsPassable(checkPos))
+                        if (Level.S.GetPFBlockedMap(checkPos) != WorldBlock.PFBlockType.StaticBlocked)
                             isMatch = false;
                         break;
                     case RuneType.PredicateTileWall:
-                        if (WorldBlock.S.pfIsPassable(checkPos))
+                        if (Level.S.GetPFBlockedMap(checkPos) == WorldBlock.PFBlockType.StaticBlocked)
                             isMatch = false;
                         break;
                     case RuneType.PredicateTileMonster:
-                        if (!WorldBlock.S.entityMap[checkPos.x, checkPos.y].Any(e => e is Mob))
+                        if (!Level.S.GetEntities(checkPos).Any(e => e is Mob))
                             isMatch = false;
                         break;
                 }

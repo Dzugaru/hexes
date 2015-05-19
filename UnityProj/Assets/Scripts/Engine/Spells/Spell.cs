@@ -84,7 +84,7 @@ namespace Engine
                 {
                     var d = HexXY.neighbours[i];
                     var np = refPos + c.relPos + d;
-                    Rune rune = (Rune)WorldBlock.S.entityMap[np.x, np.y].FirstOrDefault(ent => ent is Rune);
+                    Rune rune = (Rune)Level.S.GetEntities(np).FirstOrDefault(ent => ent is Rune);
                     if (rune == null) continue;
 
                     var nrune = compilationMap[np.x, np.y];
@@ -169,7 +169,7 @@ namespace Engine
         public void RedrawOnGround(CompiledRune rune, HexXY refPos)
         {
             HexXY pos = refPos + rune.relPos;
-            if (WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is Rune)) return;
+            if (Level.S.GetEntities(pos).Any(e => e is Rune)) return;
 
             Rune groundRune = new Rune(rune.type, rune.dir);            
             groundRune.Spawn(pos);

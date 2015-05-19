@@ -38,7 +38,7 @@ namespace Engine
                 return;
             }
 
-            if (!isDrawing || !WorldBlock.S.pfIsPassable(to))
+            if (!isDrawing || Level.S.GetPFBlockedMap(to) == WorldBlock.PFBlockType.StaticBlocked)
             {
                 avatar.spell.UseElementalPower(elementRuneIdx, 0.01f);
             }

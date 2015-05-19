@@ -48,9 +48,9 @@ namespace Engine
             //TODO: move this to Walker? or it can be thrown by some other force...
             if (pos != prevPos)
             {
-                bool removeSucceded = WorldBlock.S.entityMap[prevPos.x, prevPos.y].Remove(this);                
+                bool removeSucceded = Level.S.RemoveEntity(prevPos, this);                
                 Tools.Assert(removeSucceded);
-                WorldBlock.S.entityMap[pos.x, pos.y].Add(this);
+                Level.S.AddEntity(pos, this);
             }
         }
 
@@ -61,8 +61,8 @@ namespace Engine
 
             pos = p;
 
-            WorldBlock.S.entityList.Add(this);
-            WorldBlock.S.entityMap[p.x, p.y].Add(this);
+            Level.S.entityList.Add(this);
+            Level.S.AddEntity(p, this);
 
             foreach (var comp in components) comp.OnSpawn(p);
 
@@ -82,8 +82,8 @@ namespace Engine
         {
             foreach (var comp in components) comp.OnDie();            
 
-            WorldBlock.S.entityList.Remove(this);
-            WorldBlock.S.entityMap[pos.x, pos.y].Remove(this);
+            Level.S.entityList.Remove(this);
+            Level.S.RemoveEntity(pos, this);
             Interfacing.PerformInterfaceDie(graphicsHandle);            
         }
 

@@ -25,25 +25,25 @@ namespace Engine.SpellEffects
         public override void Spawn(HexXY p)
         {           
             base.Spawn(p);
-            WorldBlock.S.pfBlockedMap[p.x, p.y] = true;
+            Level.S.SetPFBlockedMap(p, WorldBlock.PFBlockType.DynamicBlocked);
         }
 
         public override void Die()
         {
             base.Die();
-            WorldBlock.S.pfBlockedMap[pos.x, pos.y] = false;
+            Level.S.SetPFBlockedMap(pos, WorldBlock.PFBlockType.Unblocked);
         }
 
 
         public override void StackOn(HexXY pos)
         {
             //Dont drop if path is already blocked by smth
-            if (WorldBlock.S.pfBlockedMap[pos.x, pos.y]) return;
+            if (Level.S.GetPFBlockedMap(pos) == WorldBlock.PFBlockType.DynamicBlocked) return;
             
 
             //Kill all other effects
-            foreach (var eff in WorldBlock.S.entityMap[pos.x, pos.y].Where(e => e is SpellEffect))            
-            eff.Die();            
+            foreach (var eff in Level.S.GetEntities(pos).Where(e => e is SpellEffect))
+                eff.Die();            
             
             Spawn(pos);            
         }

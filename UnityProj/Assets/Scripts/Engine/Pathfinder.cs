@@ -57,14 +57,14 @@ namespace Engine
             return HexXY.Dist(pos, to);
         }
 
-        public static uint? FindPath(HexXY from, HexXY to, HexXY[] pathStorage, uint blockedCost = 0)
+        public static uint? FindPath(HexXY from, HexXY to, HexXY[] pathStorage, uint dynBlockCost = 0)
         {
             front.Reset();
             front.Enqueue(new XYCost(from, 0, 0, GetHeuristic(from, to)));
 
             //TODO: assume we're in the single worldblock for now
-            ++WorldBlock.S.pfExpandMarker;
-            WorldBlock.S.pfExpandMap[from.x, from.y] = WorldBlock.S.pfExpandMarker;
+            ++Level.S.pfExpandMarker;
+            Level.S.SetPFExpandMap(from, Level.S.pfExpandMarker);
 
             XYCost c;
             bool isFound = false;
@@ -82,18 +82,19 @@ namespace Engine
                 foreach (var st in steps)
                 {
                     var np = c.p + st;
-                    if (WorldBlock.S.pfIsPassable(np) &&
-                        WorldBlock.S.pfExpandMap[np.x, np.y] < WorldBlock.S.pfExpandMarker)
+                    var blockType = Level.S.GetPFBlockedMap(np);
+                    if (blockType != WorldBlock.PFBlockType.StaticBlocked &&
+                        Level.S.GetPFExpandMap(np) < Level.S.pfExpandMarker)
                     {
-                        WorldBlock.S.pfExpandMap[np.x, np.y] = WorldBlock.S.pfExpandMarker;
-                        uint cost = (uint)(c.cost + WorldBlock.S.pfGetPassCost(np));
+                        Level.S.SetPFExpandMap(np, Level.S.pfExpandMarker);
+                        uint cost = (uint)(c.cost + WorldBlock.PFGetPassCost(np));
 
-                        if (blockedCost > 0 && np != to && WorldBlock.S.pfBlockedMap[np.x, np.y])
-                            cost += blockedCost;
+                        if (dynBlockCost > 0 && np != to && blockType == WorldBlock.PFBlockType.DynamicBlocked)
+                            cost += dynBlockCost;
 
                         var n = new XYCost(np, c.len + 1, cost, cost + GetHeuristic(np, to));
                         front.Enqueue(n);
-                        WorldBlock.S.pfStepsMap[np.x, np.y] = st.backIdx;
+                        Level.S.SetPFStepsMap(np, st.backIdx);
                     }
                 }
             } while (front.Count > 0);
@@ -105,7 +106,7 @@ namespace Engine
                 for (int i = 0; i < pathLen; i++)
                 {
                     pathStorage[pathLen - i - 1] = p;
-                    var backIdx = WorldBlock.S.pfStepsMap[p.x, p.y];
+                    var backIdx = Level.S.GetPFStepsMap(p);
                     p = p + steps[backIdx];
                 }
                 return pathLen;

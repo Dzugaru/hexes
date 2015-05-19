@@ -16,7 +16,7 @@ namespace Engine.SpellEffects
 
         public override void Update(float dt)
         {
-            foreach (var ent in WorldBlock.S.entityMap[pos.x, pos.y].OfType<Mob>())            
+            foreach (var ent in Level.S.GetEntities(pos).OfType<Mob>())            
                 ent.hasHP.Damage(dt * 5.0f);            
 
             power -= 0.2f * dt;
@@ -33,9 +33,9 @@ namespace Engine.SpellEffects
 
         public override void StackOn(HexXY pos)
         {
-            bool isExistsOther = WorldBlock.S.entityMap[pos.x, pos.y].Any(e => e is SpellEffect && !(e is GroundFlame));
+            bool isExistsOther = Level.S.GetEntities(pos).Any(e => e is SpellEffect && !(e is GroundFlame));
             if (isExistsOther) return;
-            var existingFlame = (GroundFlame)WorldBlock.S.entityMap[pos.x, pos.y].FirstOrDefault(e => e is GroundFlame);
+            var existingFlame = (GroundFlame)Level.S.GetEntities(pos).FirstOrDefault(e => e is GroundFlame);
             if (existingFlame != null)
             {
                 if (existingFlame.power < power)

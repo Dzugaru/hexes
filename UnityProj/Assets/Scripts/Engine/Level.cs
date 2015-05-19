@@ -54,8 +54,16 @@ namespace Engine
             }
         }
 
+        public static Level S { get; private set; }
 
         WorldBlocksCache wbCache = new WorldBlocksCache();
+        public LList<Entity> entityList = new LList<Entity>();
+        public int pfExpandMarker = 0;
+
+        public Level()
+        {
+            S = this;
+        }
 
 
         public void Update(float dt)
@@ -110,14 +118,6 @@ namespace Engine
             return block;
         }
 
-        public WorldBlock SetCellType(HexXY p, TerrainCellType type)
-        {
-            HexXY localPos;
-            WorldBlock block = GetBlockWithCell(p, true, out localPos);
-            block.SetCellType(localPos, type);
-            return block;
-        }
-
         public TerrainCellType GetCellType(HexXY p)
         {
             HexXY localPos;
@@ -126,6 +126,88 @@ namespace Engine
             else return block.GetCellType(localPos);
         }
 
+        public WorldBlock SetCellType(HexXY p, TerrainCellType type)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, true, out localPos);
+            block.SetCellType(localPos, type);
+            return block;
+        }
+
+        public WorldBlock.PFBlockType GetPFBlockedMap(HexXY p)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            if (block == null) return  WorldBlock.PFBlockType.StaticBlocked;
+            else return block.pfBlockedMap[localPos.x, localPos.y];
+        }
+
+        public WorldBlock SetPFBlockedMap(HexXY p, WorldBlock.PFBlockType val)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            block.pfBlockedMap[localPos.x, localPos.y] = val;
+            return block;
+        }
+
+        public int GetPFExpandMap(HexXY p)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);            
+            return block.pfExpandMap[localPos.x, localPos.y];
+        }
+
+        public WorldBlock SetPFExpandMap(HexXY p, int val)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            block.pfExpandMap[localPos.x, localPos.y] = val;
+            return block;
+        }
+
+        public byte GetPFStepsMap(HexXY p)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            return block.pfStepsMap[localPos.x, localPos.y];
+        }
+
+        public WorldBlock SetPFStepsMap(HexXY p, byte val)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            block.pfStepsMap[localPos.x, localPos.y] = val;
+            return block;
+        }
+
+        public IEnumerable<Entity> GetEntities(HexXY p)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            if (block == null) yield break;
+            else
+            {
+                foreach (var ent in block.entityMap[localPos.x, localPos.y])
+                    yield return ent;
+            }                
+        }
+
+        public void AddEntity(HexXY p, Entity ent)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            block.entityMap[localPos.x, localPos.y].Add(ent);                    
+        }
+
+        public bool RemoveEntity(HexXY p, Entity ent)
+        {
+            HexXY localPos;
+            WorldBlock block = GetBlockWithCell(p, false, out localPos);
+            return block.entityMap[localPos.x, localPos.y].Remove(ent);
+        }
+
+
+
         public void SaveStaticPart(BinaryWriter writer)
         {
             writer.Write(wbCache.all.Count);
@@ -133,7 +215,12 @@ namespace Engine
                 wb.SaveStaticPart(writer);
         }
 
-        public static Level Load(BinaryReader reader)
+        public void SaveDynamicPart(BinaryWriter writer)
+        {
+            //TODO:
+        }
+
+        public static void Load(BinaryReader reader)
         {
             var level = new Level();
             int count = reader.ReadInt32();
@@ -141,8 +228,12 @@ namespace Engine
             {
                 var wb = WorldBlock.Load(reader);
                 level.wbCache.Add(wb.position, wb);
-            }
-            return level;
+            }            
+        }
+
+        public void LoadDynamicPart(BinaryReader reader)
+        {
+            //TODO:
         }
     }
 }
