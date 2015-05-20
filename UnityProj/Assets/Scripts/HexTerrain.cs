@@ -13,7 +13,7 @@ public class HexTerrain : MonoBehaviour
 
     public bool enableWalls = true;
 
-    static Vector2[] cellVertices = new Vector2[]
+    public static Vector2[] cellVertices = new Vector2[]
         {
             new Vector2(-0.5f / r3, 0.5f),
             new Vector2(0.5f / r3, 0.5f),
@@ -23,7 +23,7 @@ public class HexTerrain : MonoBehaviour
             new Vector2(-1f / r3, 0),
         };
 
-    static int[] cellTriangles = new int[]
+    public static int[] cellTriangles = new int[]
         {
             0, 1, 2,//Right triangle
             2, 3, 4,//Bottom-left triangle

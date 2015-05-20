@@ -9,7 +9,9 @@ public class StickyButton : MonoBehaviour
 {    
     public bool isPressed = false;
     public Color pressedColor = new Color(0.5f, 1f, 0.5f);
-    public Color releasedColor = new Color(1f, 1f, 1f);   
+    public Color releasedColor = new Color(1f, 1f, 1f);
+
+    public event Action<bool> PressedChanged;
 
     void OnEnable()
     {
@@ -39,6 +41,9 @@ public class StickyButton : MonoBehaviour
         isPressed = pressed;
         if (isPressed) GetComponent<Image>().color = pressedColor;
         else GetComponent<Image>().color = releasedColor;
+
+        if (PressedChanged != null)
+            PressedChanged(isPressed);
     }
 }
 

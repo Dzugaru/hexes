@@ -76,6 +76,12 @@ namespace Engine
             return wbCache.GetNoCache(blockp);
         }
 
+        public IEnumerable<WorldBlock> GetAllBlocks()
+        {
+            foreach (var wb in wbCache.all.Values)
+                yield return wb;
+        }
+
         public static HexXY GetBlockCoords(HexXY p)
         {
             var blockX = p.x < 0 ? -((-p.x - 1) / WorldBlock.sz) - 1 : p.x / WorldBlock.sz;

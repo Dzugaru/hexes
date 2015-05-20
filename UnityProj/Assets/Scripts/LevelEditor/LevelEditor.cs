@@ -28,8 +28,10 @@ public class LevelEditor : MonoBehaviour
     public GameObject envRoot;
 
     public InputField levelNameField;
+    public GameObject sbvisParent;
 
     public bool isInRuneDrawingMode = false;
+    public bool isInPassabilityMode = false;
 
     
 
@@ -43,8 +45,13 @@ public class LevelEditor : MonoBehaviour
       
         Interfacing.PerformInterfaceSpawn = PerformInterfaceSpawn;      
         Interfacing.PerformInterfaceDie = PerformInterfaceDie;
-        Interfacing.PerformInterfaceUpdateRune = PerformInterfaceUpdateRune;        
-    } 
+        Interfacing.PerformInterfaceUpdateRune = PerformInterfaceUpdateRune;
+
+        canvas.transform.Find("InstrPanel").Find("Passability").GetComponent<StickyButton>().PressedChanged += OnPassabilityModeChanged;        
+        sbvisParent = GameObject.Find("SBTileVis");
+    }
+
+   
 
     HexXY? brushOldMousePos;
 
@@ -55,7 +62,7 @@ public class LevelEditor : MonoBehaviour
         HexXY p = getMouseOverTile();
 
         //Info
-        canvas.transform.Find("StatsPanel").transform.Find("CursorCoordsText").GetComponent<Text>().text = p.x + " " + p.y;
+        canvas.transform.Find("StatsPanel").Find("CursorCoordsText").GetComponent<Text>().text = p.x + " " + p.y;
 
         //Drawing terrain
         if (Input.GetMouseButton(0) && brushCellType.HasValue)
@@ -81,6 +88,10 @@ public class LevelEditor : MonoBehaviour
 
         //Putting runes
         PutRunes(p);
+
+        //Changing passability
+        if (isInPassabilityMode && Input.GetMouseButtonDown(0))
+            ChangeStaticPassability(p); 
 
         //Undo and redo
         if (Input.GetKeyDown(KeyCode.BackQuote) && undos.Count > 0)
@@ -124,6 +135,7 @@ public class LevelEditor : MonoBehaviour
                         op.Remove();
                         undos.Push(op);
                         existingRune = null;
+                        redos.Clear();
                     }
 
                     if (existingRune == null)
@@ -132,16 +144,32 @@ public class LevelEditor : MonoBehaviour
                         var op = new Undos.AddEntity(rune, p);
                         op.Add();
                         undos.Push(op);
+                        redos.Clear();
                     }
-                    else
+                    else if(Data.runeDatas[kvp.Value].isDirectional)
                     {
                         var op = new Undos.RotateRune(p);
                         op.Rotate();
                         undos.Push(op);
-                    }
-
-                    redos.Clear();
+                        redos.Clear();
+                    }                    
                 }
+    }
+
+    void ChangeStaticPassability(HexXY p)
+    {
+        var op = new Undos.ChangePassability(p);
+        if (op.Change())
+        {
+            undos.Push(op);
+            redos.Clear();
+        }
+    }
+    
+    void OnPassabilityModeChanged(bool isEnabled)
+    {
+        isInPassabilityMode = isEnabled;        
+        sbvisParent.SetActive(isInPassabilityMode);         
     }
 
     public void OnBrushSizeChanged(float size)
@@ -205,8 +233,26 @@ public class LevelEditor : MonoBehaviour
             Level.S.LoadDynamicPart(reader);
         }
 
+        if (envRoot != null) Destroy(envRoot);
         envRoot = Instantiate(Resources.Load<GameObject>("Prefabs/Env/" + levelNameField.text));
         envRoot.name = "Env";
+
+        //SB vis
+        foreach (var wb in Level.S.GetAllBlocks())
+            for (int x = 0; x < WorldBlock.sz; x++)
+                for (int y = 0; y < WorldBlock.sz; y++)
+                {
+                    if (wb.GetCellType(new HexXY(x, y)) != TerrainCellType.Empty &&
+                        wb.pfBlockedMap[x, y] == WorldBlock.PFBlockType.StaticBlocked)
+                    {
+                        var p = new HexXY(wb.position.x * WorldBlock.sz + x, wb.position.y * WorldBlock.sz + y);
+                        var tileVis = Instantiate(Resources.Load<GameObject>("Prefabs/Editor/SBTileVis"));
+                        tileVis.GetComponent<StaticBlockedTileVisual>().p = p;
+                        tileVis.transform.SetParent(sbvisParent.transform, false);
+                        var pp = p.ToPlaneCoordinates();
+                        tileVis.transform.localPosition = new Vector3(pp.x, 0, pp.y);
+                    }
+                }
     }
 
     HexXY getMouseOverTile()
@@ -239,6 +285,7 @@ public class LevelEditor : MonoBehaviour
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
         obj.SetActive(false);
+        obj.transform.SetParent(GameObject.Find("Entities").transform, false);
 
         var handle = new Interfacing.EntityHandle() { objClass = objClass, idx = entitiesCountByClass[(int)objClass]++ };
 

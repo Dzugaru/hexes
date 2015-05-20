@@ -22,7 +22,8 @@ namespace Engine
 
         public void SetCellType(HexXY pos, TerrainCellType type)
         {
-            if (entityMap[pos.x, pos.y].Count > 0) return; //Can't change non-empty
+            //Can't destroy tile under object
+            if (entityMap[pos.x, pos.y].Count > 0 && type == TerrainCellType.Empty) return;
 
             var oldCellType = cellTypes[pos.x, pos.y];
             --cellTypeCounts[(int)oldCellType];
