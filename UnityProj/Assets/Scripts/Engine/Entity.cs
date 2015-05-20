@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -90,6 +91,37 @@ namespace Engine
         public bool Equals(Entity other)
         {
             return ReferenceEquals(this, other);
+        }
+
+        protected enum DerivedTypes : byte
+        {
+            Rune = 0,
+            Mob = 1,
+            SpellEffect = 2
+        }      
+
+        public virtual void Save(BinaryWriter writer)
+        {   
+            writer.Write(entityType);
+            writer.Write(pos.x);
+            writer.Write(pos.y);
+        }
+
+        public static void Load(BinaryReader reader)
+        {
+            Entity ent;
+
+            var type = reader.ReadUInt32();
+            var pos = new HexXY(reader.ReadInt32(), reader.ReadInt32());
+            
+            var classType = (DerivedTypes)reader.ReadByte();
+            switch (classType)
+            {
+                case DerivedTypes.Rune: ent = Rune.Load(reader, type); break;
+                default: throw new NotImplementedException();
+            }
+
+            ent.Spawn(pos);            
         }
     }
 }

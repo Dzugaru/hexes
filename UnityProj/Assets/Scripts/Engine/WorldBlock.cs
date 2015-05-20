@@ -80,6 +80,28 @@ namespace Engine
                 }
         }
 
+        public void SaveDynamicPart(BinaryWriter writer)
+        {
+            List<HexXY> nonZeroList = new List<HexXY>();
+            for (int x = 0; x < sz; x++)
+                for (int y = 0; y < sz; y++)
+                {
+                    int count = entityMap[x, y].Count;
+                    if (count > 0) nonZeroList.Add(new HexXY(x, y));
+                }
+
+            writer.Write(nonZeroList.Count);
+            foreach (var nz in nonZeroList)
+            {
+                int count = entityMap[nz.x, nz.y].Count;                
+                writer.Write(nz.x);
+                writer.Write(nz.y);
+                writer.Write(count);
+                foreach (var ent in entityMap[nz.x, nz.y])                
+                    ent.Save(writer);                
+            }        
+        }
+
         public static WorldBlock Load(BinaryReader reader)
         {
             var pos = new HexXY(reader.ReadInt32(), reader.ReadInt32()); 
@@ -96,16 +118,16 @@ namespace Engine
             return wb;
         }
 
-        public void SaveDynamicPart(BinaryWriter writer)
-        {
-            //TODO: this should save entities and pfBlockedMap etc.
-            throw new NotImplementedException();
-        }
-
         public void LoadDynamicPart(BinaryReader reader)
         {
-            //TODO: this should load entities and pfBlockedMap etc.
-            throw new NotImplementedException();
+            int count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                var p = new HexXY(reader.ReadInt32(), reader.ReadInt32());                
+                int entCount = reader.ReadInt32();
+                for (int j = 0; j < entCount; j++)                
+                    Entity.Load(reader);
+            }            
         }
 
         //Procedural generation

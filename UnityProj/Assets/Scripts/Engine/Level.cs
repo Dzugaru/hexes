@@ -216,8 +216,13 @@ namespace Engine
         }
 
         public void SaveDynamicPart(BinaryWriter writer)
-        {
-            //TODO:
+        {            
+            foreach (var wb in wbCache.all.Values)
+            {
+                writer.Write(wb.position.x);
+                writer.Write(wb.position.y);
+                wb.SaveDynamicPart(writer);
+            }
         }
 
         public static void Load(BinaryReader reader)
@@ -233,7 +238,11 @@ namespace Engine
 
         public void LoadDynamicPart(BinaryReader reader)
         {
-            //TODO:
+            for (int i = 0; i < wbCache.all.Count; i++)
+            {
+                var wb = wbCache.GetNoCache(new HexXY(reader.ReadInt32(), reader.ReadInt32()));
+                wb.LoadDynamicPart(reader);
+            }                
         }
     }
 }

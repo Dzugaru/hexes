@@ -55,22 +55,22 @@ public class LevelEditorCameraControl : MonoBehaviour
             else
             {
                 //if (mousePos.x < scrollMargin)
-                if(Input.GetKey(KeyCode.A))
+                if(!LevelEditor.S.isInRuneDrawingMode && Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
                     transform.position -= transform.right * scrollSpeed * Time.deltaTime;
 
                 //if (mousePos.x > Screen.width - scrollMargin)
-                if (Input.GetKey(KeyCode.D))
+                if (!LevelEditor.S.isInRuneDrawingMode && Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
                     transform.position += transform.right * scrollSpeed * Time.deltaTime;
 
                 Vector3 fwd = transform.forward;
                 fwd.y = 0;
 
                 //if (mousePos.y < scrollMargin)
-                if (Input.GetKey(KeyCode.S))
+                if (!LevelEditor.S.isInRuneDrawingMode && Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
                     transform.position -= fwd * scrollSpeed * Time.deltaTime;
 
                 //if (mousePos.y > Screen.height - scrollMargin)
-                if (Input.GetKey(KeyCode.W))
+                if (!LevelEditor.S.isInRuneDrawingMode && Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
                     transform.position += fwd * scrollSpeed * Time.deltaTime;
             }
         }

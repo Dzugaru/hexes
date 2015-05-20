@@ -64,7 +64,7 @@ public class TerrainController : MonoBehaviour
         {
             Destroy(hexTerrains[p].gameObject);
             hexTerrains.Remove(p);
-            Debug.Log("Terrain " + p + " destroyed");
+            //Debug.Log("Terrain " + p + " destroyed");
         }
 
         //Create if in range
@@ -79,7 +79,7 @@ public class TerrainController : MonoBehaviour
                     if (wb != null)
                     {
                         hexTerrains.Add(p, CreateHexTerrain(wb));
-                        Debug.Log("Terrain " + p + " created");
+                        //Debug.Log("Terrain " + p + " created");
                     }
                 }
             }
@@ -103,10 +103,14 @@ public class TerrainController : MonoBehaviour
 
     public void RecreateHexTerrain(WorldBlock block)
     {
-        if (hexTerrains.ContainsKey(block.position))        
+        if (hexTerrains.ContainsKey(block.position))
+        {
             Destroy(hexTerrains[block.position].gameObject);
+        }
         else
-            Debug.Log("Terrain " + block.position + " created");
+        {
+            //Debug.Log("Terrain " + block.position + " created");
+        }
 
         hexTerrains[block.position] = CreateHexTerrain(block);
     }

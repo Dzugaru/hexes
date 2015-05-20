@@ -6,41 +6,41 @@ using System.IO;
 
 class PlayerInput : MonoBehaviour
 {
-    readonly Dictionary<KeyCode, RuneType> runeKeys = new Dictionary<KeyCode, RuneType>();
+    public static readonly Dictionary<KeyCode, RuneType> runeKeys = new Dictionary<KeyCode, RuneType>();
 
-    public PlayerInput()
+    static PlayerInput()
     {
-        runeKeys.Add(KeyCode.X,             RuneType.Nop);
-        runeKeys.Add(KeyCode.W,             RuneType.Arrow0);
-        runeKeys.Add(KeyCode.A,             RuneType.ArrowL60);
-        runeKeys.Add(KeyCode.D,             RuneType.ArrowR60);
-        runeKeys.Add(KeyCode.Z,             RuneType.ArrowL120);
-        runeKeys.Add(KeyCode.C,             RuneType.ArrowR120);
-        runeKeys.Add(KeyCode.S,             RuneType.ArrowCross);
-        
-        runeKeys.Add(KeyCode.T,             RuneType.AvatarWalkDir);
-        runeKeys.Add(KeyCode.R,             RuneType.AvatarWalkDirDraw);
-        runeKeys.Add(KeyCode.Y,             RuneType.AvatarForward);
-        runeKeys.Add(KeyCode.U,             RuneType.AvatarForwardDraw);
-        runeKeys.Add(KeyCode.F,             RuneType.AvatarLeft);
-        runeKeys.Add(KeyCode.H,             RuneType.AvatarRight);
+        runeKeys.Add(KeyCode.X, RuneType.Nop);
+        runeKeys.Add(KeyCode.W, RuneType.Arrow0);
+        runeKeys.Add(KeyCode.A, RuneType.ArrowL60);
+        runeKeys.Add(KeyCode.D, RuneType.ArrowR60);
+        runeKeys.Add(KeyCode.Z, RuneType.ArrowL120);
+        runeKeys.Add(KeyCode.C, RuneType.ArrowR120);
+        runeKeys.Add(KeyCode.S, RuneType.ArrowCross);
 
-        runeKeys.Add(KeyCode.V,             RuneType.Flame);
-        runeKeys.Add(KeyCode.B,             RuneType.Stone);
-        runeKeys.Add(KeyCode.N,             RuneType.Wind);
+        runeKeys.Add(KeyCode.T, RuneType.AvatarWalkDir);
+        runeKeys.Add(KeyCode.R, RuneType.AvatarWalkDirDraw);
+        runeKeys.Add(KeyCode.Y, RuneType.AvatarForward);
+        runeKeys.Add(KeyCode.U, RuneType.AvatarForwardDraw);
+        runeKeys.Add(KeyCode.F, RuneType.AvatarLeft);
+        runeKeys.Add(KeyCode.H, RuneType.AvatarRight);
 
-        runeKeys.Add(KeyCode.Alpha2,        RuneType.Number2);
-        runeKeys.Add(KeyCode.Alpha3,        RuneType.Number3);
-        runeKeys.Add(KeyCode.Alpha4,        RuneType.Number4);
-        runeKeys.Add(KeyCode.Alpha5,        RuneType.Number5);
-        runeKeys.Add(KeyCode.Alpha6,        RuneType.Number6);
-        runeKeys.Add(KeyCode.Alpha7,        RuneType.Number7);
+        runeKeys.Add(KeyCode.V, RuneType.Flame);
+        runeKeys.Add(KeyCode.B, RuneType.Stone);
+        runeKeys.Add(KeyCode.N, RuneType.Wind);
 
-        runeKeys.Add(KeyCode.I,             RuneType.If);
-        runeKeys.Add(KeyCode.O,             RuneType.PredicateAvatarRef);
-        runeKeys.Add(KeyCode.K,             RuneType.PredicateTileEmpty);
-        runeKeys.Add(KeyCode.L,             RuneType.PredicateTileWall);
-        runeKeys.Add(KeyCode.P,             RuneType.PredicateTileMonster);
+        runeKeys.Add(KeyCode.Alpha2, RuneType.Number2);
+        runeKeys.Add(KeyCode.Alpha3, RuneType.Number3);
+        runeKeys.Add(KeyCode.Alpha4, RuneType.Number4);
+        runeKeys.Add(KeyCode.Alpha5, RuneType.Number5);
+        runeKeys.Add(KeyCode.Alpha6, RuneType.Number6);
+        runeKeys.Add(KeyCode.Alpha7, RuneType.Number7);
+
+        runeKeys.Add(KeyCode.I, RuneType.If);
+        runeKeys.Add(KeyCode.O, RuneType.PredicateAvatarRef);
+        runeKeys.Add(KeyCode.K, RuneType.PredicateTileEmpty);
+        runeKeys.Add(KeyCode.L, RuneType.PredicateTileWall);
+        runeKeys.Add(KeyCode.P, RuneType.PredicateTileMonster);
     }
     
     

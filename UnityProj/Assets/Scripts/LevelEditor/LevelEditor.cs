@@ -2,10 +2,12 @@
 using System.Collections;
 using Engine;
 using System.Diagnostics;
+using System.Linq;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using System;
 
 public class LevelEditor : MonoBehaviour
 {
@@ -13,7 +15,11 @@ public class LevelEditor : MonoBehaviour
     
     Canvas canvas;
     Stack<IUndo> undos = new Stack<IUndo>(), redos = new Stack<IUndo>();
-    Undos.TerrainPaint currentTerrainPaint;    
+    Undos.TerrainPaint currentTerrainPaint;
+
+    static readonly int entitiesClassesCount = Enum.GetValues(typeof(EntityClass)).Length;
+    uint[] entitiesCountByClass = new uint[entitiesClassesCount];
+    Dictionary<Interfacing.EntityHandle, GameObject> entities = new Dictionary<Interfacing.EntityHandle, GameObject>();
 
     public TerrainCellType? brushCellType;
     public int brushSize;
@@ -23,13 +29,21 @@ public class LevelEditor : MonoBehaviour
 
     public InputField levelNameField;
 
+    public bool isInRuneDrawingMode = false;
+
     
 
     void Awake()
     {
         S = this;
 
-        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();                
+        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+
+        Interfacing.CreateEntity = CreateEntity;
+      
+        Interfacing.PerformInterfaceSpawn = PerformInterfaceSpawn;      
+        Interfacing.PerformInterfaceDie = PerformInterfaceDie;
+        Interfacing.PerformInterfaceUpdateRune = PerformInterfaceUpdateRune;        
     } 
 
     HexXY? brushOldMousePos;
@@ -39,8 +53,11 @@ public class LevelEditor : MonoBehaviour
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
 
         HexXY p = getMouseOverTile();
+
+        //Info
         canvas.transform.Find("StatsPanel").transform.Find("CursorCoordsText").GetComponent<Text>().text = p.x + " " + p.y;
 
+        //Drawing terrain
         if (Input.GetMouseButton(0) && brushCellType.HasValue)
         {
             if (p != brushOldMousePos)
@@ -62,10 +79,10 @@ public class LevelEditor : MonoBehaviour
             }
         }
 
-
+        //Putting runes
+        PutRunes(p);
 
         //Undo and redo
-
         if (Input.GetKeyDown(KeyCode.BackQuote) && undos.Count > 0)
         {
             var op = undos.Pop();
@@ -78,10 +95,54 @@ public class LevelEditor : MonoBehaviour
             op.Redo();
             undos.Push(op);
         }
-
     }
 
-   
+    void PutRunes(HexXY p)
+    {
+        isInRuneDrawingMode = canvas.transform.Find("InstrPanel").transform.Find("Runes").GetComponent<StickyButton>().isPressed;
+        if (!isInRuneDrawingMode) return;
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            var existingRune = Level.S.GetEntities(p).OfType<Rune>().FirstOrDefault();
+            if (existingRune != null)
+            {
+                var op = new Undos.RemoveEntity(existingRune, p);
+                op.Remove();
+                undos.Push(op);
+                redos.Clear();
+            }
+        }
+        else
+            foreach (var kvp in PlayerInput.runeKeys)
+                if (Input.GetKeyDown(kvp.Key))
+                {
+                    var existingRune = Level.S.GetEntities(p).OfType<Rune>().FirstOrDefault();
+                    if (existingRune != null && existingRune.entityType != (uint)kvp.Value)
+                    {
+                        var op = new Undos.RemoveEntity(existingRune, p);
+                        op.Remove();
+                        undos.Push(op);
+                        existingRune = null;
+                    }
+
+                    if (existingRune == null)
+                    {
+                        var rune = new Rune(kvp.Value, 0);
+                        var op = new Undos.AddEntity(rune, p);
+                        op.Add();
+                        undos.Push(op);
+                    }
+                    else
+                    {
+                        var op = new Undos.RotateRune(p);
+                        op.Rotate();
+                        undos.Push(op);
+                    }
+
+                    redos.Clear();
+                }
+    }
 
     public void OnBrushSizeChanged(float size)
     {
@@ -162,6 +223,49 @@ public class LevelEditor : MonoBehaviour
         {
             return new HexXY(0, 0);
         }
-    }  
-    
+    }
+
+
+    Interfacing.EntityHandle CreateEntity(EntityClass objClass, uint objType)
+    {
+        string prefabPath = "Prefabs/" + objClass.ToString() + "/";
+        switch (objClass)
+        {
+            case EntityClass.Character: prefabPath += ((CharacterType)objType).ToString(); break;
+            case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
+            case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
+            case EntityClass.SpellEffect: prefabPath += ((SpellEffectType)objType).ToString(); break;
+        }
+
+        GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
+        obj.SetActive(false);
+
+        var handle = new Interfacing.EntityHandle() { objClass = objClass, idx = entitiesCountByClass[(int)objClass]++ };
+
+        var objGr = obj.GetComponent<EntityGraphics>();
+        objGr.entityType = objType;
+        objGr.entityHandle = handle;
+
+        entities.Add(handle, obj);
+
+        return handle;
+    }
+
+    void PerformInterfaceSpawn(Interfacing.EntityHandle objHandle, HexXY pos)
+    {
+        GameObject obj = entities[objHandle];
+        obj.GetComponent<EntityGraphics>().Spawn(pos);
+    }
+
+    void PerformInterfaceDie(Interfacing.EntityHandle objHandle)
+    {
+        GameObject obj = entities[objHandle];
+        obj.GetComponent<EntityGraphics>().Die();
+    }
+
+    void PerformInterfaceUpdateRune(Interfacing.EntityHandle objHandle, uint dir)
+    {
+        GameObject obj = entities[objHandle];
+        obj.GetComponent<RuneGraphics>().UpdateInterface(dir);
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -51,6 +52,19 @@ namespace Engine
         {   
             var rune = Level.S.GetEntities(pos).First(e => e is Rune);
             rune.Die();
-        }        
+        }
+
+        public override void Save(BinaryWriter writer)
+        {
+            base.Save(writer);
+            writer.Write((byte)DerivedTypes.Rune);
+            
+            writer.Write((byte)dir);            
+        }
+
+        public static Rune Load(BinaryReader reader, uint type)
+        {
+            return new Rune((RuneType)type, reader.ReadByte());
+        }
     }
 }
