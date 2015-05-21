@@ -15,6 +15,7 @@ namespace Engine
         public Fibered fibered;
 
         public HexXY pos;
+        public uint dir; //TODO: Move to IRotatable interface?
         public Interfacing.EntityHandle graphicsHandle;
         public bool hasGraphicsHandle;
         public uint entityType;
@@ -77,6 +78,13 @@ namespace Engine
 		    {
                 Interfacing.PerformInterfaceUpdateHP(graphicsHandle, hasHP.currentHP, hasHP.maxHP);
             }
+
+            IRotatable rotatable = this as IRotatable;
+            if (rotatable != null)
+            {
+                if(rotatable.CanRotate)
+                    Interfacing.PerformInterfaceUpdateRotation(graphicsHandle, dir);
+            }
         }
 
         public virtual void Die()
@@ -97,14 +105,15 @@ namespace Engine
         {
             Rune = 0,
             Mob = 1,
-            SpellEffect = 2
+            SpellEffect = 2,
+            StatueCaster = 3
         }      
 
         public virtual void Save(BinaryWriter writer)
         {   
             writer.Write(entityType);
             writer.Write(pos.x);
-            writer.Write(pos.y);
+            writer.Write(pos.y);           
         }
 
         public static void Load(BinaryReader reader)
@@ -118,6 +127,7 @@ namespace Engine
             switch (classType)
             {
                 case DerivedTypes.Rune: ent = Rune.Load(reader, type); break;
+                case DerivedTypes.StatueCaster: ent = StatueCaster.Load(reader); break;
                 default: throw new NotImplementedException();
             }
 

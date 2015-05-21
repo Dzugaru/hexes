@@ -52,7 +52,7 @@ public class G : MonoBehaviour
         Interfacing.PerformInterfaceStop = PerformInterfaceStop;
 
         Interfacing.PerformInterfaceUpdateHP = PerformInterfaceUpdateHP;
-        Interfacing.PerformInterfaceUpdateRune = PerformInterfaceUpdateRune;
+        Interfacing.PerformInterfaceUpdateRotation = PerformInterfaceUpdateRotation;
         Interfacing.PerformInterfaceUpdateSpellEffect = PerformInterfaceUpdateSpellEffect;
 
         
@@ -96,6 +96,7 @@ public class G : MonoBehaviour
             case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
             case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
             case EntityClass.SpellEffect: prefabPath += ((SpellEffectType)objType).ToString(); break;
+            case EntityClass.Mech: prefabPath += ((MechType)objType).ToString(); break;
         }
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
@@ -154,10 +155,10 @@ public class G : MonoBehaviour
         obj.GetComponent<EntityGraphics>().UpdateHP(currentHP, maxHP);
     }
 
-    static void PerformInterfaceUpdateRune(Interfacing.EntityHandle objHandle, uint dir)
+    static void PerformInterfaceUpdateRotation(Interfacing.EntityHandle objHandle, uint dir)
     {
         GameObject obj = entities[objHandle];
-        obj.GetComponent<RuneGraphics>().UpdateInterface(dir);
+        obj.GetComponent<EntityGraphics>().UpdateInterfaceRotation(dir);
     }
 
     static void PerformInterfaceUpdateSpellEffect(Interfacing.EntityHandle objHandle, float power)

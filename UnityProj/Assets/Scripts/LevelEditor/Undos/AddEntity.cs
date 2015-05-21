@@ -20,6 +20,9 @@ namespace Undos
         public void Add()
         {
             ent.Spawn(p);
+            IStaticBlocker blocker = ent as IStaticBlocker;
+            if (blocker != null)
+                LevelEditor.S.ChangeStaticPassability(p, false);
         }
 
         public void Redo()
@@ -30,6 +33,9 @@ namespace Undos
         public void Undo()
         {
             ent.Die();
+            IStaticBlocker blocker = ent as IStaticBlocker;
+            if (blocker != null)
+                LevelEditor.S.ChangeStaticPassability(p, false);
         }
     }
 }

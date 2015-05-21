@@ -18,7 +18,7 @@ public class StickyButton : MonoBehaviour
         SetPressed(isPressed);
     }
 
-    public virtual void OnClick()
+    public void OnClick()
     {
         if (!isPressed)
         {
@@ -36,7 +36,7 @@ public class StickyButton : MonoBehaviour
         }
     }
 
-    public void SetPressed(bool pressed)
+    public virtual void SetPressed(bool pressed)
     {
         isPressed = pressed;
         if (isPressed) GetComponent<Image>().color = pressedColor;

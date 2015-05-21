@@ -23,10 +23,15 @@ public enum SpellType
 public enum EntityClass
 {
     Character,
-    Inanimate,
+    Mech,
     Rune,
     Collectible,
     SpellEffect
+}
+
+public enum MechType
+{
+    StatueCaster
 }
 
 public enum CharacterType
@@ -35,7 +40,9 @@ public enum CharacterType
     Sphere,
     Cube,
     Player,
-    Spider,    
+    Spider, 
+    
+    AvatarLearn   
 }
 
 public enum InanimateType

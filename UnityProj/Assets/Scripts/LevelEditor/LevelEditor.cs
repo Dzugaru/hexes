@@ -32,8 +32,10 @@ public class LevelEditor : MonoBehaviour
 
     public bool isInRuneDrawingMode = false;
     public bool isInPassabilityMode = false;
+    public bool isInEntitySetMode = false;
 
-    
+    Entity backlinkEntity;
+
 
     void Awake()
     {
@@ -45,9 +47,15 @@ public class LevelEditor : MonoBehaviour
       
         Interfacing.PerformInterfaceSpawn = PerformInterfaceSpawn;      
         Interfacing.PerformInterfaceDie = PerformInterfaceDie;
-        Interfacing.PerformInterfaceUpdateRune = PerformInterfaceUpdateRune;
+        Interfacing.PerformInterfaceUpdateRotation = PerformInterfaceUpdateRotation;
 
-        canvas.transform.Find("InstrPanel").Find("Passability").GetComponent<StickyButton>().PressedChanged += OnPassabilityModeChanged;        
+        var instrPanel = canvas.transform.Find("InstrPanel");
+
+        instrPanel.Find("Passability").GetComponent<StickyButton>().PressedChanged += OnPassabilityModeChanged;
+        instrPanel.Find("EntitySet").GetComponent<StickyButton>().PressedChanged += val => isInEntitySetMode = val;
+        instrPanel.Find("Runes").GetComponent<StickyButton>().PressedChanged += val => isInRuneDrawingMode = val;
+
+
         sbvisParent = GameObject.Find("SBTileVis");
     }
 
@@ -89,9 +97,12 @@ public class LevelEditor : MonoBehaviour
         //Putting runes
         PutRunes(p);
 
+        //Putting entities
+        PutEntities(p);
+
         //Changing passability
         if (isInPassabilityMode && Input.GetMouseButtonDown(0))
-            ChangeStaticPassability(p); 
+            ChangeStaticPassability(p, true); 
 
         //Undo and redo
         if (Input.GetKeyDown(KeyCode.BackQuote) && undos.Count > 0)
@@ -109,8 +120,7 @@ public class LevelEditor : MonoBehaviour
     }
 
     void PutRunes(HexXY p)
-    {
-        isInRuneDrawingMode = canvas.transform.Find("InstrPanel").transform.Find("Runes").GetComponent<StickyButton>().isPressed;
+    {   
         if (!isInRuneDrawingMode) return;
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -146,9 +156,9 @@ public class LevelEditor : MonoBehaviour
                         undos.Push(op);
                         redos.Clear();
                     }
-                    else if(Data.runeDatas[kvp.Value].isDirectional)
+                    else if(existingRune.CanRotate)
                     {
-                        var op = new Undos.RotateRune(p);
+                        var op = new Undos.RotateEntity(existingRune, p);
                         op.Rotate();
                         undos.Push(op);
                         redos.Clear();
@@ -156,10 +166,55 @@ public class LevelEditor : MonoBehaviour
                 }
     }
 
-    void ChangeStaticPassability(HexXY p)
+    void PutEntities(HexXY p)
+    {
+        if (!isInEntitySetMode) return;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (Input.GetKey(KeyCode.LeftControl))
+            {
+                var ent = Level.S.GetEntities(p).FirstOrDefault();
+                if (ent != null && ent is IRotatable)
+                {
+                    var op = new Undos.RotateEntity(ent, p);
+                    op.Rotate();
+                    undos.Push(op);
+                    redos.Clear();
+                }
+            }
+            else
+            {
+                var prefab = Selection.activeGameObject;
+                if (prefab == null || PrefabUtility.GetPrefabType(prefab) == PrefabType.None) return;
+                var creator = prefab.GetComponent<EditorEntityBacklink>();
+                if (creator == null) return;
+                var ent = creator.CreateEntity();
+                var op = new Undos.AddEntity(ent, p);
+
+                backlinkEntity = ent; //This will be linked in CreateEntity()
+                op.Add();
+                undos.Push(op);
+                redos.Clear();
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.Space))
+        {
+            var ent = Level.S.GetEntities(p).FirstOrDefault();
+            if (ent != null)
+            {
+                var op = new Undos.RemoveEntity(ent, p);
+                op.Remove();
+                undos.Push(op);
+                redos.Clear();
+            }
+        }
+    }
+
+    public void ChangeStaticPassability(HexXY p, bool isUndoable)
     {
         var op = new Undos.ChangePassability(p);
-        if (op.Change())
+        if (op.Change() && isUndoable)
         {
             undos.Push(op);
             redos.Clear();
@@ -281,6 +336,7 @@ public class LevelEditor : MonoBehaviour
             case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
             case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
             case EntityClass.SpellEffect: prefabPath += ((SpellEffectType)objType).ToString(); break;
+            case EntityClass.Mech: prefabPath += ((MechType)objType).ToString(); break;
         }
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
@@ -294,6 +350,13 @@ public class LevelEditor : MonoBehaviour
         objGr.entityHandle = handle;
 
         entities.Add(handle, obj);
+
+        if (backlinkEntity != null)
+        {
+            obj.GetComponent<EditorEntityBacklink>().ent = backlinkEntity;
+            backlinkEntity = null;
+            //Selection.activeGameObject = obj;            
+        }
 
         return handle;
     }
@@ -310,9 +373,9 @@ public class LevelEditor : MonoBehaviour
         obj.GetComponent<EntityGraphics>().Die();
     }
 
-    void PerformInterfaceUpdateRune(Interfacing.EntityHandle objHandle, uint dir)
+    void PerformInterfaceUpdateRotation(Interfacing.EntityHandle objHandle, uint dir)
     {
         GameObject obj = entities[objHandle];
-        obj.GetComponent<RuneGraphics>().UpdateInterface(dir);
+        obj.GetComponent<EntityGraphics>().UpdateInterfaceRotation(dir);
     }
 }

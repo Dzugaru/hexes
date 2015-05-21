@@ -21,5 +21,10 @@ public abstract class EntityGraphics : MonoBehaviour
     public virtual void Damage(float dmg) { }
     public virtual void Die() { }
     public virtual void UpdateHP(float currentHP, float maxHP) { }
+
+    public void UpdateInterfaceRotation(uint dir)
+    {
+        transform.rotation = Quaternion.AngleAxis(dir * 60, new Vector3(0, 1, 0));
+    }
 }
 

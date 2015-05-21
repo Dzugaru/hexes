@@ -6,19 +6,14 @@ using System.Text;
 
 namespace Engine
 {
-    public class Rune : Entity
+    public class Rune : Entity, IRotatable
     {
-        public uint dir;
+        public bool CanRotate { get { return Data.runeDatas[(RuneType)entityType].isDirectional; } }
 
         public Rune(RuneType type, uint dir) : base(EntityClass.Rune, (uint)type)
         {            
             this.dir = dir;
-        }
-
-        public override void UpdateInterface()
-        {
-            Interfacing.PerformInterfaceUpdateRune(graphicsHandle, dir);
-        }
+        }      
 
         public static bool CanDraw(Entity ent, RuneType rune, HexXY pos)
         {

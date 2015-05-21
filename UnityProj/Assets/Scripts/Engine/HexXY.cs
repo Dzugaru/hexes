@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Engine
 {
+    [Serializable]
     public struct HexXY : IEquatable<HexXY>
     {
         static readonly Vector2 ex = new Vector2(Mathf.Sqrt(3f) * 0.5f, 0.5f);
