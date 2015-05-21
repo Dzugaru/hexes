@@ -17,8 +17,8 @@ public class LevelEditor : MonoBehaviour
     Stack<IUndo> undos = new Stack<IUndo>(), redos = new Stack<IUndo>();
     Undos.TerrainPaint currentTerrainPaint;
 
-    static readonly int entitiesClassesCount = Enum.GetValues(typeof(EntityClass)).Length;
-    uint[] entitiesCountByClass = new uint[entitiesClassesCount];
+   
+    
     Dictionary<Interfacing.EntityHandle, GameObject> entities = new Dictionary<Interfacing.EntityHandle, GameObject>();
 
     public TerrainCellType? brushCellType;
@@ -33,9 +33,6 @@ public class LevelEditor : MonoBehaviour
     public bool isInRuneDrawingMode = false;
     public bool isInPassabilityMode = false;
     public bool isInEntitySetMode = false;
-
-    Entity backlinkEntity;
-
 
     void Awake()
     {
@@ -191,8 +188,7 @@ public class LevelEditor : MonoBehaviour
                 if (creator == null) return;
                 var ent = creator.CreateEntity();
                 var op = new Undos.AddEntity(ent, p);
-
-                backlinkEntity = ent; //This will be linked in CreateEntity()
+                
                 op.Add();
                 undos.Push(op);
                 redos.Clear();
@@ -327,36 +323,29 @@ public class LevelEditor : MonoBehaviour
     }
 
 
-    Interfacing.EntityHandle CreateEntity(EntityClass objClass, uint objType)
+    Interfacing.EntityHandle CreateEntity(Entity ent)
     {
-        string prefabPath = "Prefabs/" + objClass.ToString() + "/";
-        switch (objClass)
+        string prefabPath = "Prefabs/" + ent.entityClass.ToString() + "/";
+        switch (ent.entityClass)
         {
-            case EntityClass.Character: prefabPath += ((CharacterType)objType).ToString(); break;
-            case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
-            case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
-            case EntityClass.SpellEffect: prefabPath += ((SpellEffectType)objType).ToString(); break;
-            case EntityClass.Mech: prefabPath += ((MechType)objType).ToString(); break;
+            case EntityClass.Character: prefabPath += ((CharacterType)ent.entityType).ToString(); break;
+            case EntityClass.Rune: prefabPath += ((RuneType)ent.entityType).ToString(); break;
+            case EntityClass.Collectible: prefabPath += ((CollectibleType)ent.entityType).ToString(); break;
+            case EntityClass.SpellEffect: prefabPath += ((SpellEffectType)ent.entityType).ToString(); break;
+            case EntityClass.Mech: prefabPath += ((MechType)ent.entityType).ToString(); break;
         }
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
         obj.SetActive(false);
         obj.transform.SetParent(GameObject.Find("Entities").transform, false);
 
-        var handle = new Interfacing.EntityHandle() { objClass = objClass, idx = entitiesCountByClass[(int)objClass]++ };
+        var handle = new Interfacing.EntityHandle() { idx = (uint)entities.Count };
 
         var objGr = obj.GetComponent<EntityGraphics>();
-        objGr.entityType = objType;
-        objGr.entityHandle = handle;
+        objGr.entity = ent;
+        objGr.entityType = ent.entityType;        
 
-        entities.Add(handle, obj);
-
-        if (backlinkEntity != null)
-        {
-            obj.GetComponent<EditorEntityBacklink>().ent = backlinkEntity;
-            backlinkEntity = null;
-            //Selection.activeGameObject = obj;            
-        }
+        entities.Add(handle, obj);       
 
         return handle;
     }

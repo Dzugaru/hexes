@@ -78,7 +78,7 @@ class CharacterGraphics : EntityGraphics
         transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
         gameObject.SetActive(true);        
 
-        if (entityHandle.objClass == EntityClass.Character && entityType == (int)CharacterType.Player)
+        if (entity.entityClass == EntityClass.Character && entityType == (int)CharacterType.Player)
         {
             Camera.main.GetComponent<CameraControl>().player = gameObject;
         }

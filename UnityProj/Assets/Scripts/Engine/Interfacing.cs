@@ -8,12 +8,11 @@ namespace Engine
     public static class Interfacing
     {
         public struct EntityHandle
-        {           
-	        public EntityClass objClass;
+        {           	        
             public uint idx;
         }
 
-        public static Func<EntityClass, uint, EntityHandle> CreateEntity;
+        public static Func<Entity, EntityHandle> CreateEntity;
 
         public static Action<EntityHandle, HexXY> PerformInterfaceSpawn;
         public static Action<EntityHandle, HexXY, float> PerformInterfaceMove;

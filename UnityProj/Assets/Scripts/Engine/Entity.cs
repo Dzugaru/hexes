@@ -18,6 +18,7 @@ namespace Engine
         public uint dir; //TODO: Move to IRotatable interface?
         public Interfacing.EntityHandle graphicsHandle;
         public bool hasGraphicsHandle;
+        public EntityClass entityClass;
         public uint entityType;
 
         public Entity(EntityClass cls, uint type)
@@ -28,7 +29,7 @@ namespace Engine
             if (this is IFibered) { fibered = new Fibered(); components.Add(fibered); }
 
             entityType = type;
-            graphicsHandle.objClass = cls;
+            entityClass = cls;
             hasGraphicsHandle = false;            
         }
 
@@ -59,7 +60,7 @@ namespace Engine
         public virtual void Spawn(HexXY p)
         {
             if (!hasGraphicsHandle)            
-                graphicsHandle = Interfacing.CreateEntity(graphicsHandle.objClass, entityType);                            
+                graphicsHandle = Interfacing.CreateEntity(this);                            
 
             pos = p;
 

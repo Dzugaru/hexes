@@ -11,8 +11,7 @@ public abstract class EntityGraphics : MonoBehaviour
     [HideInInspector]
     public uint entityType;
 
-    [HideInInspector]
-    public Interfacing.EntityHandle entityHandle;  
+    public Entity entity;
 
     public virtual void Spawn(HexXY p) { }
     public virtual void Move(HexXY pos, float timeToGetThere) { }

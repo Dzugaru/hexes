@@ -16,10 +16,8 @@ public class G : MonoBehaviour
     public float terrainSnowiness = 0.1f;
 
     public static readonly Plane gamePlane = new Plane(new Vector3(0, 1, 0), 0);
-
-    static readonly int entitiesClassesCount = Enum.GetValues(typeof(EntityClass)).Length;
-
-    static uint[] entitiesCountByClass;
+   
+    
     static Dictionary<Interfacing.EntityHandle, GameObject> entities;
 
     public static bool isTimeStopped;
@@ -31,8 +29,7 @@ public class G : MonoBehaviour
 
     void Awake()
     {
-        entities = new Dictionary<Interfacing.EntityHandle, GameObject>();
-        entitiesCountByClass = new uint[entitiesClassesCount];
+        entities = new Dictionary<Interfacing.EntityHandle, GameObject>();        
 
         if (S != null)
         {
@@ -87,26 +84,26 @@ public class G : MonoBehaviour
         E.Update(Time.deltaTime);
     }
 
-    static Interfacing.EntityHandle CreateEntity(EntityClass objClass, uint objType)
+    static Interfacing.EntityHandle CreateEntity(Entity ent)
     {
-        string prefabPath = "Prefabs/" + objClass.ToString() + "/";
-        switch (objClass)
+        string prefabPath = "Prefabs/" + ent.entityClass.ToString() + "/";
+        switch (ent.entityClass)
         {
-            case EntityClass.Character: prefabPath += ((CharacterType)objType).ToString(); break;
-            case EntityClass.Rune: prefabPath += ((RuneType)objType).ToString(); break;
-            case EntityClass.Collectible: prefabPath += ((CollectibleType)objType).ToString(); break;
-            case EntityClass.SpellEffect: prefabPath += ((SpellEffectType)objType).ToString(); break;
-            case EntityClass.Mech: prefabPath += ((MechType)objType).ToString(); break;
+            case EntityClass.Character: prefabPath += ((CharacterType)ent.entityType).ToString(); break;
+            case EntityClass.Rune: prefabPath += ((RuneType)ent.entityType).ToString(); break;
+            case EntityClass.Collectible: prefabPath += ((CollectibleType)ent.entityType).ToString(); break;
+            case EntityClass.SpellEffect: prefabPath += ((SpellEffectType)ent.entityType).ToString(); break;
+            case EntityClass.Mech: prefabPath += ((MechType)ent.entityType).ToString(); break;
         }
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
         obj.SetActive(false);
 
-        var handle = new Interfacing.EntityHandle() { objClass = objClass, idx = entitiesCountByClass[(int)objClass]++ };
+        var handle = new Interfacing.EntityHandle() {  idx = (uint)entities.Count };
 
         var objGr = obj.GetComponent<EntityGraphics>();
-        objGr.entityType = objType;
-        objGr.entityHandle = handle;
+        objGr.entity = ent;
+        objGr.entityType = ent.entityType;        
 
         entities.Add(handle, obj);
 
