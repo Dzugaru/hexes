@@ -42,7 +42,8 @@ class PlayerInput : MonoBehaviour
         runeKeys.Add(KeyCode.L, RuneType.PredicateTileWall);
         runeKeys.Add(KeyCode.P, RuneType.PredicateTileMonster);
     }
-    
+
+    EntityGraphics mouseOverClickable;
     
 
     HexXY getMouseOverTile()
@@ -90,8 +91,8 @@ class PlayerInput : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButtonDown(0))
-            E.PlayerCastSpell(getMouseOverTile());
+        //if (Input.GetMouseButtonDown(0))
+        //    E.PlayerCastSpell(getMouseOverTile());
 
         //DEBUG redraw spell
         if (Input.GetKeyDown(KeyCode.Backslash) && E.player.currentSpell != null)            
@@ -114,6 +115,44 @@ class PlayerInput : MonoBehaviour
         //        Time.timeScale = 1;
         //    }
         //}
+
+        MouseOverHighlightAndClick();
+    }
+
+    void MouseOverHighlightAndClick()
+    {        
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        bool isFound = false;
+        if (Physics.Raycast(ray, out hit))
+        {            
+            var go = hit.transform.gameObject;
+            var gr = go.GetComponentInParent<EntityGraphics>();
+           
+            if (gr != null && gr is IClickable)
+            {
+                isFound = true;
+                if (gr != mouseOverClickable)
+                {
+                    if (mouseOverClickable != null)
+                        mouseOverClickable.highlight.DisableHighlight();
+                   
+                    mouseOverClickable = gr;                    
+                    gr.highlight.EnableHighlight();                   
+                }
+            }
+        }
+
+        if (!isFound && mouseOverClickable != null)
+        {
+            mouseOverClickable.highlight.DisableHighlight();
+            mouseOverClickable = null;
+        }
+
+        if (mouseOverClickable != null && Input.GetMouseButtonDown(0))
+        {
+            ((Engine.IClickable)mouseOverClickable.entity).Click();
+        }
     }
 }
 

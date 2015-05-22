@@ -57,13 +57,9 @@ namespace Engine
         
 
         static Queue<CompiledRune> compilationFront = new Queue<CompiledRune>();
-        static CompiledRune[,] compilationMap = new CompiledRune[WorldBlock.sz, WorldBlock.sz];
+        static Dictionary<HexXY, CompiledRune> compilationMap = new Dictionary<HexXY, CompiledRune>();
         public static Spell CompileSpell(Rune compileRune, HexXY compileRunePos)
         {
-            for (int x = 0; x < WorldBlock.sz; x++)
-                for (int y = 0; y < WorldBlock.sz; y++)
-                    compilationMap[x, y] = null;
-
             Spell spell = new Spell();
 
             HexXY refPos = compileRunePos;
@@ -71,8 +67,9 @@ namespace Engine
             spell.allRunes.Add(spell.root);
 
             compilationFront.Clear();
+            compilationMap.Clear();
             compilationFront.Enqueue(spell.root);
-            compilationMap[compileRunePos.x, compileRunePos.y] = spell.root;         
+            compilationMap.Add(compileRunePos, spell.root);
 
             CompiledRune c;            
 
@@ -87,8 +84,8 @@ namespace Engine
                     Rune rune = (Rune)Level.S.GetEntities(np).FirstOrDefault(ent => ent is Rune);
                     if (rune == null) continue;
 
-                    var nrune = compilationMap[np.x, np.y];
-                    if (nrune != null)
+                    CompiledRune nrune;
+                    if (compilationMap.TryGetValue(np, out nrune))
                     {                        
                         int reverseIdx = (i + 3) % 6;
                         c.neighs[i] = nrune;
@@ -101,7 +98,7 @@ namespace Engine
                         nrune = new CompiledRune((RuneType)rune.entityType, c.relPos + d, rune.dir, (uint)spell.allRunes.Count);
                         spell.allRunes.Add(nrune);
                         compilationFront.Enqueue(nrune);
-                        compilationMap[np.x, np.y] = nrune;
+                        compilationMap.Add(np, nrune);
                     }
                 }
             } while (compilationFront.Count > 0);

@@ -10,7 +10,7 @@ namespace Engine
     {
         public bool CanRotate { get { return true; } }
 
-        HexXY sourceSpellPos;
+        public HexXY sourceSpellPos;
 
         public StatueCaster(uint dir, HexXY sourceSpellPos) : base(EntityClass.Mech, (uint)MechType.StatueCaster)
         {
@@ -20,7 +20,9 @@ namespace Engine
 
         public void Click()
         {
-           
+            var compileRune = (Rune)Level.S.GetEntities(sourceSpellPos).FirstOrDefault(e => e is Rune);            
+            var spell = Spell.CompileSpell(compileRune, sourceSpellPos);
+            spell.Cast(this, dir);            
         }
 
         public override void Save(BinaryWriter writer)

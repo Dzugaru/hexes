@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using System.Collections;
 
 public class LevelEditorCameraControl : MonoBehaviour
@@ -79,3 +80,4 @@ public class LevelEditorCameraControl : MonoBehaviour
 
     }
 }
+#endif

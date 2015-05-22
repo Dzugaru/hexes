@@ -10,6 +10,6 @@ using UnityEngine;
 //graphics obj back to entity and changing entity 
 //from graphics frontend in editor
 public abstract class EditorEntityBacklink : MonoBehaviour
-{   
+{
     public abstract Entity CreateEntity();    
 }

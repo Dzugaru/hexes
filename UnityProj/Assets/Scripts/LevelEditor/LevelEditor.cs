@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+
+using UnityEngine;
 using System.Collections;
 using Engine;
 using System.Diagnostics;
@@ -368,3 +370,4 @@ public class LevelEditor : MonoBehaviour
         obj.GetComponent<EntityGraphics>().UpdateInterfaceRotation(dir);
     }
 }
+#endif

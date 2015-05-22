@@ -6,11 +6,11 @@ using System.Text;
 using UnityEngine;
 
 
-public class StatueCasterGraphics : InanimateGraphics
+public class StatueCasterGraphics : InanimateGraphics, IHighlightable, IClickable
 {
     public StatueCasterGraphics()
     {
-        
+       
     }   
 
     void Start()
@@ -18,8 +18,5 @@ public class StatueCasterGraphics : InanimateGraphics
          
     }
 
-    void LateUpdate()
-    {
-    }
 }
 

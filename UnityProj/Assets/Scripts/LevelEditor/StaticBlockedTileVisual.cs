@@ -1,4 +1,5 @@
-﻿using Engine;
+﻿#if UNITY_EDITOR
+using Engine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,4 +32,5 @@ public class StaticBlockedTileVisual : MonoBehaviour
         GetComponent<MeshFilter>().mesh = mesh;
     }
 }
+#endif
 

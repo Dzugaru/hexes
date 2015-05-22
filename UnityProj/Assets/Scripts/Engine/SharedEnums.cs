@@ -35,10 +35,7 @@ public enum MechType
 }
 
 public enum CharacterType
-{    
-    Pyramid,
-    Sphere,
-    Cube,
+{       
     Player,
     Spider, 
     

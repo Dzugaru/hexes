@@ -21,9 +21,19 @@ public abstract class EntityGraphics : MonoBehaviour
     public virtual void Die() { }
     public virtual void UpdateHP(float currentHP, float maxHP) { }
 
+    public Highlight highlight;
+    public GameObject meshRoot;
+
+    void Awake()
+    {
+        if (this is IHighlightable)        
+            highlight = new Highlight(this);
+        
+    }
+
     public void UpdateInterfaceRotation(uint dir)
     {
-        transform.rotation = Quaternion.AngleAxis(dir * 60, new Vector3(0, 1, 0));
+        transform.rotation = Quaternion.AngleAxis(dir * 60, new Vector3(0, 1, 0));        
     }
 }
 

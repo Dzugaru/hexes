@@ -9,7 +9,7 @@ public class PropertyDrawer : UnityEditor.PropertyDrawer
     {        
         EditorGUI.BeginProperty(position, label, property);
 
-        var valueProp = property.FindPropertyRelative("_value");
+        var valueProp = property.FindPropertyRelative("value");
         position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
         valueProp.floatValue = EditorGUI.FloatField(position, valueProp.floatValue);
 

@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 
-class CharacterGraphics : EntityGraphics
+class CharacterGraphics : EntityGraphics, IHighlightable
 {
     public enum AnimationsType
     {
@@ -21,7 +21,7 @@ class CharacterGraphics : EntityGraphics
     }
 
     public AnimationsType animationsType;
-    public GameObject meshRoot;
+    
     public float hpBarUpDistance;
 
     Animator mecanimAnimator;
@@ -36,12 +36,6 @@ class CharacterGraphics : EntityGraphics
     float rotationFixLeft;
 
     Coroutine attackCor;
-
-    GameObject highlightMeshCopy;
-    Material highlightMat;
-    Coroutine flashHighlightAnimation; //These don't support state view (exec, term), wtf
-    bool isflashHighlightAnimationRunning;
-
 
    
     public float currentHP;
@@ -122,7 +116,7 @@ class CharacterGraphics : EntityGraphics
 
     public override void Damage(float dmg)
     {        
-        AnimateFlashHighlight(Color.white, 0.15f, 0.5f);
+        highlight.AnimateFlashHighlight(Color.white, 0.15f, 0.5f);
     }
 
     public override void UpdateHP(float currentHP, float maxHP)
@@ -197,61 +191,7 @@ class CharacterGraphics : EntityGraphics
         }
     }
 
-    void EnableHighlight()
-    {
-        Material hlMat = (Material)Resources.Load("Debug/Highlight");
-        highlightMat = new Material(hlMat);        
-
-        highlightMeshCopy = Instantiate(meshRoot);
-        highlightMeshCopy.transform.parent = meshRoot.transform.parent;
-
-        foreach (var mr in highlightMeshCopy.GetComponentsInChildren<MeshRenderer>())        
-            mr.sharedMaterial = highlightMat;                    
-
-        foreach (var mr in highlightMeshCopy.GetComponentsInChildren<SkinnedMeshRenderer>())
-            mr.sharedMaterial = highlightMat;        
-    }
-
-    void DisableHighlight()
-    {
-        Destroy(highlightMeshCopy);        
-    }
-
-    public void AnimateFlashHighlight(Color color, float dur, float peakAlpha)
-    {
-        bool isHighlightAlreadyPresent;
-        if (isflashHighlightAnimationRunning)
-        {
-            StopCoroutine(flashHighlightAnimation);
-            isHighlightAlreadyPresent = true;
-        }
-        else
-        {
-            isHighlightAlreadyPresent = false;
-        }        
-        flashHighlightAnimation = StartCoroutine(CorAnimateFlashHighlight(color, dur, peakAlpha, isHighlightAlreadyPresent));
-    }
-
-    IEnumerator CorAnimateFlashHighlight(Color color, float dur, float peakAlpha, bool isHighlightAlreadyPresent)
-    {
-        isflashHighlightAnimationRunning = true;
-        if(!isHighlightAlreadyPresent) EnableHighlight();
-        highlightMat.color = new Color(color.r, color.g, color.b, 0);
-        float startTime = Time.time;
-
-        for(; ;)
-        {
-            if (Time.time > startTime + dur) break;
-            Color col = highlightMat.color;
-            highlightMat.color = new Color(col.r, col.g, col.b, Mathf.Sin((Time.time - startTime) / dur * Mathf.PI) * peakAlpha);
-            
-            yield return null;
-        }
-       
-        DisableHighlight();
-        isflashHighlightAnimationRunning = false;
-        yield break;
-    }
+   
 
 
     void Update()

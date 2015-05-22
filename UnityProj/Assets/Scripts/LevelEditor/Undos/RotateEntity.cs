@@ -1,4 +1,5 @@
-﻿using Engine;
+﻿#if UNITY_EDITOR
+using Engine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,3 +36,4 @@ namespace Undos
         }
     }
 }
+#endif
