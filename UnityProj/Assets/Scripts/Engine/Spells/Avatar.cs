@@ -13,12 +13,14 @@ namespace Engine
         
         public HexXY pos;
         public uint dir;
-        public Spell.CompiledRune rune;
+        public Spell.CompiledRune prevRune, rune;
+        public uint flowDir;
         public float timeLeft;
         public FinishedState? finishState;        
         public IAvatarElement avatarElement;
 
         bool isArrowCrossDirLeft;
+        HashSet<HexXY> arrowsProcessed = new HashSet<HexXY>(); //This is for flow arrow cycle detection
 
         public enum FinishedState
         {
@@ -48,12 +50,13 @@ namespace Engine
 
             if (SpellExecuting.isLogging)
                 Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> interpret " + rune.type + " at " + rune.relPos);
+            
+            var currRune = rune;                       
 
             bool needsFlow = true;
-
             if (IsArrowRune(rune.type))
             {
-                rune = InterpretArrowSeq(rune);
+                rune = InterpretArrowSeq(rune, true, true);
                 needsFlow = false;
             }
             else if (IsAvatarElementRune(rune.type))
@@ -74,8 +77,13 @@ namespace Engine
                 finishState = FinishedState.FlowFinished;
             }
 
+            if (avatarElement != null)
+                timeLeft += avatarElement.OnInterpret(currRune);
+
             if (needsFlow && finishState == null)
-                InterpretFlow();
+                InterpretFlow();           
+
+            prevRune = currRune;
         }    
 
         void InterpretFlow()
@@ -88,8 +96,8 @@ namespace Engine
                 if (nrune == null) continue;
 
                 bool isArrow = IsArrowRune(nrune.type);
-                if ((isArrow && !IsArrowFrom(nrune, (uint)i)) || (!isArrow && i != 0)) continue;
-                if (i == 0 && !IsFlowCorrect(rune, 0)) continue;
+                if ((isArrow && !IsArrowFrom(nrune, (uint)i)) || (!isArrow && i != flowDir)) continue;
+                if (i == flowDir && !IsFlowCorrect(rune, flowDir)) continue;
 
                 if (forkCount == 0)
                     nextRune = nrune;
@@ -103,14 +111,16 @@ namespace Engine
             else rune = nextRune;
         }
 
-        Spell.CompiledRune InterpretArrowSeq(Spell.CompiledRune r)
+        Spell.CompiledRune InterpretArrowSeq(Spell.CompiledRune r, bool onlyOneRune, bool setFlowDir)
         {
-            HashSet<HexXY> processed = new HashSet<HexXY>();
-
-            while(true)
+            do
             {
-                if (processed.Contains(r.relPos)) return null; //Cycle detected
-                processed.Add(r.relPos);
+                if (arrowsProcessed.Contains(r.relPos))
+                {
+                    arrowsProcessed.Clear();
+                    return null; //Cycle detected
+                }
+                arrowsProcessed.Add(r.relPos);
 
                 uint fromDir = r.dir;
 
@@ -127,11 +137,27 @@ namespace Engine
                 }
 
                 uint toDir = (fromDir + dirChange) % 6;
-                if (!IsFlowCorrect(r, toDir)) return null;
+                if (!IsFlowCorrect(r, toDir))
+                {
+                    arrowsProcessed.Clear();
+                    return null;
+                }
                 r = r.neighs[toDir];
-                if (r == null) return null;
-                if (!IsArrowRune(r.type)) return r;                
-            } 
+                if (r == null)
+                {
+                    arrowsProcessed.Clear();
+                    return null;
+                }
+                if (!IsArrowRune(r.type))
+                {
+                    arrowsProcessed.Clear();
+                    if (setFlowDir)                    
+                        flowDir = toDir;                    
+                    return r;
+                }
+            } while (!onlyOneRune);
+
+            return r;
         }
 
         bool IsFlowCorrect(Spell.CompiledRune from, uint toDir)
@@ -156,12 +182,25 @@ namespace Engine
 
         void InterpretChangeElement()
         {            
+            IAvatarElement newEl;
+
             switch (rune.type)
             {
-                case RuneType.Flame: avatarElement = new AvatarFlame(this, rune.listIdx); break;
-                case RuneType.Wind: avatarElement = new AvatarWind(this, rune.listIdx); break;
-                case RuneType.Stone: avatarElement = new AvatarStone(this, rune.listIdx); break;
+                case RuneType.Flame: newEl = new AvatarLearn(this, rune.listIdx, 2); break;
+                case RuneType.Wind: newEl = new AvatarWind(this, rune.listIdx); break;
+                case RuneType.Stone: newEl = new AvatarStone(this, rune.listIdx); break;
                 default: throw new Tools.AssertException();
+            }
+
+            if (avatarElement == null || newEl.GetType() != avatarElement.GetType()) //TODO: what if it's the same?
+            {
+                if (avatarElement != null)
+                {
+                    avatarElement.OnDie();
+                }
+
+                avatarElement = newEl;
+                avatarElement.OnSpawn();
             }
 
             if (SpellExecuting.isLogging)
@@ -335,7 +374,7 @@ namespace Engine
                 if (i != 0 && i != 5 && nrune != null && IsArrowRune(nrune.type) && IsArrowFrom(nrune, (uint)i))
                 {
                     //Find following arrows
-                    nrune = InterpretArrowSeq(nrune);
+                    nrune = InterpretArrowSeq(nrune, false, false);
                     if (nrune == null || !IsPredicateRune(nrune.type)) continue;
 
                     isTrue = isTrue || InterpretPredicate(nrune); //using OR

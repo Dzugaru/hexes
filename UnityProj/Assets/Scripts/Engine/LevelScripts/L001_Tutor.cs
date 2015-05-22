@@ -11,7 +11,7 @@ namespace Engine.LevelScripts
         {
             get
             {
-                return new HexXY(7, 5);
+                return new HexXY(0, -3);
             }
         }
     }

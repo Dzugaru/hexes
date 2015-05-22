@@ -36,6 +36,7 @@ public class Highlight
 
     public void DisableHighlight()
     {
+        GameObject.Destroy(highlightMat);
         GameObject.Destroy(highlightMeshCopy);
     }
 

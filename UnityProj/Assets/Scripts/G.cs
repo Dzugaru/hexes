@@ -51,8 +51,9 @@ public class G : MonoBehaviour
         Interfacing.PerformInterfaceUpdateHP = PerformInterfaceUpdateHP;
         Interfacing.PerformInterfaceUpdateRotation = PerformInterfaceUpdateRotation;
         Interfacing.PerformInterfaceUpdateSpellEffect = PerformInterfaceUpdateSpellEffect;
+        Interfacing.PerformInterfaceLightOrQuenchRune = PerformInterfaceLightOrQuenchRune;
 
-        
+
         E.LoadLevel(levelName);
         var envRoot = Instantiate(Resources.Load<GameObject>("Prefabs/Env/" + levelName));
         envRoot.name = "Env";
@@ -68,6 +69,8 @@ public class G : MonoBehaviour
                 E.player.currentSpell = Spell.Load(writer);
         }
     }
+
+  
 
     void Start()
     {
@@ -162,6 +165,15 @@ public class G : MonoBehaviour
     {
         GameObject obj = entities[objHandle];
         obj.GetComponent<SpellEffectGraphics>().UpdateInterface(power);
+    }
+
+    static void PerformInterfaceLightOrQuenchRune(Interfacing.EntityHandle objHandle, bool enable)
+    {
+        GameObject obj = entities[objHandle];
+        if (enable)        
+            obj.GetComponent<RuneGraphics>().LearnLight();        
+        else
+            obj.GetComponent<RuneGraphics>().LearnQuench();
     }
 }
 

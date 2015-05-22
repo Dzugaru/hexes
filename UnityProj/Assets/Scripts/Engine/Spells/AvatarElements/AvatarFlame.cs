@@ -55,6 +55,21 @@ namespace Engine
                 var spellEffect = new SpellEffects.GroundFlame(powerUse / powerMax);                
                 spellEffect.StackOn(to);
             }
-        }     
+        }
+
+        public void OnSpawn()
+        {
+            
+        }
+
+        public void OnDie()
+        {
+            
+        }
+
+        public float OnInterpret(Spell.CompiledRune rune)
+        {
+            return 0;
+        }
     }
 }

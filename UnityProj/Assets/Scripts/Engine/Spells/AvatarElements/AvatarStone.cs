@@ -50,5 +50,20 @@ namespace Engine
                 spellEffect.StackOn(to);
             }
         }
+
+        public void OnSpawn()
+        {
+
+        }
+
+        public void OnDie()
+        {
+
+        }
+
+        public float OnInterpret(Spell.CompiledRune rune)
+        {
+            return 0;
+        }
     }
 }

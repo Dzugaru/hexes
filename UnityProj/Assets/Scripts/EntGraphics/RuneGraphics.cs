@@ -7,9 +7,9 @@ using UnityEngine;
 
 
 public class RuneGraphics : InanimateGraphics
-{
-    Color origColor;
-    Material mat;
+{   
+    SpriteRenderer renderer;
+    Material origMaterial;
 
     public uint dir;
 
@@ -20,11 +20,21 @@ public class RuneGraphics : InanimateGraphics
 
     void Start()
     {
-        SpriteRenderer renderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
-        mat = new Material(renderer.material);
-        renderer.material = mat;
+        renderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+        origMaterial = renderer.sharedMaterial;
+    }
 
-        origColor = mat.color;     
-    }   
+    internal void LearnLight()
+    {
+       
+        renderer.material.SetFloat("_Emission", 2);
+    }
+
+    internal void LearnQuench()
+    {
+        Destroy(renderer.material);
+        renderer.sharedMaterial = origMaterial;
+        
+    }
 }
 

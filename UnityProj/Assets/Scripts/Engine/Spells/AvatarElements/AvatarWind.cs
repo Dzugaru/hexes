@@ -31,5 +31,20 @@ namespace Engine
         {
             throw new NotImplementedException();
         }
+
+        public void OnSpawn()
+        {
+
+        }
+
+        public void OnDie()
+        {
+
+        }
+
+        public float OnInterpret(Spell.CompiledRune rune)
+        {
+            return 0;
+        }
     }
 }

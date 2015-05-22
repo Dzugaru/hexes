@@ -28,9 +28,8 @@ class CharacterGraphics : EntityGraphics, IHighlightable
     Animation legacyAnimator;
 
     State state;
-    Vector2 walkDest;
-    Vector3 walkDir;
-    float walkSpeed;
+    Vector2 walkSource, walkDest;        
+    float walkProgress, walkTime;
 
     Quaternion oldRotation, targetRotation;
     float rotationFixLeft;
@@ -40,6 +39,8 @@ class CharacterGraphics : EntityGraphics, IHighlightable
    
     public float currentHP;
     public float maxHP;
+    public bool isRotatable = true;
+    public bool isSmoothStepMove = false;
    
 
     public static List<CharacterGraphics> activeCharacters = new List<CharacterGraphics>();
@@ -84,12 +85,14 @@ class CharacterGraphics : EntityGraphics, IHighlightable
     {
         //Debug.Log(entityHandle + " move " + args.pos);      
         state = State.Walk;
+        walkProgress = 1;
         Vector2 dest = pos.ToPlaneCoordinates();
-        walkDest = dest;
-        float dist = (new Vector2(transform.position.x, transform.position.z) - dest).magnitude;
-        walkSpeed = dist / timeToGetThere;
-        walkDir = (new Vector3(walkDest.x, 0, walkDest.y) - transform.position).normalized;
-        RotateTo(walkDir);
+        walkSource = new Vector2(transform.position.x, transform.position.z);
+        walkDest = dest;        
+        walkTime = timeToGetThere;
+        Vector3 walkDir = (new Vector3(walkDest.x, 0, walkDest.y) - transform.position).normalized;
+        if(isRotatable)
+            RotateTo(walkDir);
 
         if (animationsType == AnimationsType.Legacy) legacyAnimator.Play("Walk");
         else if(animationsType == AnimationsType.Mecanim) mecanimAnimator.SetBool("IsWalking", true);
@@ -144,7 +147,8 @@ class CharacterGraphics : EntityGraphics, IHighlightable
         state = State.Attack;
         Vector2 planePos = pos.ToPlaneCoordinates();
         Vector3 dir = new Vector3(planePos.x, 0, planePos.y) - transform.position;
-        RotateTo(dir);
+        if(isRotatable)
+            RotateTo(dir);
 
         legacyAnimator.PlayQueued("Idle");
 
@@ -181,13 +185,27 @@ class CharacterGraphics : EntityGraphics, IHighlightable
         }
 
         //Update walking
-        if (state == State.Walk)
+        if (state == State.Walk && walkProgress > 0)
         {
-            Vector3 diff = new Vector3(walkDest.x, 0, walkDest.y) - transform.position;
-            if (walkSpeed * Time.deltaTime >= diff.magnitude)            
-                transform.position = new Vector3(walkDest.x, 0, walkDest.y);            
-            else            
-                transform.position += walkSpeed * Time.deltaTime * walkDir;                           
+            walkProgress = Mathf.Max(0, walkProgress - Time.deltaTime / walkTime);
+            Vector2 pos;
+
+            if (isSmoothStepMove)
+            {
+                pos.x = Mathf.SmoothStep(walkSource.x, walkDest.x, 1 - walkProgress);
+                pos.y = Mathf.SmoothStep(walkSource.y, walkDest.y, 1 - walkProgress);
+            }
+            else
+            {
+                pos = Vector2.Lerp(walkSource, walkDest, 1 - walkProgress);
+            }
+            transform.position = new Vector3(pos.x, 0, pos.y);
+
+            //Vector3 diff = new Vector3(walkDest.x, 0, walkDest.y) - transform.position;
+            //if (walkSpeed * Time.deltaTime >= diff.magnitude)            
+            //    transform.position = new Vector3(walkDest.x, 0, walkDest.y);            
+            //else            
+            //    transform.position += walkSpeed * Time.deltaTime * walkDir;                           
         }
     }
 

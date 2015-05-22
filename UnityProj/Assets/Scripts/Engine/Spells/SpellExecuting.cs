@@ -33,9 +33,13 @@ namespace Engine
         {
             if (forkFrom != null && !forkFrom.avatarElement.CanAvatarFork()) return;
 
-            Avatar av = new Avatar(this, pos, dir, rune, avatarLastID++);
+            Avatar av = new Avatar(this, pos, dir, rune, avatarLastID++);            
             if (forkFrom != null)
+            {
+                av.timeLeft = forkFrom.timeLeft;
                 forkFrom.avatarElement.ForkTo(av);
+                av.avatarElement.OnSpawn();
+            }
             avatars.Add(av);
 
             if (isLogging)
@@ -54,7 +58,10 @@ namespace Engine
                     av.Interpret();
 
                 if (av.finishState != null/* && av.finishState.Value != Avatar.FinishedState.FlowFinished*/)
+                {                    
                     avatars.RemoveAt(i--);
+                    av.avatarElement.OnDie();
+                }
 
                 //TODO:
                 //if (av.finishState != null && av.finishState.Value == Avatar.FinishedState.FlowFinished)

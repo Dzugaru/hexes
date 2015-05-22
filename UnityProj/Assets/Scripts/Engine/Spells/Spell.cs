@@ -8,6 +8,7 @@ namespace Engine
 {
     public class Spell
     {
+        public HexXY realWorldStartRunePos;
         public CompiledRune root;
         public List<CompiledRune> allRunes = new List<CompiledRune>();
 
@@ -62,7 +63,7 @@ namespace Engine
         {
             Spell spell = new Spell();
 
-            HexXY refPos = compileRunePos;
+            HexXY refPos = spell.realWorldStartRunePos = compileRunePos;
             spell.root = new CompiledRune((RuneType)compileRune.entityType, new HexXY(0, 0), compileRune.dir, 0);
             spell.allRunes.Add(spell.root);
 

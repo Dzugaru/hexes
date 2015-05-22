@@ -9,7 +9,7 @@ public class Flame : SpellEffectGraphics
     ParticleSystemRenderer coreRenderer;
 
     float origCoreSpeed, origCinderEmitRate;
-    Color origTint;
+    Color origTint;   
 
     public float lightIntensity = 2.5f;
     public float lightFlickerPart = 0.2f;
@@ -41,7 +41,11 @@ public class Flame : SpellEffectGraphics
         if (deathTimeLeft.HasValue)
         {
             deathTimeLeft -= Time.deltaTime;
-            if (deathTimeLeft <= 0) Destroy(gameObject);
+            if (deathTimeLeft <= 0)
+            {
+                Destroy(coreRenderer.material);
+                Destroy(gameObject);
+            }
             else
             {
                 light.intensity *= deathTimeLeft.Value / deathTime;
@@ -70,7 +74,7 @@ public class Flame : SpellEffectGraphics
 	}
 
     public override void Die()
-    {
+    {        
         deathTimeLeft = deathTime;
         coreParticles.emissionRate = 0;
         cinderParticles.emissionRate = 0;
