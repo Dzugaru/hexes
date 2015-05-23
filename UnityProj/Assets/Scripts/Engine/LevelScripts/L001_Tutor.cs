@@ -7,6 +7,12 @@ namespace Engine.LevelScripts
 {
     public class L001_Tutor : LevelScript
     {
+        public enum ID
+        {
+            PressurePlate01,
+            Door01
+        }
+
         public override HexXY PlayerSpawnPos
         {
             get

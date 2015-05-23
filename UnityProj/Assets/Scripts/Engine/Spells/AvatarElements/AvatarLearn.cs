@@ -9,6 +9,8 @@ namespace Engine
     public class AvatarLearn : Entity, IAvatarElement, IRotatable
     {
         Rune litRune;
+        float movementTimeLeft;
+
 
         public Avatar avatar;
         public uint elementRuneIdx;
@@ -38,9 +40,15 @@ namespace Engine
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
         {
             if (Level.S.GetPFBlockedMap(to) == WorldBlock.PFBlockType.StaticBlocked)
-                avatar.finishState = Avatar.FinishedState.CantMoveThere;            
+            {
+                avatar.finishState = Avatar.FinishedState.CantMoveThere;
+            }
             else
-                Interfacing.PerformInterfaceMove(graphicsHandle, to, 1 / speed);            
+            {
+                float time = 1 / speed;
+                Interfacing.PerformInterfaceMove(graphicsHandle, to, time);
+                movementTimeLeft = time * 0.75f; //TODO: this is point in time when avatar changes pos and pressplates etc. react
+            }
         }
 
         public void OnRotate(uint dir)
@@ -78,6 +86,21 @@ namespace Engine
                 return 0.25f;
             else
                 return 1;
+        }
+
+        public override void Update(float dt)
+        {
+            if (movementTimeLeft > 0)
+            {
+                movementTimeLeft = Mathf.Max(0, movementTimeLeft - dt);
+                if (movementTimeLeft == 0)
+                {
+                    Level.S.RemoveEntity(pos, this);                    
+                    pos = avatar.pos;                    
+                    Level.S.AddEntity(pos, this);
+                }
+            }
+            base.Update(dt);
         }
     }
 }

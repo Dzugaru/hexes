@@ -36,6 +36,9 @@ public class LevelEditor : MonoBehaviour
     public bool isInPassabilityMode = false;
     public bool isInEntitySetMode = false;
 
+    public LevelScript levelScript;
+    public Type levelScriptIDs;
+
     void Awake()
     {
         S = this;
@@ -184,16 +187,24 @@ public class LevelEditor : MonoBehaviour
             }
             else
             {
-                var prefab = Selection.activeGameObject;
-                if (prefab == null || PrefabUtility.GetPrefabType(prefab) == PrefabType.None) return;
-                var creator = prefab.GetComponent<EditorEntityBacklink>();
-                if (creator == null) return;
-                var ent = creator.CreateEntity();
-                var op = new Undos.AddEntity(ent, p);
-                
-                op.Add();
-                undos.Push(op);
-                redos.Clear();
+                var existingEntity = Level.S.GetEntities(p).FirstOrDefault();
+                if (existingEntity != null)
+                {                    
+                    Selection.activeGameObject = entities[existingEntity.graphicsHandle];
+                }
+                else //TODO: make possible stacking entities with Alt or something?
+                {
+                    var prefab = Selection.activeGameObject;
+                    if (prefab == null || PrefabUtility.GetPrefabType(prefab) == PrefabType.None) return;
+                    var creator = prefab.GetComponent<EditorEntityBacklink>();
+                    if (creator == null) return;
+                    var ent = creator.CreateEntity();
+                    var op = new Undos.AddEntity(ent, p);
+
+                    op.Add();
+                    undos.Push(op);
+                    redos.Clear();
+                }
             }
         }
         else if (Input.GetKeyDown(KeyCode.Space))
@@ -310,6 +321,11 @@ public class LevelEditor : MonoBehaviour
                         tileVis.transform.localPosition = new Vector3(pp.x, 0, pp.y);
                     }
                 }
+
+        levelScript = (LevelScript)Activator.CreateInstance(System.Reflection.Assembly.GetExecutingAssembly()
+            .GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == levelNameField.text));
+
+        levelScriptIDs = levelScript.GetType().GetNestedType("ID");
     }
 
     HexXY getMouseOverTile()
