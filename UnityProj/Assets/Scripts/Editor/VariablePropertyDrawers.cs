@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEditor;
 
-[CustomPropertyDrawer(typeof(FloatVariable))]
+[CustomPropertyDrawer(typeof(VariableFloat))]
 public class PropertyDrawer : UnityEditor.PropertyDrawer
 {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

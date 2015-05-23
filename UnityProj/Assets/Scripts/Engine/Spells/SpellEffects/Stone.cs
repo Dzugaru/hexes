@@ -6,17 +6,15 @@ using System.Text;
 namespace Engine.SpellEffects
 {
     public class Stone : SpellEffect //TODO: , IHasHP 
-    {
-        public float power;
-        public Stone(float power) : base(SpellEffectType.Stone)
+    {        
+        public Stone(float power) : base(SpellEffectType.Stone, power)
         {
             this.power = power;            
         }
 
         public override void Update(float dt)
         {
-            power -= 0.1f * dt;
-            Interfacing.PerformInterfaceUpdateSpellEffect(graphicsHandle, power);         
+            power -= 0.1f * dt;                 
             if (power <= 0) Die();
 
             base.Update(dt);

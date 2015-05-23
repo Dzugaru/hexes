@@ -7,9 +7,7 @@ namespace Engine.SpellEffects
 {
     public class GroundFlame : SpellEffect
     {
-        public float power;
-
-        public GroundFlame(float power) : base(SpellEffectType.GroundFlame)
+        public GroundFlame(float power) : base(SpellEffectType.GroundFlame, power)
         {
             this.power = power;              
         }
@@ -19,17 +17,11 @@ namespace Engine.SpellEffects
             foreach (var ent in Level.S.GetEntities(pos).OfType<Mob>())            
                 ent.hasHP.Damage(dt * 5.0f);            
 
-            power -= 0.2f * dt;
-            UpdateInterface();
+            power -= 0.2f * dt;            
             if (power <= 0) Die();
 
             base.Update(dt);
-        }
-
-        public override void UpdateInterface()
-        {
-            Interfacing.PerformInterfaceUpdateSpellEffect(graphicsHandle, power);            
-        }
+        }        
 
         public override void StackOn(HexXY pos)
         {

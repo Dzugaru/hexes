@@ -5,18 +5,21 @@ using System.Collections;
 [ExecuteInEditMode]
 public class SpellEffectGraphics : EntityGraphics
 {
-    public float scale = 1;       
-    public FloatVariable power = new FloatVariable(1);
+    public float scale = 1;
+    public VariableFloat power;
 
-    void Start()
+    protected virtual void OnEnable()
     {
-        ScaleParticleSystems();        
-    }
-    
+#if UNITY_EDITOR
+        if (UnityEditor.EditorApplication.isPlaying)
+            power = new VariableFloat(() => ((SpellEffect)entity).power);
+        else
+            power = new VariableFloat() { value = 1 };
+#else
+        power = new VariableFloat(() => ((SpellEffect)entity).power);
+#endif  
 
-    public void UpdateInterface(float power)
-    {        
-        this.power.Value = power;
+        ScaleParticleSystems();        
     }
 
     void ScaleParticleSystems()

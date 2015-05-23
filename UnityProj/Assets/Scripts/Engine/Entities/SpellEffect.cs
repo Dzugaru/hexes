@@ -7,9 +7,11 @@ namespace Engine
 {
     public abstract class SpellEffect : Entity, IFibered
     {
-        public SpellEffect(SpellEffectType type) : base(EntityClass.SpellEffect, (uint)type)
+        public float power;
+
+        public SpellEffect(SpellEffectType type, float power) : base(EntityClass.SpellEffect, (uint)type)
         {
-            
+            this.power = power;
         }
 
         public abstract void StackOn(HexXY pos);

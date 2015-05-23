@@ -88,5 +88,12 @@ namespace Engine
 
             //Debug.Log("power used: " + amount + ", left: " + elementalPower[idx]);
         }
+
+        public void Die()
+        {
+            isExecuting = false;
+            foreach (var av in avatars)            
+                av.avatarElement.OnDie();            
+        }
     }
 }

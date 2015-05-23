@@ -35,11 +35,12 @@ namespace Engine
             }
         }
 
-        public void Cast(Entity ent, uint dir)
+        public SpellExecuting Cast(Entity ent, uint dir)
         {
             var spEx = new SpellExecuting(ent, this, ent.pos, dir);
             spEx.SpawnAvatar(root, null, ent.pos, dir); //TODO: spawn at spell target? what to do with direction? make random if far?
             executingSpells.Add(spEx);
+            return spEx;
         }
 
 
@@ -55,7 +56,6 @@ namespace Engine
                     exSp.Update(dt);
             }            
         }
-        
 
         static Queue<CompiledRune> compilationFront = new Queue<CompiledRune>();
         static Dictionary<HexXY, CompiledRune> compilationMap = new Dictionary<HexXY, CompiledRune>();

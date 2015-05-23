@@ -4,52 +4,65 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
+//NOTE: can't use generics here cause of Unity SerializeField doesn't recognize it
+
 [Serializable]
-public class FloatVariable
+public class VariableFloat
 {
+    float prevValue = float.NaN;
+
     [SerializeField]
-    float value;
+    public float value;
 
-    bool isNew;
+    public Func<float> binding;
 
-    public FloatVariable(float v)
+    public VariableFloat(Func<float> binding = null)
     {
-        value = v;
-        isNew = true;
-    }
-
-    public float Value
-    {
-        get
-        {
-            return value;
-        }
-        set
-        {
-            if (!this.value.Equals(value))
-            {
-                isNew = true;
-                this.value = value;
-            }
-        }
+        this.binding = binding;
     }
 
     public bool IsNew
     {
         get
         {
-#if UNITY_EDITOR
-            if (!UnityEditor.EditorApplication.isPlaying) //Field editing in inspector updates field, not property, so everything should update every frame
-                return true;
-#endif
-            bool n = isNew;
-            isNew = false;
-            return n;
+            if (binding != null) value = binding();
+
+            bool isNew = value != prevValue;
+            prevValue = value;
+            return isNew;
         }
     }
-
-   
 }
+
+[Serializable]
+public class VariableBool
+{
+    bool? prevValue = null;
+
+    [SerializeField]
+    public bool value;
+
+    public Func<bool> binding;
+
+    public VariableBool(Func<bool> binding = null)
+    {
+        this.binding = binding;
+    }
+
+    public bool IsNew
+    {
+        get
+        {
+            if (binding != null) value = binding();
+
+            bool isNew = value != prevValue;
+            prevValue = value;
+            return isNew;
+        }
+    }
+}
+
+
 
 
 

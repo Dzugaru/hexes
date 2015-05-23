@@ -20,10 +20,10 @@ public class Stone : SpellEffectGraphics
         base.Die();
     }
 
-    void OnEnable()
+    protected override void OnEnable()
     {
+        base.OnEnable();
         origYPos = transform.position.y;
-
         transform.Rotate(new Vector3(0, 1, 0), Random.Range(0, 360));
     }
 
@@ -31,7 +31,7 @@ public class Stone : SpellEffectGraphics
     {
         if (power.IsNew)
         {
-            transform.position = new Vector3(transform.position.x, Mathf.Lerp(origYPos, -0.3f, 1 - power.Value), transform.position.z);
+            transform.position = new Vector3(transform.position.x, Mathf.Lerp(origYPos, -0.3f, 1 - power.value), transform.position.z);
         }
     }    
 }

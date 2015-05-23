@@ -49,9 +49,7 @@ public class G : MonoBehaviour
         Interfacing.PerformInterfaceStop = PerformInterfaceStop;
 
         Interfacing.PerformInterfaceUpdateHP = PerformInterfaceUpdateHP;
-        Interfacing.PerformInterfaceUpdateRotation = PerformInterfaceUpdateRotation;
-        Interfacing.PerformInterfaceUpdateSpellEffect = PerformInterfaceUpdateSpellEffect;
-        Interfacing.PerformInterfaceLightOrQuenchRune = PerformInterfaceLightOrQuenchRune;
+        Interfacing.PerformInterfaceUpdateRotation = PerformInterfaceUpdateRotation;        
 
 
         E.LoadLevel(levelName);
@@ -159,21 +157,6 @@ public class G : MonoBehaviour
     {
         GameObject obj = entities[objHandle];
         obj.GetComponent<EntityGraphics>().UpdateInterfaceRotation(dir);
-    }
-
-    static void PerformInterfaceUpdateSpellEffect(Interfacing.EntityHandle objHandle, float power)
-    {
-        GameObject obj = entities[objHandle];
-        obj.GetComponent<SpellEffectGraphics>().UpdateInterface(power);
-    }
-
-    static void PerformInterfaceLightOrQuenchRune(Interfacing.EntityHandle objHandle, bool enable)
-    {
-        GameObject obj = entities[objHandle];
-        if (enable)        
-            obj.GetComponent<RuneGraphics>().LearnLight();        
-        else
-            obj.GetComponent<RuneGraphics>().LearnQuench();
-    }
+    }       
 }
 

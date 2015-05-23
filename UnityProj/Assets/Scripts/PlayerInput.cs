@@ -91,8 +91,8 @@ class PlayerInput : MonoBehaviour
             }
         }
 
-        //if (Input.GetMouseButtonDown(0))
-        //    E.PlayerCastSpell(getMouseOverTile());
+        if (Input.GetKeyDown(KeyCode.Backspace))
+            E.PlayerCastSpell(getMouseOverTile());
 
         //DEBUG redraw spell
         if (Input.GetKeyDown(KeyCode.Backslash) && E.player.currentSpell != null)            

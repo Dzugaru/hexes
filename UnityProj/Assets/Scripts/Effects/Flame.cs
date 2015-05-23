@@ -18,15 +18,15 @@ public class Flame : SpellEffectGraphics
     float? deathTimeLeft;
     
 
-	void OnEnable()
+	protected override void OnEnable()
     {
-        power.Value = 1;
+        base.OnEnable();
+        light = transform.GetChild(0).GetChild(0).GetComponent<Light>();
+        light.intensity = 0;     
 
-        light = transform.GetChild(0).GetComponent<Light>();        
-
-        coreParticles = transform.GetChild(1).GetComponent<ParticleSystem>();
-        coreRenderer = transform.GetChild(1).GetComponent<ParticleSystemRenderer>();
-        cinderParticles = transform.GetChild(2).GetComponent<ParticleSystem>();
+        coreParticles = transform.GetChild(0).GetChild(1).GetComponent<ParticleSystem>();
+        coreRenderer = transform.GetChild(0).GetChild(1).GetComponent<ParticleSystemRenderer>();
+        cinderParticles = transform.GetChild(0).GetChild(2).GetComponent<ParticleSystem>();
 
         origCoreSpeed = coreParticles.startSpeed;
         origTint = coreRenderer.sharedMaterial.GetColor("_TintColor");
@@ -35,9 +35,7 @@ public class Flame : SpellEffectGraphics
 	
 	
 	void Update()
-    {     
-        light.intensity = Mathf.Lerp(0.1f, 1f, power.Value) * Random.Range(lightIntensity - lightIntensity * lightFlickerPart, lightIntensity);
-
+    {
         if (deathTimeLeft.HasValue)
         {
             deathTimeLeft -= Time.deltaTime;
@@ -53,10 +51,10 @@ public class Flame : SpellEffectGraphics
         }
 
         if (power.IsNew)
-        {            
-            coreParticles.startSpeed = Mathf.Lerp(0.25f, 1f, power.Value) * origCoreSpeed;
+        {
+            coreParticles.startSpeed = Mathf.Lerp(0.25f, 1f, power.value) * origCoreSpeed;
             Color c = origTint;
-            c = new Color(c.r, c.g, c.b, Mathf.Lerp(0.02f, 1f, power.Value) * c.a);
+            c = new Color(c.r, c.g, c.b, Mathf.Lerp(0.02f, 1f, power.value) * c.a);
 
             //Instantiate in editor only if playing not editing
 #if UNITY_EDITOR
@@ -69,9 +67,11 @@ public class Flame : SpellEffectGraphics
 #endif
 
 
-            cinderParticles.emissionRate = Mathf.Lerp(0, 1f, power.Value) * origCinderEmitRate;        
+            cinderParticles.emissionRate = Mathf.Lerp(0, 1f, power.value) * origCinderEmitRate;        
         }
-	}
+
+        light.intensity = Mathf.Lerp(0.1f, 1f, power.value) * Random.Range(lightIntensity - lightIntensity * lightFlickerPart, lightIntensity);
+    }
 
     public override void Die()
     {        

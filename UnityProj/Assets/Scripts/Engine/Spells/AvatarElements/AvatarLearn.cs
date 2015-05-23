@@ -51,7 +51,7 @@ namespace Engine
 
         public void OnDie()
         {
-            Interfacing.PerformInterfaceLightOrQuenchRune(GetRealRune(avatar.rune).graphicsHandle, false);
+            GetRealRune(avatar.rune).isLit = false;            
             base.Die();
         }
 
@@ -63,9 +63,9 @@ namespace Engine
         public float OnInterpret(Spell.CompiledRune rune)
         {            
             if (avatar.prevRune != null)
-                Interfacing.PerformInterfaceLightOrQuenchRune(GetRealRune(avatar.prevRune).graphicsHandle, false);            
-            
-            Interfacing.PerformInterfaceLightOrQuenchRune(GetRealRune(rune).graphicsHandle, true);
+                GetRealRune(avatar.prevRune).isLit = false;
+
+            GetRealRune(rune).isLit = true;
 
             if (rune.type == RuneType.Flame)
                 return 2;

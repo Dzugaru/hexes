@@ -8,6 +8,7 @@ namespace Engine
 {
     public class Rune : Entity, IRotatable
     {
+        public bool isLit;
         public bool CanRotate { get { return Data.runeDatas[(RuneType)entityType].isDirectional; } }
 
         public Rune(RuneType type, uint dir) : base(EntityClass.Rune, (uint)type)

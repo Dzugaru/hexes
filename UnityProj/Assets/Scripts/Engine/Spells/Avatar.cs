@@ -186,8 +186,8 @@ namespace Engine
 
             switch (rune.type)
             {
-                case RuneType.Flame: newEl = new AvatarLearn(this, rune.listIdx, 3); break;
-                case RuneType.Wind: newEl = new AvatarWind(this, rune.listIdx); break;
+                case RuneType.Flame: newEl = new AvatarFlame(this, rune.listIdx); break;
+                case RuneType.Wind: newEl = new AvatarLearn(this, rune.listIdx, 3); break;
                 case RuneType.Stone: newEl = new AvatarStone(this, rune.listIdx); break;
                 default: throw new Tools.AssertException();
             }

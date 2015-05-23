@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Engine;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,11 +13,12 @@ public class RuneGraphics : InanimateGraphics
     Material origMaterial;
 
     public uint dir;
+    public VariableBool isLit;
 
-    public RuneGraphics()
+    void OnEnable()
     {
-        
-    }   
+        isLit = new VariableBool(() => ((Rune)entity).isLit);
+    }
 
     void Start()
     {
@@ -24,17 +26,20 @@ public class RuneGraphics : InanimateGraphics
         origMaterial = renderer.sharedMaterial;
     }
 
-    internal void LearnLight()
+    void Update()
     {
-       
-        renderer.material.SetFloat("_Emission", 2);
-    }
-
-    internal void LearnQuench()
-    {
-        Destroy(renderer.material);
-        renderer.sharedMaterial = origMaterial;
-        
-    }
+        if (isLit.IsNew)
+        {
+            if (isLit.value)
+            {
+                renderer.material.SetFloat("_Emission", 2);
+            }
+            else
+            {
+                Destroy(renderer.material);
+                renderer.sharedMaterial = origMaterial;
+            }
+        }
+    }    
 }
 
