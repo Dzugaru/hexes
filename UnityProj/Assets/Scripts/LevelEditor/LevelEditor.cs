@@ -203,9 +203,9 @@ public class LevelEditor : MonoBehaviour
                 {
                     var prefab = Selection.activeGameObject;
                     if (prefab == null || PrefabUtility.GetPrefabType(prefab) == PrefabType.None) return;
-                    var creator = prefab.GetComponent<EditorEntityBacklink>();
-                    if (creator == null) return;
-                    var ent = creator.CreateEntity();
+                    var gr = prefab.GetComponent<EntityGraphics>();
+                    if (gr == null) return;
+                    var ent = gr.CreateEntity();
                     var op = new Undos.AddEntity(ent, p);
 
                     op.Add();

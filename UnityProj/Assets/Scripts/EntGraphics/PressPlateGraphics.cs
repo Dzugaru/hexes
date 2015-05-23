@@ -52,6 +52,13 @@ public class PressPlateGraphics : EntityGraphics
         origMaterial = renderer.sharedMaterial;
     }
 
+    void Start()
+    {
+#if UNITY_EDITOR
+        if (LevelEditor.S != null) EditorStart();
+#endif
+    }
+
     void Update()
     {
         if (isPressed.IsNew)
@@ -66,6 +73,29 @@ public class PressPlateGraphics : EntityGraphics
                 renderer.sharedMaterial = origMaterial;
             }
         }
+
+#if UNITY_EDITOR
+        if (LevelEditor.S != null) EditorUpdate();
+#endif
     }
+
+#if UNITY_EDITOR   
+    public ScriptObjectID id;
+
+    public override Entity CreateEntity()
+    {
+        return new PressPlate();
+    }
+
+    void EditorStart()
+    {
+        id.id = ((PressPlate)entity).id.id;
+    }
+
+    void EditorUpdate()
+    {
+        ((PressPlate)entity).id.id = id.id;
+    }
+#endif
 }
 

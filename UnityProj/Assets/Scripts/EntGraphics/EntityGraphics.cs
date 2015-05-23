@@ -52,5 +52,8 @@ public abstract class EntityGraphics : MonoBehaviour
         Vector2 planeCoord = to.ToPlaneCoordinates();
         transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
     }
+
+    //Editor
+    public virtual Entity CreateEntity() { return null; }
 }
 
