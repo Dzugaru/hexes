@@ -6,7 +6,7 @@ using System.Text;
 using UnityEngine;
 using Engine;
 
-public class StatueCasterGraphics : InanimateGraphics, IHighlightable, IClickable
+public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
 {
     public VariableBool isCasting;
 

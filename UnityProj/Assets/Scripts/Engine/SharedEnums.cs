@@ -31,7 +31,8 @@ public enum EntityClass
 
 public enum MechType
 {
-    StatueCaster
+    StatueCaster,
+    AvatarWalkPressPlate
 }
 
 public enum CharacterType

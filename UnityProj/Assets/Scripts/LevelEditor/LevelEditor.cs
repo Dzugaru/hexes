@@ -249,8 +249,12 @@ public class LevelEditor : MonoBehaviour
     }
 
     public void OnSave()
-    {   
-        using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(Path.Combine(Application.dataPath, "Resources/Levels/" + levelNameField.text + ".bytes"))))
+    {
+        string filePath = Path.Combine(Application.dataPath, "Resources/Levels/" + levelNameField.text + ".bytes");
+        if (File.Exists(filePath))        
+            File.Copy(filePath, filePath + ".bak", true);        
+
+        using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(filePath)))
         {
             Level.S.SaveStaticPart(writer);
             Level.S.SaveDynamicPart(writer);

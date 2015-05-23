@@ -27,7 +27,8 @@ namespace Engine
             FlowFinished,
             DiedCauseTooWeak,            
             PredicateParseError,
-            CantMoveThere                          
+            CantMoveThere,
+            CantFork                         
         }
 
         public Avatar(SpellExecuting spell, HexXY pos, uint dir, Spell.CompiledRune startRune, uint id)
@@ -99,8 +100,18 @@ namespace Engine
 
                 if (forkCount == 0)
                     nextRune = nrune;
-                else                
-                    spell.SpawnAvatar(nrune, this, pos, dir); 
+                else
+                {
+                    if (avatarElement.CanAvatarFork())
+                    {
+                        spell.SpawnAvatar(nrune, this, pos, dir);
+                    }
+                    else
+                    {
+                        finishState = FinishedState.CantFork;
+                        break;
+                    }
+                }
 
                 ++forkCount;
             }
@@ -420,7 +431,7 @@ namespace Engine
             }
         }
 
-        static bool IsArrowRune(RuneType type)
+        public static bool IsArrowRune(RuneType type)
         {
             switch (type)
             {

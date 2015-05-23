@@ -26,7 +26,8 @@ namespace Engine
 
         public bool CanAvatarFork()
         {
-            return true;
+            //return true;
+            return false;
         }
 
         public void ForkTo(Avatar to)
@@ -36,9 +37,9 @@ namespace Engine
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
         {
-            if (Level.S.GetPFBlockedMap(to) == WorldBlock.PFBlockType.StaticBlocked)            
+            if (Level.S.GetPFBlockedMap(to) == WorldBlock.PFBlockType.StaticBlocked)
                 avatar.finishState = Avatar.FinishedState.CantMoveThere;            
-            else            
+            else
                 Interfacing.PerformInterfaceMove(graphicsHandle, to, 1 / speed);            
         }
 
@@ -69,10 +70,12 @@ namespace Engine
                 litRune.isLit = false;
 
             litRune = GetRealRune(rune);
-            litRune.isLit = true;             
+            litRune.isLit = true;
 
-            if (rune.type == RuneType.Flame)
+            if (rune.type == RuneType.Wind)
                 return 2;
+            else if (Avatar.IsArrowRune(rune.type))
+                return 0.25f;
             else
                 return 1;
         }

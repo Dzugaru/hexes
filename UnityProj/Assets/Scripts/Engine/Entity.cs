@@ -107,7 +107,8 @@ namespace Engine
             Rune = 0,
             Mob = 1,
             SpellEffect = 2,
-            StatueCaster = 3
+            StatueCaster = 3,
+            PressPlate = 4
         }      
 
         public virtual void Save(BinaryWriter writer)
@@ -129,6 +130,7 @@ namespace Engine
             {
                 case DerivedTypes.Rune: ent = Rune.Load(reader, type); break;
                 case DerivedTypes.StatueCaster: ent = StatueCaster.Load(reader); break;
+                case DerivedTypes.PressPlate: ent = PressPlate.Load(reader); break;
                 default: throw new NotImplementedException();
             }
 

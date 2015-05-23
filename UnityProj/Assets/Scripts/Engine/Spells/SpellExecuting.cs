@@ -31,8 +31,6 @@ namespace Engine
 
         public void SpawnAvatar(Spell.CompiledRune rune, Avatar forkFrom, HexXY pos, uint dir)
         {
-            if (forkFrom != null && !forkFrom.avatarElement.CanAvatarFork()) return;
-
             Avatar av = new Avatar(this, pos, dir, rune, avatarLastID++);            
             if (forkFrom != null)
             {
@@ -54,18 +52,14 @@ namespace Engine
                 av.timeLeft -= dt;
                 if (av.timeLeft > 0) continue;
 
-                if(av.finishState == null)
-                    av.Interpret();
-
-                if (av.finishState != null/* && av.finishState.Value != Avatar.FinishedState.FlowFinished*/)
-                {                    
+                if (av.finishState != null)
+                {
                     avatars.RemoveAt(i--);
                     av.avatarElement.OnDie();
                 }
 
-                //TODO:
-                //if (av.finishState != null && av.finishState.Value == Avatar.FinishedState.FlowFinished)
-                //    av.UpdateElement();
+                if (av.finishState == null)
+                    av.Interpret();
             }
 
             if (avatars.Count == 0)

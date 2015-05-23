@@ -20,11 +20,18 @@ namespace Engine
             this.sourceSpellPos = sourceSpellPos;            
         }
 
+        public override void Update(float dt)
+        {
+            base.Update(dt);
+            if (exSpell != null && !exSpell.isExecuting)
+                exSpell = null;
+            
+            isCasting = exSpell != null;
+        }
+
         public void Click()
         {
-            isCasting = !isCasting;
-
-            if (isCasting)
+            if (!isCasting)
             {
                 var compileRune = (Rune)Level.S.GetEntities(sourceSpellPos).FirstOrDefault(e => e is Rune);
                 var spell = Spell.CompileSpell(compileRune, sourceSpellPos);
@@ -33,6 +40,7 @@ namespace Engine
             else
             {
                 exSpell.Die();
+                exSpell = null;
             }
         }
 

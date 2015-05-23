@@ -127,7 +127,7 @@ namespace Engine
                 var p = new HexXY(reader.ReadInt32(), reader.ReadInt32());                
                 int entCount = reader.ReadInt32();
                 for (int j = 0; j < entCount; j++)                
-                    Entity.Load(reader);
+                    Entity.Load(reader);                
             }            
         }
 

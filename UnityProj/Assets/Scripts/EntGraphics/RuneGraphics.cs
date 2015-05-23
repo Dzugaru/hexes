@@ -7,7 +7,7 @@ using System.Text;
 using UnityEngine;
 
 
-public class RuneGraphics : InanimateGraphics
+public class RuneGraphics : EntityGraphics
 {   
     SpriteRenderer renderer;
     Material origMaterial;
