@@ -39,7 +39,7 @@ class CharacterGraphics : EntityGraphics, IHighlightable
    
     public float currentHP;
     public float maxHP;
-    public bool isRotatable = true;
+    public bool isAutoRotatable = true;
     public bool isSmoothStepMove = false;
    
 
@@ -66,12 +66,10 @@ class CharacterGraphics : EntityGraphics, IHighlightable
         }
     }
 
-    public override void Spawn(HexXY pos)
+    public override void Spawn(HexXY pos, uint dir)
     {
         //if(entityHandle.idx == 7) Debug.Log(entityHandle + " spawn " + pos);
-        Vector2 planeCoord = pos.ToPlaneCoordinates();
-        transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
-        gameObject.SetActive(true);        
+        base.Spawn(pos, dir);
 
         if (entity.entityClass == EntityClass.Character && entityType == (int)CharacterType.Player)
         {
@@ -91,7 +89,7 @@ class CharacterGraphics : EntityGraphics, IHighlightable
         walkDest = dest;        
         walkTime = timeToGetThere;
         Vector3 walkDir = (new Vector3(walkDest.x, 0, walkDest.y) - transform.position).normalized;
-        if(isRotatable)
+        if(isAutoRotatable)
             RotateTo(walkDir);
 
         if (animationsType == AnimationsType.Legacy) legacyAnimator.Play("Walk");
@@ -130,9 +128,19 @@ class CharacterGraphics : EntityGraphics, IHighlightable
 
     public override void Die()
     {
-        Destroy(gameObject);
+        base.Die();
         activeCharacters.Remove(this);
     }
+
+    public override void UpdateInterfaceRotation(uint dir)
+    {
+        targetRotation = Quaternion.AngleAxis(dir * 60, new Vector3(0, 1, 0));
+        if (transform.rotation != targetRotation)
+        {
+            rotationFixLeft = 1;
+            oldRotation = transform.rotation;
+        }        
+    }    
 
     IEnumerator CorAttack(HexXY pos)
     {
@@ -147,7 +155,7 @@ class CharacterGraphics : EntityGraphics, IHighlightable
         state = State.Attack;
         Vector2 planePos = pos.ToPlaneCoordinates();
         Vector3 dir = new Vector3(planePos.x, 0, planePos.y) - transform.position;
-        if(isRotatable)
+        if(isAutoRotatable)
             RotateTo(dir);
 
         legacyAnimator.PlayQueued("Idle");

@@ -5,12 +5,14 @@ using System.Text;
 
 namespace Engine
 {
-    public class AvatarLearn : Entity, IAvatarElement
+    public class AvatarLearn : Entity, IAvatarElement, IRotatable
     {
         public Avatar avatar;
         public uint elementRuneIdx;
 
         float speed;
+
+        public bool CanRotate { get { return true; } }
 
         public AvatarLearn(Avatar avatar, uint elementRuneIdx, float speed) : base(EntityClass.Character, (uint)CharacterType.AvatarLearn)
         {
@@ -35,6 +37,11 @@ namespace Engine
                 avatar.finishState = Avatar.FinishedState.CantMoveThere;            
             else            
                 Interfacing.PerformInterfaceMove(graphicsHandle, to, 1 / speed);            
+        }
+
+        public void OnRotate(uint dir)
+        {
+            Interfacing.PerformInterfaceUpdateRotation(graphicsHandle, dir);
         }
 
         public void OnSpawn()

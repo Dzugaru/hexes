@@ -65,5 +65,10 @@ namespace Engine
         {
             return 0;
         }
+
+        public void OnRotate(uint dir)
+        {
+
+        }
     }
 }

@@ -14,18 +14,6 @@ public class SpellEffectGraphics : EntityGraphics
     }
     
 
-    public override void Spawn(HexXY pos)
-    {
-        Vector2 planeCoord = pos.ToPlaneCoordinates();
-        transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
-        gameObject.SetActive(true);
-    }
-
-    public override void Die()
-    {
-        Destroy(gameObject);
-    }
-
     public void UpdateInterface(float power)
     {        
         this.power.Value = power;

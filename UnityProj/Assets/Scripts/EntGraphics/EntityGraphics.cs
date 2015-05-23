@@ -13,13 +13,29 @@ public abstract class EntityGraphics : MonoBehaviour
 
     public Entity entity;
 
-    public virtual void Spawn(HexXY p) { }
-    public virtual void Move(HexXY pos, float timeToGetThere) { }
+    public virtual void Spawn(HexXY p, uint dir)
+    {   
+        Vector2 planeCoord = p.ToPlaneCoordinates();
+        transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
+        transform.rotation = Quaternion.AngleAxis(dir * 60, new Vector3(0, 1, 0));
+        gameObject.SetActive(true);        
+    }
+
+    public virtual void Die()
+    {
+        Destroy(gameObject);
+    }
+
+    public virtual void Move(HexXY pos, float timeToGetThere) { }   
     public virtual void Stop(HexXY p) { }
     public virtual void Attack(HexXY p) { }
     public virtual void Damage(float dmg) { }
-    public virtual void Die() { }
+    
     public virtual void UpdateHP(float currentHP, float maxHP) { }
+    public virtual void UpdateInterfaceRotation(uint dir)
+    {        
+        transform.rotation = Quaternion.AngleAxis(dir * 60, new Vector3(0, 1, 0));
+    }
 
     public Highlight highlight;
     public GameObject meshRoot;
@@ -31,9 +47,6 @@ public abstract class EntityGraphics : MonoBehaviour
         
     }
 
-    public void UpdateInterfaceRotation(uint dir)
-    {
-        transform.rotation = Quaternion.AngleAxis(dir * 60, new Vector3(0, 1, 0));        
-    }
+   
 }
 

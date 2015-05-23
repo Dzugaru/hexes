@@ -7,10 +7,10 @@ public class Stone : SpellEffectGraphics
 {
     float origYPos;
 
-    public override void Spawn(HexXY pos)
+    public override void Spawn(HexXY pos, uint dir)
     {
         //TODO: spawn effect
-        base.Spawn(pos);
+        base.Spawn(pos, dir);
     }
 
 

@@ -352,10 +352,10 @@ public class LevelEditor : MonoBehaviour
         return handle;
     }
 
-    void PerformInterfaceSpawn(Interfacing.EntityHandle objHandle, HexXY pos)
+    void PerformInterfaceSpawn(Interfacing.EntityHandle objHandle, HexXY pos, uint dir)
     {
         GameObject obj = entities[objHandle];
-        obj.GetComponent<EntityGraphics>().Spawn(pos);
+        obj.GetComponent<EntityGraphics>().Spawn(pos, dir);
     }
 
     void PerformInterfaceDie(Interfacing.EntityHandle objHandle)

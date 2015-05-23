@@ -43,7 +43,7 @@ public class G : MonoBehaviour
         Interfacing.CreateEntity = CreateEntity;
         Interfacing.PerformInterfaceAttack = PerformInterfaceAttack;
         Interfacing.PerformInterfaceSpawn = PerformInterfaceSpawn;
-        Interfacing.PerformInterfaceMove = PerformInterfaceMove;
+        Interfacing.PerformInterfaceMove = PerformInterfaceMove;        
         Interfacing.PerformInterfaceDamage = PerformInterfaceDamage;
         Interfacing.PerformInterfaceDie = PerformInterfaceDie;
         Interfacing.PerformInterfaceStop = PerformInterfaceStop;
@@ -119,17 +119,17 @@ public class G : MonoBehaviour
         obj.GetComponent<EntityGraphics>().Attack(pos);
     }
 
-    static void PerformInterfaceSpawn(Interfacing.EntityHandle objHandle, HexXY pos)
+    static void PerformInterfaceSpawn(Interfacing.EntityHandle objHandle, HexXY pos, uint dir)
     {
         GameObject obj = entities[objHandle];
-        obj.GetComponent<EntityGraphics>().Spawn(pos);
+        obj.GetComponent<EntityGraphics>().Spawn(pos, dir);
     }
 
     static void PerformInterfaceMove(Interfacing.EntityHandle objHandle, HexXY pos, float timeToGetThere)
     {
         GameObject obj = entities[objHandle];
         obj.GetComponent<EntityGraphics>().Move(pos, timeToGetThere);
-    }
+    }   
 
     static void PerformInterfaceStop(Interfacing.EntityHandle objHandle, HexXY pos)
     {

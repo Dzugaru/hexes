@@ -186,7 +186,7 @@ namespace Engine
 
             switch (rune.type)
             {
-                case RuneType.Flame: newEl = new AvatarLearn(this, rune.listIdx, 2); break;
+                case RuneType.Flame: newEl = new AvatarLearn(this, rune.listIdx, 3); break;
                 case RuneType.Wind: newEl = new AvatarWind(this, rune.listIdx); break;
                 case RuneType.Stone: newEl = new AvatarStone(this, rune.listIdx); break;
                 default: throw new Tools.AssertException();
@@ -249,12 +249,16 @@ namespace Engine
                 //}
                 //else
                 //{
-                    avatarElement.OnMove(pos, newPos, isDraw);
-                    pos = newPos;
+                avatarElement.OnMove(pos, newPos, isDraw);
+                pos = newPos;
 
-                    if (SpellExecuting.isLogging)
-                        Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> moved to " + pos);
+                if (SpellExecuting.isLogging)
+                    Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> moved to " + pos);
                 //}
+            }
+            else
+            {
+                avatarElement.OnRotate(dir);
             }
         }
 

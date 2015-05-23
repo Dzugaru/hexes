@@ -69,7 +69,7 @@ namespace Engine
 
             foreach (var comp in components) comp.OnSpawn(p);
 
-            Interfacing.PerformInterfaceSpawn(graphicsHandle, pos);
+            Interfacing.PerformInterfaceSpawn(graphicsHandle, pos, dir);
             UpdateInterface();
         }
 
