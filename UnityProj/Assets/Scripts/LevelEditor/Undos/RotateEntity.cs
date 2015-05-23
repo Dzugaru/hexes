@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Undos
 {
@@ -19,8 +20,8 @@ namespace Undos
         }
 
         public void Rotate()
-        {   
-            ent.dir = (ent.dir + 1) % 6;
+        {            
+            ent.dir = (ent.dir + 1) % 6;            
             ent.UpdateInterface();        
         }
 

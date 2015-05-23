@@ -36,6 +36,9 @@ public class LevelEditor : MonoBehaviour
     public bool isInPassabilityMode = false;
     public bool isInEntitySetMode = false;
 
+    public Entity draggedEntity;
+    public HexXY draggedEntityCurrPos, draggedEntityOrigPos;
+
     public LevelScript levelScript;
     public Type levelScriptIDs;
 
@@ -49,6 +52,7 @@ public class LevelEditor : MonoBehaviour
       
         Interfacing.PerformInterfaceSpawn = PerformInterfaceSpawn;      
         Interfacing.PerformInterfaceDie = PerformInterfaceDie;
+        Interfacing.PerformInterfaceTeleport = PerformInterfaceTeleport;
         Interfacing.PerformInterfaceUpdateRotation = PerformInterfaceUpdateRotation;
 
         var instrPanel = canvas.transform.Find("InstrPanel");
@@ -61,7 +65,7 @@ public class LevelEditor : MonoBehaviour
         sbvisParent = GameObject.Find("SBTileVis");
     }
 
-   
+    
 
     HexXY? brushOldMousePos;
 
@@ -172,12 +176,13 @@ public class LevelEditor : MonoBehaviour
     {
         if (!isInEntitySetMode) return;
 
+        //Creating/selecting/rotating
         if (Input.GetMouseButtonDown(0))
         {
             if (Input.GetKey(KeyCode.LeftControl))
             {
                 var ent = Level.S.GetEntities(p).FirstOrDefault();
-                if (ent != null && ent is IRotatable)
+                if (ent != null && ent is IRotatable && !(ent is Rune))
                 {
                     var op = new Undos.RotateEntity(ent, p);
                     op.Rotate();
@@ -191,6 +196,8 @@ public class LevelEditor : MonoBehaviour
                 if (existingEntity != null)
                 {                    
                     Selection.activeGameObject = entities[existingEntity.graphicsHandle];
+                    draggedEntity = existingEntity;
+                    draggedEntityOrigPos = draggedEntityCurrPos = existingEntity.pos;
                 }
                 else //TODO: make possible stacking entities with Alt or something?
                 {
@@ -207,7 +214,9 @@ public class LevelEditor : MonoBehaviour
                 }
             }
         }
-        else if (Input.GetKeyDown(KeyCode.Space))
+
+        //Deleting
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             var ent = Level.S.GetEntities(p).FirstOrDefault();
             if (ent != null)
@@ -216,6 +225,33 @@ public class LevelEditor : MonoBehaviour
                 op.Remove();
                 undos.Push(op);
                 redos.Clear();
+            }
+        }
+
+        //Dragging
+        if (draggedEntity != null)
+        {
+            if (Input.GetMouseButton(0))
+            {
+                //Drag
+                if (p != draggedEntityCurrPos)
+                {
+                    var op = new Undos.MoveEntity(draggedEntity, draggedEntityCurrPos, p);
+                    op.Move();
+                    draggedEntityCurrPos = p;
+                }
+            }
+            else
+            {
+                //Release
+                if (draggedEntityCurrPos != draggedEntityOrigPos)
+                {
+                    var op = new Undos.MoveEntity(draggedEntity, draggedEntityOrigPos, draggedEntityCurrPos);
+                    op.Move();
+                    redos.Clear();
+                    undos.Push(op);
+                }
+                draggedEntity = null;
             }
         }
     }
@@ -388,6 +424,12 @@ public class LevelEditor : MonoBehaviour
     {
         GameObject obj = entities[objHandle];
         obj.GetComponent<EntityGraphics>().UpdateInterfaceRotation(dir);
+    }
+
+    void PerformInterfaceTeleport(Interfacing.EntityHandle objHandle, HexXY to)
+    {
+        GameObject obj = entities[objHandle];
+        obj.GetComponent<EntityGraphics>().Teleport(to);
     }
 }
 #endif

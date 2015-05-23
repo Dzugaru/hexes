@@ -47,6 +47,10 @@ public abstract class EntityGraphics : MonoBehaviour
         
     }
 
-   
+    public void Teleport(HexXY to)
+    {
+        Vector2 planeCoord = to.ToPlaneCoordinates();
+        transform.position = new Vector3(planeCoord.x, 0, planeCoord.y);
+    }
 }
 

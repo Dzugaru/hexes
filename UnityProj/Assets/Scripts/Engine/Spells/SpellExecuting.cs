@@ -36,6 +36,8 @@ namespace Engine
             {
                 av.timeLeft = forkFrom.timeLeft;
                 forkFrom.avatarElement.ForkTo(av);
+                if (av.avatarElement is Entity)
+                    ((Entity)av.avatarElement).dir = av.dir;
                 av.avatarElement.OnSpawn();
             }
             avatars.Add(av);

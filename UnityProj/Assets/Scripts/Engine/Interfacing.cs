@@ -15,7 +15,8 @@ namespace Engine
         public static Func<Entity, EntityHandle> CreateEntity;
 
         public static Action<EntityHandle, HexXY, uint> PerformInterfaceSpawn;
-        public static Action<EntityHandle, HexXY, float> PerformInterfaceMove;        
+        public static Action<EntityHandle, HexXY, float> PerformInterfaceMove;
+        public static Action<EntityHandle, HexXY> PerformInterfaceTeleport;
         public static Action<EntityHandle, HexXY> PerformInterfaceStop;
         public static Action<EntityHandle, HexXY> PerformInterfaceAttack;
         public static Action<EntityHandle, float> PerformInterfaceDamage;        

@@ -209,6 +209,8 @@ namespace Engine
                 }
 
                 avatarElement = newEl;
+                if (avatarElement is Entity)
+                    ((Entity)avatarElement).dir = dir;
                 avatarElement.OnSpawn();
             }
 
