@@ -9,6 +9,7 @@ public class CameraControl : MonoBehaviour
     public bool boundToPlayer;
     public float playerCatchupSpeed;
     public float dipAngle;
+    public float rotateSpeed;
 
     public GameObject player;
 
@@ -31,6 +32,7 @@ public class CameraControl : MonoBehaviour
     }
 
     float runeDrawingChangeProgress;
+    Vector2? oldMousePos;
 
     void Awake()
     {
@@ -104,15 +106,17 @@ public class CameraControl : MonoBehaviour
             }
         }
 
-        //Rune draw rotate
+
+
+        //Rune draw rotate (Shift)
         if (runeDrawingChangeProgress != 0)
         {
-            float delta;       
+            float delta;
             if (IsInRuneDrawingMode)
             {
                 float oldAngle = Mathf.SmoothStep(90, dipAngle, runeDrawingChangeProgress);
                 runeDrawingChangeProgress -= Time.deltaTime;
-                delta = Mathf.SmoothStep(90, dipAngle, runeDrawingChangeProgress) - oldAngle;                
+                delta = Mathf.SmoothStep(90, dipAngle, runeDrawingChangeProgress) - oldAngle;
             }
             else
             {
@@ -122,6 +126,26 @@ public class CameraControl : MonoBehaviour
             }
 
             camera.transform.RotateAround(transform.position + viewRay.direction * dist, camera.transform.right, delta);
+        }
+        else
+        {
+            //Camera rotate
+            if (Input.GetMouseButton(0) && Input.GetMouseButton(1))
+            {
+                var mousePos = Input.mousePosition;
+
+                if (oldMousePos.HasValue)
+                {
+                    var deltaX = mousePos.x - oldMousePos.Value.x;
+                    transform.RotateAround(transform.position + viewRay.direction * dist, new Vector3(0, 1, 0), Time.deltaTime * rotateSpeed * deltaX);
+                }
+
+                oldMousePos = mousePos;
+            }
+            else
+            {
+                oldMousePos = null;
+            }
         }
     }
 }

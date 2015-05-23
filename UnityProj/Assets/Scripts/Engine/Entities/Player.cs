@@ -9,6 +9,8 @@ namespace Engine
     {
         public Spell currentSpell;
 
+        Entity clickable;
+
         //Spell castingSpell;
         //void spellFinishedCasting()
         //{
@@ -36,6 +38,15 @@ namespace Engine
        //                 gatheredCollectibles[coll.entityType] += coll.amount;
        //             }
        //         }
+            }
+
+            if (!walker.isWalking)
+            {
+                if (clickable != null && HexXY.Dist(clickable.pos, this.pos) <= 1)
+                {
+                    ((IClickable)clickable).Click();
+                    clickable = null;
+                }
             }
 
             //Update collectibles number in GUI
@@ -73,7 +84,30 @@ namespace Engine
             bool isSuccess = currentSpell != null && HexXY.Dist(pos, p) == 1;
             if (isSuccess) currentSpell.Cast(this, (uint)HexXY.neighbours.IndexOf(p - pos));
             return isSuccess;            
-        }       
+        }
+
+        public void Move(HexXY p)
+        {
+            if (Level.S.GetPFBlockedMap(p) != WorldBlock.PFBlockType.StaticBlocked &&
+               (!walker.dest.HasValue || p != walker.dest))
+            {
+                clickable = null;
+                walker.SetDest(p, 0, 10);
+            }
+        }
+
+        public void Clicked(Entity clickable)
+        {
+            if (HexXY.Dist(clickable.pos, this.pos) <= 1)
+            {
+                ((IClickable)clickable).Click();
+            }
+            else
+            {
+                this.clickable = clickable;
+                walker.SetDest(clickable.pos, 1, 10);
+            }
+        }
     } 
 }
 

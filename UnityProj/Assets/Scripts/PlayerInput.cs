@@ -64,10 +64,7 @@ class PlayerInput : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(1))
-        {
-            E.PlayerMove(getMouseOverTile());
-        }
+      
 
 
         foreach (var kvp in runeKeys)        
@@ -116,10 +113,13 @@ class PlayerInput : MonoBehaviour
         //    }
         //}
 
-        MouseOverHighlightAndClick();
+        bool isClickedObject = MouseOverHighlightAndClick();
+
+        if (!isClickedObject && Input.GetMouseButtonDown(0))        
+            E.player.Move(getMouseOverTile());        
     }
 
-    void MouseOverHighlightAndClick()
+    bool MouseOverHighlightAndClick()
     {        
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -150,9 +150,12 @@ class PlayerInput : MonoBehaviour
         }
 
         if (mouseOverClickable != null && Input.GetMouseButtonDown(0))
-        {
-            ((Engine.IClickable)mouseOverClickable.entity).Click();
+        {            
+            E.player.Clicked(mouseOverClickable.entity);
+            return true;
         }
+
+        return false;
     }
 }
 

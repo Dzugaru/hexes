@@ -51,16 +51,7 @@ namespace Engine
 
             Spell.Update(dt);
             //Overseer.Update();
-        }
-
-        public static void PlayerMove(HexXY p)
-        {
-            if (Level.S.GetPFBlockedMap(p) != WorldBlock.PFBlockType.StaticBlocked &&
-               (!player.walker.dest.HasValue || p != player.walker.dest))
-            {
-                player.walker.SetDest(p, 10, false);
-            }
-        }
+        }       
 
         public static void PlayerDrawRune(RuneType type, HexXY p)
         {
@@ -80,6 +71,6 @@ namespace Engine
         public static void PlayerCastSpell(HexXY p)
         {
             player.CastCurrentSpell(p);
-        }
+        }        
     }
 }

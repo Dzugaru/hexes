@@ -27,14 +27,14 @@ namespace Engine
                 //Simple walk to player
                 if (!walker.dest.HasValue || walker.dest != E.player.pos)
                 {
-                    walker.SetDest(E.player.pos, 0, true);
+                    walker.SetDest(E.player.pos, 1, 0);
                 }
 
                 //Is we're blocked for some time try to find a way around other mobs	
                 if (walker.isWalkBlocked && walker.walkBlockedTime > 0.5f) //TODO: random time?
                 {
                     //log(format("%s %f", isWalkBlocked, walkBlockedTime));
-                    walker.SetDest(E.player.pos, 10, true);
+                    walker.SetDest(E.player.pos, 1, 10);
                 }
 
                 //Attack

@@ -57,7 +57,7 @@ namespace Engine
             return HexXY.Dist(pos, to);
         }
 
-        public static uint? FindPath(HexXY from, HexXY to, HexXY[] pathStorage, uint dynBlockCost = 0)
+        public static uint? FindPath(HexXY from, HexXY to, HexXY[] pathStorage, uint distToStop = 0, uint dynBlockCost = 0)
         {
             front.Reset();
             front.Enqueue(new XYCost(from, 0, 0, GetHeuristic(from, to)));
@@ -73,7 +73,7 @@ namespace Engine
             {
                 c = front.Dequeue();                
 
-                if (c.p == to)
+                if (HexXY.Dist(c.p, to) <= distToStop)
                 {
                     isFound = true;
                     break;

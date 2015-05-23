@@ -15,13 +15,12 @@ namespace Engine
         uint pathStart, pathEnd;
         HexXY prevTile, pfBlockedTile;
         public HexXY? dest;
-        uint blockedCost;
+        uint distToStop, blockedCost;
         bool onTileCenter;
         float speed, invSpeed, distToNextTile;
         public bool isWalkBlocked, isWalking;
         public float walkBlockedTime;
-        bool shouldRecalcPath;
-        bool shouldStopNearDest;
+        bool shouldRecalcPath;        
 
         public Walker(Entity ent, int maxPathLen)
         {
@@ -38,7 +37,7 @@ namespace Engine
             onTileCenter = true;
             isWalkBlocked = isWalking = false;
             walkBlockedTime = 0;
-            shouldRecalcPath = shouldStopNearDest = false;
+            shouldRecalcPath = false;
             Level.S.SetPFBlockedMap(pos, WorldBlock.PFBlockType.DynamicBlocked);            
         }
 
@@ -51,7 +50,7 @@ namespace Engine
         {
             if (onTileCenter && shouldRecalcPath)
             {
-                var pathLen = Pathfinder.FindPath(entity.pos, dest.Value, pathStorage, blockedCost);
+                var pathLen = Pathfinder.FindPath(entity.pos, dest.Value, pathStorage, distToStop, blockedCost);
                 if (!pathLen.HasValue)
                 {
                     //log("PATH NULL");
@@ -61,16 +60,7 @@ namespace Engine
                 pathStart = 0;
                 pathEnd = pathLen.Value;
 
-                shouldRecalcPath = false;
-                if (shouldStopNearDest && pathEnd == 1)
-                {
-                    pathEnd = 0;
-                    if (isWalking)
-                    {
-                        Interfacing.PerformInterfaceStop(entity.graphicsHandle, entity.pos);
-                        isWalking = false;
-                    }
-                }
+                shouldRecalcPath = false;               
                 isWalkBlocked = false;
             }
 
@@ -118,14 +108,13 @@ namespace Engine
                 onTileCenter = true;
                 ++pathStart;
 
-                if (pathEnd - pathStart > (shouldStopNearDest ? 1 : 0))
+                if (pathEnd - pathStart > 0)
                 {
                     OnUpdate(dt - timeLeft);
                 }
                 else
                 {
-                    Interfacing.PerformInterfaceStop(entity.graphicsHandle, prevTile);
-                    if (shouldStopNearDest) pathEnd = pathStart;
+                    Interfacing.PerformInterfaceStop(entity.graphicsHandle, prevTile);                    
                     isWalking = false;
                 }
             }
@@ -133,11 +122,11 @@ namespace Engine
             return true;
         }
 	    
-	    public void SetDest(HexXY dest, uint blockedCost, bool shouldStopNearDest)
+	    public void SetDest(HexXY dest, uint distToStop, uint blockedCost)
         {
             this.dest = dest;
-            this.blockedCost = blockedCost;
-            this.shouldStopNearDest = shouldStopNearDest;
+            this.distToStop = distToStop;
+            this.blockedCost = blockedCost;            
             this.shouldRecalcPath = true;
         }
 
