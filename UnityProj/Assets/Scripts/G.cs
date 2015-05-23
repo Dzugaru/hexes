@@ -157,6 +157,15 @@ public class G : MonoBehaviour
     {
         GameObject obj = entities[objHandle];
         obj.GetComponent<EntityGraphics>().UpdateInterfaceRotation(dir);
-    }       
+    }
+
+    public static bool IsEditing()
+    {
+#if UNITY_EDITOR
+        return !UnityEditor.EditorApplication.isPlaying;
+#else
+        return false;
+#endif 
+    }
 }
 

@@ -92,8 +92,11 @@ namespace Engine
         public void Die()
         {
             isExecuting = false;
-            foreach (var av in avatars)            
-                av.avatarElement.OnDie();            
+            foreach (var av in avatars)
+            {
+                if(av.avatarElement != null)
+                    av.avatarElement.OnDie();
+            }
         }
     }
 }

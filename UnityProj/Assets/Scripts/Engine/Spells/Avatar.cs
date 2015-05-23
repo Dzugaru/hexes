@@ -13,7 +13,7 @@ namespace Engine
         
         public HexXY pos;
         public uint dir;
-        public Spell.CompiledRune prevRune, rune;
+        public Spell.CompiledRune rune;
         public uint flowDir;
         public float timeLeft;
         public FinishedState? finishState;        
@@ -81,9 +81,7 @@ namespace Engine
                 timeLeft += avatarElement.OnInterpret(currRune);
 
             if (needsFlow && finishState == null)
-                InterpretFlow();           
-
-            prevRune = currRune;
+                InterpretFlow();
         }    
 
         void InterpretFlow()

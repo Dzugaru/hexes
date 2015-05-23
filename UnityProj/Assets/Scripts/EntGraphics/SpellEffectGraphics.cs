@@ -10,14 +10,10 @@ public class SpellEffectGraphics : EntityGraphics
 
     protected virtual void OnEnable()
     {
-#if UNITY_EDITOR
-        if (UnityEditor.EditorApplication.isPlaying)
-            power = new VariableFloat(() => ((SpellEffect)entity).power);
-        else
+        if(G.IsEditing())
             power = new VariableFloat() { value = 1 };
-#else
-        power = new VariableFloat(() => ((SpellEffect)entity).power);
-#endif  
+        else
+            power = new VariableFloat(() => ((SpellEffect)entity).power);        
 
         ScaleParticleSystems();        
     }

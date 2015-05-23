@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Engine
 {
     public class AvatarLearn : Entity, IAvatarElement, IRotatable
     {
+        Rune litRune;
+
         public Avatar avatar;
         public uint elementRuneIdx;
 
@@ -50,8 +53,8 @@ namespace Engine
         }
 
         public void OnDie()
-        {
-            GetRealRune(avatar.rune).isLit = false;            
+        {           
+            litRune.isLit = false;            
             base.Die();
         }
 
@@ -62,10 +65,11 @@ namespace Engine
 
         public float OnInterpret(Spell.CompiledRune rune)
         {            
-            if (avatar.prevRune != null)
-                GetRealRune(avatar.prevRune).isLit = false;
+            if (litRune != null)
+                litRune.isLit = false;
 
-            GetRealRune(rune).isLit = true;
+            litRune = GetRealRune(rune);
+            litRune.isLit = true;             
 
             if (rune.type == RuneType.Flame)
                 return 2;
