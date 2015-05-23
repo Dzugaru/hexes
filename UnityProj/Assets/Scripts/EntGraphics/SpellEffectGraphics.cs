@@ -8,9 +8,9 @@ public class SpellEffectGraphics : EntityGraphics
     public float scale = 1;
     public VariableFloat power;
 
-    protected virtual void OnEnable()
+    protected virtual void Start()
     {
-        if(G.IsEditing())
+        if(G.IsInUnityEditMode())
             power = new VariableFloat() { value = 1 };
         else
             power = new VariableFloat(() => ((SpellEffect)entity).power);        

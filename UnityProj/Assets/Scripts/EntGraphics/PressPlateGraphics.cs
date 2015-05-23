@@ -14,15 +14,7 @@ public class PressPlateGraphics : EntityGraphics
     public float ypos = 0.01f, inset = 1;
 
     public VariableBool isPressed;
-    public Color pressEmissionColor;
-
-    void OnEnable()
-    {
-        if (G.IsEditing())
-            isPressed = new VariableBool() { value = false };
-        else
-            isPressed = new VariableBool(() => ((PressPlate)entity).isPressed);
-    } 
+    public Color pressEmissionColor;   
 
     void Awake()
     {
@@ -54,6 +46,11 @@ public class PressPlateGraphics : EntityGraphics
 
     void Start()
     {
+        if (G.IsInUnityEditMode())
+            isPressed = new VariableBool() { value = false };
+        else
+            isPressed = new VariableBool(() => ((PressPlate)entity).isPressed);
+
 #if UNITY_EDITOR
         if (LevelEditor.S != null) EditorStart();
 #endif
@@ -84,7 +81,7 @@ public class PressPlateGraphics : EntityGraphics
 
     public override Entity CreateEntity()
     {
-        return new PressPlate();
+        return new PressPlate() { id = (ScriptObjectID)id.id };
     }
 
     void EditorStart()

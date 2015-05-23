@@ -20,7 +20,7 @@ public class G : MonoBehaviour
     
     static Dictionary<Interfacing.EntityHandle, GameObject> entities;
 
-    public static bool isTimeStopped;
+    public static bool isTimeStopped;    
 
     public float timeStopMultiplier;
 
@@ -159,13 +159,13 @@ public class G : MonoBehaviour
         obj.GetComponent<EntityGraphics>().UpdateInterfaceRotation(dir);
     }
 
-    public static bool IsEditing()
+    public static bool IsInUnityEditMode()
     {
 #if UNITY_EDITOR
         return !UnityEditor.EditorApplication.isPlaying;
 #else
         return false;
 #endif 
-    }
+    }        
 }
 

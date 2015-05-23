@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Engine
 {
+    //TODO: should be class for searialize
     [Serializable]
     public class ScriptObjectID
     {

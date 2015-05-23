@@ -8,16 +8,9 @@ namespace Engine
     public class Player : Entity, IWalker
     {
         public Spell currentSpell;
-
         Entity clickable;
-
-        //Spell castingSpell;
-        //void spellFinishedCasting()
-        //{
-        //   castingSpell = null;
-        //}
-
-        //uint[EnumMembers!CollectibleType.length] gatheredCollectibles;
+        
+               
 
 	    public Player() : base(EntityClass.Character, (uint)CharacterType.Player)
         {		    
@@ -25,21 +18,7 @@ namespace Engine
         }
 
         public override void Update(float dt)
-        {           
-            //Collectible gather
-            if (walker.isWalkBlocked)
-            {
-       //         foreach (ent; worldBlock.entityMap[path[0].x][path[0].y].els())
-			    //{
-       //             Collectible coll = cast(Collectible)ent;
-       //             if (coll !is null)
-				   // {
-       //                 coll.die();
-       //                 gatheredCollectibles[coll.entityType] += coll.amount;
-       //             }
-       //         }
-            }
-
+        {   
             if (!walker.isWalking)
             {
                 if (clickable != null && HexXY.Dist(clickable.pos, this.pos) <= 1)
@@ -48,9 +27,6 @@ namespace Engine
                     clickable = null;
                 }
             }
-
-            //Update collectibles number in GUI
-            //guiData.fGemsCount = gatheredCollectibles[CollectibleType.FireGem];
 
             base.Update(dt);
         }

@@ -13,18 +13,15 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
     public StatueCasterGraphics()
     {
        
-    }   
-
-    void OnEnable()
-    {
-        if (G.IsEditing())
-            isCasting = new VariableBool() { value = false };
-        else
-            isCasting = new VariableBool(() => ((StatueCaster)entity).isCasting);
-    }
+    }      
 
     void Start()
     {
+        if (G.IsInUnityEditMode())
+            isCasting = new VariableBool() { value = false };
+        else
+            isCasting = new VariableBool(() => ((StatueCaster)entity).isCasting);
+
 #if UNITY_EDITOR
         if (LevelEditor.S != null) EditorStart();
 #endif

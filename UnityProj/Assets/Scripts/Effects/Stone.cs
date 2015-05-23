@@ -20,9 +20,9 @@ public class Stone : SpellEffectGraphics
         base.Die();
     }
 
-    protected override void OnEnable()
+    protected override void Start()
     {
-        base.OnEnable();
+        base.Start();
         origYPos = transform.position.y;
         transform.Rotate(new Vector3(0, 1, 0), Random.Range(0, 360));
     }

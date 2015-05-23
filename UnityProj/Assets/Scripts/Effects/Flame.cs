@@ -18,9 +18,9 @@ public class Flame : SpellEffectGraphics
     float? deathTimeLeft;
     
 
-	protected override void OnEnable()
+	protected override void Start()
     {
-        base.OnEnable();
+        base.Start();
         light = transform.GetChild(0).GetChild(0).GetComponent<Light>();
         light.intensity = 0;     
 
@@ -57,7 +57,7 @@ public class Flame : SpellEffectGraphics
             c = new Color(c.r, c.g, c.b, Mathf.Lerp(0.02f, 1f, power.value) * c.a);
 
             //Instantiate in editor only if playing not editing
-            if(G.IsEditing())
+            if(G.IsInUnityEditMode())
                 coreRenderer.sharedMaterial.SetColor("_TintColor", c);
             else            
                 coreRenderer.material.SetColor("_TintColor", c);           

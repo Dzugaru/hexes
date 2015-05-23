@@ -19,6 +19,8 @@ public class VariableFloat
     public VariableFloat(Func<float> binding = null)
     {
         this.binding = binding;
+        if(binding != null)
+            value = binding();
     }
 
     public bool IsNew
@@ -47,6 +49,8 @@ public class VariableBool
     public VariableBool(Func<bool> binding = null)
     {
         this.binding = binding;
+        if (binding != null)
+            value = binding();
     }
 
     public bool IsNew

@@ -15,13 +15,13 @@ public class RuneGraphics : EntityGraphics
     public uint dir;
     public VariableBool isLit;
 
-    void OnEnable()
-    {
-        isLit = new VariableBool(() => ((Rune)entity).isLit);
-    }
-
     void Start()
     {
+        if(G.IsInUnityEditMode())
+            isLit = new VariableBool() { value = false };
+        else
+            isLit = new VariableBool(() => ((Rune)entity).isLit);
+
         renderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
         origMaterial = renderer.sharedMaterial;
     }
