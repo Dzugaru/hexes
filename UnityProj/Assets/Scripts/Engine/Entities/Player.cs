@@ -31,7 +31,8 @@ namespace Engine
             knownRunes.Add(RuneType.ArrowL120);
             knownRunes.Add(RuneType.ArrowL60);
             knownRunes.Add(RuneType.ArrowR120);
-            knownRunes.Add(RuneType.ArrowR60);            
+            knownRunes.Add(RuneType.ArrowR60);
+            knownRunes.Add(RuneType.AvatarWalkDir);          
         }
 
         public override void Spawn(HexXY p)

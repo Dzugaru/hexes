@@ -29,10 +29,10 @@ namespace Engine
             return (T)Level.S.entityList.OfType<IHasScriptID>().FirstOrDefault(e => e.ID == Convert.ToInt32(idEnum));
         }
 
-        protected IEnumerable<Entity> GetScriptEntities(Enum idEnum)
+        protected IEnumerable<T> GetScriptEntities<T>(Enum idEnum) where T : Entity
         {
             foreach (var scrEnt in Level.S.entityList.OfType<IHasScriptID>().Where(e => e.ID == Convert.ToInt32(idEnum)))
-                yield return (Entity)scrEnt;
+                yield return (T)scrEnt;
         }
     }
 }

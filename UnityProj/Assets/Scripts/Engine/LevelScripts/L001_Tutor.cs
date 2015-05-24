@@ -17,7 +17,7 @@ namespace Engine.LevelScripts
         {
             get
             {
-                return new HexXY(0, -3);
+                return new HexXY(-12, -12);
             }
         }
 
@@ -25,11 +25,12 @@ namespace Engine.LevelScripts
         {
             base.Update(dt);
 
-            PressPlate plate01 = GetScriptEntity<PressPlate>(ID.PressurePlate01);
+            var plate01 = GetScriptEntity<PressPlate>(ID.PressurePlate01);
             if (plate01.isPressed)
             {
                 fibers.StartFiber(UnpressPlateAfter(plate01, 2));
-                GetScriptEntity<Door>(ID.Door01).OpenOrClose(true);
+                foreach(var d in GetScriptEntities<Door>(ID.Door01))
+                    d.OpenOrClose(true);
             }
         }
 
