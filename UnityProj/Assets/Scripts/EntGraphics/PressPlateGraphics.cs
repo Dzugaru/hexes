@@ -8,7 +8,7 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class PressPlateGraphics : EntityGraphics
 {
-    MeshRenderer renderer;
+    new MeshRenderer renderer;
     Material origMaterial;
 
     public float ypos = 0.01f, inset = 1;
@@ -16,7 +16,7 @@ public class PressPlateGraphics : EntityGraphics
     public VariableBool isPressed;
     public Color pressEmissionColor;   
 
-    void Awake()
+    protected override void Awake()
     {
         var mesh = new Mesh();
         var vertices = new List<Vector3>();       

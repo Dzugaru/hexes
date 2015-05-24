@@ -18,7 +18,7 @@ public class DoorGraphics : EntityGraphics
     public float openSpeed;
     float openProgress;
 
-    void Awake()
+    protected override void Awake()
     {
         var mesh = new Mesh();
         var vertices = new List<Vector3>();       

@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class RuneGraphics : EntityGraphics
 {   
-    SpriteRenderer renderer;
+    new SpriteRenderer renderer;
     Material origMaterial;
 
     public uint dir;
