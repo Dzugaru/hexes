@@ -2,7 +2,6 @@
 using System.Collections;
 using Engine;
 
-[ExecuteInEditMode]
 public class Stone : SpellEffectGraphics
 {
     float origYPos;

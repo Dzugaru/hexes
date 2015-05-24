@@ -10,6 +10,14 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
 {
     public VariableBool isCasting;
 
+    public bool CanBeHighlighted
+    {
+        get
+        {
+            return true;
+        }
+    }
+
     public StatueCasterGraphics()
     {
        
@@ -41,14 +49,6 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
 
 #if UNITY_EDITOR
     public HexXY sourceSpellPos;
-
-    public bool CanBeHighlighted
-    {
-        get
-        {
-            return true;
-        }
-    }
 
     public override Entity CreateEntity()
     {

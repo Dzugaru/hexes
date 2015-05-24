@@ -2,7 +2,6 @@
 using Engine;
 using System.Collections;
 
-[ExecuteInEditMode]
 public class SpellEffectGraphics : EntityGraphics
 {
     public float scale = 1;

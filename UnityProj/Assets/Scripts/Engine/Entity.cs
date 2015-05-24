@@ -109,7 +109,8 @@ namespace Engine
             SpellEffect = 2,
             StatueCaster = 3,
             PressPlate = 4,
-            Door = 5
+            Door = 5,
+            Scroll = 6
         }      
 
         public virtual void Save(BinaryWriter writer)
@@ -133,6 +134,7 @@ namespace Engine
                 case DerivedTypes.StatueCaster: ent = StatueCaster.Load(reader); break;
                 case DerivedTypes.PressPlate: ent = PressPlate.Load(reader); break;
                 case DerivedTypes.Door: ent = Door.Load(reader); break;
+                case DerivedTypes.Scroll: ent = Scroll.Load(reader); break;
                 default: throw new NotImplementedException();
             }
 

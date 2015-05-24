@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-[ExecuteInEditMode]
 public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
 {
     public VariableBool isOpen;

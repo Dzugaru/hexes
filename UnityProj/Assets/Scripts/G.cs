@@ -45,8 +45,6 @@ public class G : MonoBehaviour
             return;
         }
 
-        
-
         entities = new Dictionary<Interfacing.EntityHandle, GameObject>();
 
         Logger.LogAction = msg => Debug.Log(msg);

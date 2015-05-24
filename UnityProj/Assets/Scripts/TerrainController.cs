@@ -123,7 +123,7 @@ public class TerrainController : MonoBehaviour
         }
     }
 
-    public void PersistTerrain()
+    public void PersistTerrainAndEntities(GameObject entities)
     {
 #if UNITY_EDITOR
         foreach (var ht in hexTerrains)        
@@ -133,9 +133,15 @@ public class TerrainController : MonoBehaviour
 
         string prefabPath = "Assets/MyAssets/PersistTerrain/" + Application.loadedLevelName + ".prefab";
         UnityEditor.AssetDatabase.DeleteAsset(prefabPath);
-        UnityEditor.PrefabUtility.CreatePrefab(prefabPath, gameObject);
 
+        var entitiesCopy = Instantiate(entities);
+        entitiesCopy.transform.SetParent(gameObject.transform, true);
+        
+
+        UnityEditor.PrefabUtility.CreatePrefab(prefabPath, gameObject);
         UnityEditor.AssetDatabase.SaveAssets();
+
+        Destroy(entitiesCopy);
 #endif
     }
 }

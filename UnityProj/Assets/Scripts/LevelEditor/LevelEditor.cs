@@ -320,7 +320,7 @@ public class LevelEditor : MonoBehaviour
 
     public void OnPersistTerrain()
     {
-        TerrainController.S.PersistTerrain();
+        TerrainController.S.PersistTerrainAndEntities(GameObject.Find("EditorEntities"));
     }
 
     public void OnLoad()

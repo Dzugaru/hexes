@@ -96,6 +96,7 @@ public enum RuneType
 
 public enum CollectibleType
 {
+    Scroll,
     FireGem
 }
 
