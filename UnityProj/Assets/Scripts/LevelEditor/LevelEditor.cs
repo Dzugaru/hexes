@@ -26,10 +26,8 @@ public class LevelEditor : MonoBehaviour
     public TerrainCellType? brushCellType;
     public int brushSize;
     public bool shouldPaintOnEmpty;
-    public GameObject sunLight;
-    public GameObject envRoot;
-
-    public InputField levelNameField;
+    public GameObject sunLight;    
+    
     public GameObject sbvisParent;
 
     public bool isInRuneDrawingMode = false;
@@ -46,7 +44,7 @@ public class LevelEditor : MonoBehaviour
     {
         S = this;
 
-        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+        canvas = GameObject.Find("EditorUI").GetComponent<Canvas>();
 
         Interfacing.CreateEntity = CreateEntity;
       
@@ -62,7 +60,9 @@ public class LevelEditor : MonoBehaviour
         instrPanel.Find("Runes").GetComponent<StickyButton>().PressedChanged += val => isInRuneDrawingMode = val;
 
 
-        sbvisParent = GameObject.Find("SBTileVis");
+        sbvisParent = GameObject.Find("EditorSBTileVis");
+
+        OnLoad();
     }
 
     
@@ -301,7 +301,9 @@ public class LevelEditor : MonoBehaviour
 
     public void OnSave()
     {
-        string filePath = Path.Combine(Application.dataPath, "Resources/Levels/" + levelNameField.text + ".bytes");
+        Selection.activeGameObject = null;
+
+        string filePath = Path.Combine(Application.dataPath, "Resources/Levels/" + Application.loadedLevelName + ".bytes");
         if (File.Exists(filePath))        
             File.Copy(filePath, filePath + ".bak", true);        
 
@@ -311,39 +313,25 @@ public class LevelEditor : MonoBehaviour
             Level.S.SaveDynamicPart(writer);
         }
 
-        AssetDatabase.Refresh();
-
-        string envPrefabPath = "Assets/Resources/Prefabs/Env/" + levelNameField.text + ".prefab";
-        var existingEnv = (GameObject)AssetDatabase.LoadAssetAtPath(envPrefabPath, typeof(GameObject));
-        if (existingEnv == null)        
-            PrefabUtility.CreatePrefab(envPrefabPath, envRoot);        
-        else        
-            PrefabUtility.ReplacePrefab(envRoot, existingEnv);
+        AssetDatabase.Refresh();     
 
         AssetDatabase.SaveAssets();
     }
 
+    public void OnPersistTerrain()
+    {
+        TerrainController.S.PersistTerrain();
+    }
+
     public void OnLoad()
     {
-        var levelDataAsset = (TextAsset)Resources.Load("Levels/" + levelNameField.text);
-        if (levelDataAsset == null)
-        {
-            //TODO: level template?
-            new Level();
-            envRoot = new GameObject("Env");
-            UnityEngine.Debug.Log("Created new level");
-            return;
-        }
+        var levelDataAsset = (TextAsset)Resources.Load("Levels/" + Application.loadedLevelName);        
 
         using (var reader = new BinaryReader(new MemoryStream(levelDataAsset.bytes)))
         {
             Level.Load(reader);
             Level.S.LoadDynamicPart(reader);
-        }
-
-        if (envRoot != null) Destroy(envRoot);
-        envRoot = Instantiate(Resources.Load<GameObject>("Prefabs/Env/" + levelNameField.text));
-        envRoot.name = "Env";
+        }       
 
         //SB vis
         foreach (var wb in Level.S.GetAllBlocks())
@@ -363,9 +351,11 @@ public class LevelEditor : MonoBehaviour
                 }
 
         levelScript = (LevelScript)Activator.CreateInstance(System.Reflection.Assembly.GetExecutingAssembly()
-            .GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == levelNameField.text));
+            .GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == Application.loadedLevelName));
 
         levelScriptIDs = levelScript.GetType().GetNestedType("ID");
+
+        TerrainController.S.LoadAllTerrain();
     }
 
     HexXY getMouseOverTile()
@@ -399,7 +389,7 @@ public class LevelEditor : MonoBehaviour
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
         obj.SetActive(false);
-        obj.transform.SetParent(GameObject.Find("Entities").transform, false);
+        obj.transform.SetParent(GameObject.Find("EditorEntities").transform, false);
 
         var handle = new Interfacing.EntityHandle() { idx = (uint)entities.Count };
 

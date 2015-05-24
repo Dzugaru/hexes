@@ -39,12 +39,12 @@ public class TerrainController : MonoBehaviour
 
     void Awake()
     {
-        S = this;
+        S = this;        
     }
 
     void Update()
     {
-        if (Level.S == null) return;
+        if (G.S.isEditMode || Level.S == null) return;
 
         Ray viewRay = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         float dist;
@@ -113,6 +113,30 @@ public class TerrainController : MonoBehaviour
         }
 
         hexTerrains[block.position] = CreateHexTerrain(block);
+    }
+
+    public void LoadAllTerrain()
+    {
+        foreach (var wb in Level.S.GetAllBlocks())
+        {
+            hexTerrains.Add(wb.position, CreateHexTerrain(wb));
+        }
+    }
+
+    public void PersistTerrain()
+    {
+#if UNITY_EDITOR
+        foreach (var ht in hexTerrains)        
+            ht.Value.SaveMeshesToAssets("x" + ht.Key.x + "y" + ht.Key.y);        
+
+        UnityEditor.AssetDatabase.SaveAssets();
+
+        string prefabPath = "Assets/MyAssets/PersistTerrain/" + Application.loadedLevelName + ".prefab";
+        UnityEditor.AssetDatabase.DeleteAsset(prefabPath);
+        UnityEditor.PrefabUtility.CreatePrefab(prefabPath, gameObject);
+
+        UnityEditor.AssetDatabase.SaveAssets();
+#endif
     }
 }
 

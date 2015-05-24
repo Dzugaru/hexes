@@ -24,19 +24,30 @@ public class G : MonoBehaviour
 
     public float timeStopMultiplier;
 
-    public string levelName = "L001_Tutor";
+    [SerializeField]
+    GameObject freeList;
+
+    public bool isEditMode;
 
 
     void Awake()
     {
-        entities = new Dictionary<Interfacing.EntityHandle, GameObject>();        
-
         if (S != null)
         {
             throw new InvalidProgramException("Two global objects");
         }
 
         S = this;
+
+        if (isEditMode)
+        {
+            GoToEditMode();
+            return;
+        }
+
+        
+
+        entities = new Dictionary<Interfacing.EntityHandle, GameObject>();
 
         Logger.LogAction = msg => Debug.Log(msg);
 
@@ -53,10 +64,7 @@ public class G : MonoBehaviour
         Interfacing.PerformInterfaceUpdateRotation = PerformInterfaceUpdateRotation;        
 
 
-        E.LoadLevel(levelName);
-        var envRoot = Instantiate(Resources.Load<GameObject>("Prefabs/Env/" + levelName));
-        envRoot.name = "Env";
-        
+        E.LoadLevel(Application.loadedLevelName);       
 
 
         //DEBUG load saved spell
@@ -99,7 +107,9 @@ public class G : MonoBehaviour
         }
 
         GameObject obj = Instantiate((GameObject)Resources.Load(prefabPath));
+        obj.transform.SetParent(GameObject.Find("Entities").transform, false);
         obj.SetActive(false);
+        
 
         var handle = new Interfacing.EntityHandle() {  idx = (uint)entities.Count };
 
@@ -189,6 +199,21 @@ public class G : MonoBehaviour
         var cell = debugCells[p];
         debugCells.Remove(p);
         Destroy(cell);        
+    }
+
+    void GoToEditMode()
+    {
+        Destroy(GameObject.Find("UICamera"));
+        Destroy(GameObject.Find("Main Camera"));
+        Destroy(GameObject.Find("Sun"));
+        Destroy(GameObject.Find("UI"));
+        Destroy(GameObject.Find("EventSystem"));       
+        Destroy(GameObject.Find("Entities"));
+        Destroy(freeList);
+
+        Destroy(gameObject);
+
+        Application.LoadLevelAdditive("editor");
     }
 }
 

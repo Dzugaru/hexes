@@ -33,64 +33,67 @@ public class HexTerrain : MonoBehaviour
 
     void Awake()
     {
+        wallPrefab = Resources.Load<GameObject>("Prefabs/Wall");
+
         //Generate wall mesh for now, model later    
-        float wallHeight = 1.5f;
-        float topTexScale = 0.5f;
-        float sideTexScale = 0.5f;
+        //float wallHeight = 1.5f;
+        //float topTexScale = 0.5f;
+        //float sideTexScale = 0.5f;
 
-        wallPrefab = new GameObject("Wall");
-        wallPrefab.transform.SetParent(gameObject.transform, false);
-        wallPrefab.SetActive(false);
-        var meshRenderer = wallPrefab.AddComponent<MeshRenderer>();
-        var meshFilter = wallPrefab.AddComponent<MeshFilter>();
-        var mesh = new Mesh();
+        //wallPrefab = new GameObject("Wall");
 
-        meshRenderer.sharedMaterial = (Material)Resources.Load("Terrain/Wall");
+        //wallPrefab.transform.SetParent(gameObject.transform, false);
+        //wallPrefab.SetActive(false);
+        //var meshRenderer = wallPrefab.AddComponent<MeshRenderer>();
+        //var meshFilter = wallPrefab.AddComponent<MeshFilter>();
+        //var mesh = new Mesh();
 
-        var vertices = new List<Vector3>();
-        var uvs = new List<Vector2>();
-        var triangles = new List<int>();
+        //meshRenderer.sharedMaterial = (Material)Resources.Load("Terrain/Wall");
 
-        //Top
-        for (int i = 0; i < 6; i++)
-        {
-            vertices.Add(new Vector3(cellVertices[i].x, wallHeight, cellVertices[i].y));
-            uvs.Add(new Vector2(cellVertices[i].x * topTexScale, cellVertices[i].y * topTexScale));
-        }
+        //var vertices = new List<Vector3>();
+        //var uvs = new List<Vector2>();
+        //var triangles = new List<int>();
 
-        for (int i = 0; i < 12; i++)        
-            triangles.Add(cellTriangles[i]);
+        ////Top
+        //for (int i = 0; i < 6; i++)
+        //{
+        //    vertices.Add(new Vector3(cellVertices[i].x, wallHeight, cellVertices[i].y));
+        //    uvs.Add(new Vector2(cellVertices[i].x * topTexScale, cellVertices[i].y * topTexScale));
+        //}
 
-        //Sides
-        for (int i = 0; i < 6; i++)
-        {
-            vertices.Add(new Vector3(cellVertices[i].x, wallHeight, cellVertices[i].y));
-            uvs.Add(new Vector2(i / 6f, wallHeight * sideTexScale));            
-        }
+        //for (int i = 0; i < 12; i++)
+        //    triangles.Add(cellTriangles[i]);
 
-        for (int i = 0; i < 6; i++)
-        {
-            vertices.Add(new Vector3(cellVertices[i].x, 0, cellVertices[i].y));
-            uvs.Add(new Vector2(i / 6f, 0));
-        }
+        ////Sides
+        //for (int i = 0; i < 6; i++)
+        //{
+        //    vertices.Add(new Vector3(cellVertices[i].x, wallHeight, cellVertices[i].y));
+        //    uvs.Add(new Vector2(i / 6f, wallHeight * sideTexScale));
+        //}
 
-        for (int i = 0; i < 6; i++)
-        {
-            triangles.Add(6 + i);
-            triangles.Add(12 + i);
-            triangles.Add(6 + ((i + 1) % 6));
-            triangles.Add(6 + ((i + 1) % 6));
-            triangles.Add(12 + i);
-            triangles.Add(12 + ((i + 1) % 6));
-        }
+        //for (int i = 0; i < 6; i++)
+        //{
+        //    vertices.Add(new Vector3(cellVertices[i].x, 0, cellVertices[i].y));
+        //    uvs.Add(new Vector2(i / 6f, 0));
+        //}
 
-        mesh.vertices = vertices.ToArray();       
-        mesh.uv = uvs.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
+        //for (int i = 0; i < 6; i++)
+        //{
+        //    triangles.Add(6 + i);
+        //    triangles.Add(12 + i);
+        //    triangles.Add(6 + ((i + 1) % 6));
+        //    triangles.Add(6 + ((i + 1) % 6));
+        //    triangles.Add(12 + i);
+        //    triangles.Add(12 + ((i + 1) % 6));
+        //}
 
-        meshFilter.mesh = mesh;
+        //mesh.vertices = vertices.ToArray();
+        //mesh.uv = uvs.ToArray();
+        //mesh.triangles = triangles.ToArray();
+        //mesh.RecalculateNormals();
+        //mesh.RecalculateBounds();
+
+        //meshFilter.mesh = mesh;
     }
 
     void Update()
@@ -315,5 +318,26 @@ public class HexTerrain : MonoBehaviour
                 wall.SetActive(true);
             }
         }                
+    }
+
+    public void SaveMeshesToAssets(string id)
+    {
+#if UNITY_EDITOR
+        foreach (Transform t in transform)
+        {
+            var f = t.GetComponent<MeshFilter>();
+            if (f == null) continue;
+
+            f.mesh.Optimize();
+
+            string folder = "Assets/MyAssets/PersistTerrain/" + Application.loadedLevelName + "/" + id + "/";
+            if (!System.IO.Directory.Exists(folder))            
+                System.IO.Directory.CreateDirectory(folder);            
+            string path = folder + t.gameObject.name + ".asset";
+            UnityEditor.AssetDatabase.DeleteAsset(path);
+            UnityEditor.AssetDatabase.CreateAsset(f.mesh, path);
+            f.mesh = (Mesh)UnityEditor.AssetDatabase.LoadAssetAtPath(path, typeof(Mesh));
+        }
+#endif
     }
 }
