@@ -9,10 +9,11 @@ namespace Engine
 
     public class Fibered : IEntityComponent
     {
-        class Fiber
+        public class Fiber
         {
             public IEnumerator<float> enumerator;
-            public float delayLeft;            
+            public float delayLeft;
+            public bool isDead;           
         }
 
         List<Fiber> fibers;        
@@ -25,7 +26,10 @@ namespace Engine
         public void OnDie()
         {
             foreach (var fib in fibers)
+            {
+                fib.isDead = true;
                 fib.enumerator.Dispose();
+            }
             
             fibers.Clear();
         }
@@ -45,8 +49,11 @@ namespace Engine
 
                 if (fib.delayLeft <= 0)
                 {
-                    if (!fib.enumerator.MoveNext())
+                    if (fib.isDead || !fib.enumerator.MoveNext())
+                    {
+                        fib.isDead = true;
                         fibers.RemoveAt(i--);
+                    }
                     else
                         fib.delayLeft = fib.enumerator.Current;
                 }
@@ -55,11 +62,19 @@ namespace Engine
             return true;
         }
 
-        public void StartFiber(IEnumerator<float> enumerator)
+        public Fiber StartFiber(IEnumerator<float> enumerator)
         {
             enumerator.MoveNext();
             float delay = enumerator.Current;
-            fibers.Add(new Fiber() { delayLeft = delay, enumerator = enumerator });
+            var fiber = new Fiber() { delayLeft = delay, enumerator = enumerator };
+            fibers.Add(fiber);
+            return fiber;
+        }
+
+        public void StopFiber(Fiber fiber)
+        {
+            fiber.isDead = true;
+            fiber.enumerator.Dispose();
         }
     }
 }
