@@ -6,5 +6,6 @@ using System.Text;
 
 public interface IHighlightable
 {
+    bool CanBeHighlighted { get; }
 }
 

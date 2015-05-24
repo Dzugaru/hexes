@@ -11,7 +11,7 @@
         ZTest LEqual Cull Off ZWrite Off Fog { Mode Off } 
 		Blend SrcAlpha OneMinusSrcAlpha
 		Tags{ "Queue" = "Transparent" }
-		Offset 0, -1
+		Offset 0, -100
 
         Pass
         {

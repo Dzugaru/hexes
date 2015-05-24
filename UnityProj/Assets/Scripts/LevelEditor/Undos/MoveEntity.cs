@@ -24,14 +24,14 @@ namespace Undos
         {
             IStaticBlocker blocker = ent as IStaticBlocker;
 
-            if (blocker != null)
+            if (blocker != null && blocker.IsBlocking)
                 LevelEditor.S.ChangeStaticPassability(ent.pos, false);
             Level.S.RemoveEntity(ent.pos, ent);
 
             ent.pos = to;            
 
             Level.S.AddEntity(ent.pos, ent);
-            if (blocker != null)
+            if (blocker != null && blocker.IsBlocking)
                 LevelEditor.S.ChangeStaticPassability(ent.pos, false);
 
             Interfacing.PerformInterfaceTeleport(ent.graphicsHandle, to);        
@@ -46,13 +46,13 @@ namespace Undos
         {
             IStaticBlocker blocker = ent as IStaticBlocker;
 
-            if (blocker != null)
+            if (blocker != null && blocker.IsBlocking)
                 LevelEditor.S.ChangeStaticPassability(ent.pos, false);
             Level.S.RemoveEntity(ent.pos, ent);
 
             ent.pos = from;
 
-            if (blocker != null)
+            if (blocker != null && blocker.IsBlocking)
                 LevelEditor.S.ChangeStaticPassability(ent.pos, false);
             Level.S.AddEntity(ent.pos, ent);
 

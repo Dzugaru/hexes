@@ -14,13 +14,16 @@ public class Highlight
     Coroutine flashHighlightAnimation; //These don't support state view (exec, term), wtf
     bool isflashHighlightAnimationRunning;
 
+    public bool isHighlightEnabled;
+
     public Highlight(EntityGraphics mainGraphics)
     {
         this.mainGraphics = mainGraphics;
     }
 
     public void EnableHighlight()
-    {   
+    {
+        isHighlightEnabled = true;
         Material hlMat = (Material)Resources.Load("Debug/Highlight");
         highlightMat = new Material(hlMat);
 
@@ -36,12 +39,13 @@ public class Highlight
 
     public void DisableHighlight()
     {
+        isHighlightEnabled = false;
         GameObject.Destroy(highlightMat);
         GameObject.Destroy(highlightMeshCopy);
     }
 
     public void AnimateFlashHighlight(Color color, float dur, float peakAlpha)
-    {
+    {        
         bool isHighlightAlreadyPresent;
         if (isflashHighlightAnimationRunning)
         {

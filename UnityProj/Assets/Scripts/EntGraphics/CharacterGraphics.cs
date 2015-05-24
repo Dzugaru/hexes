@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using System;
 
 class CharacterGraphics : EntityGraphics, IHighlightable
 {
@@ -45,6 +46,13 @@ class CharacterGraphics : EntityGraphics, IHighlightable
 
     public static List<CharacterGraphics> activeCharacters = new List<CharacterGraphics>();
 
+    public bool CanBeHighlighted
+    {
+        get
+        {
+            return true;
+        }
+    }
 
     protected override void Awake()
     {

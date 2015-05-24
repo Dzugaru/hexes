@@ -125,20 +125,35 @@ class PlayerInput : MonoBehaviour
         RaycastHit hit;
         bool isFound = false;
         if (Physics.Raycast(ray, out hit))
-        {            
-            var go = hit.transform.gameObject;
-            var gr = go.GetComponentInParent<EntityGraphics>();
-           
-            if (gr != null && gr is IClickable)
+        {
+            if (hit.point.y >= 0)
             {
-                isFound = true;
-                if (gr != mouseOverClickable)
+                var go = hit.transform.gameObject;
+                //Debug.Log("hit " + go);
+                var gr = go.GetComponentInParent<EntityGraphics>();
+
+                if (gr != null && gr is IClickable)
                 {
-                    if (mouseOverClickable != null)
-                        mouseOverClickable.highlight.DisableHighlight();
-                   
-                    mouseOverClickable = gr;                    
-                    gr.highlight.EnableHighlight();                   
+                    isFound = true;
+                    if (!((IHighlightable)gr).CanBeHighlighted)
+                    {
+                        if (gr.highlight.isHighlightEnabled)
+                        {
+                            gr.highlight.DisableHighlight();
+                            mouseOverClickable = null;
+                        }
+                    }
+                    else
+                    {
+                        if (gr != mouseOverClickable)
+                        {
+                            if (mouseOverClickable != null)
+                                mouseOverClickable.highlight.DisableHighlight();
+
+                            mouseOverClickable = gr;
+                            gr.highlight.EnableHighlight();
+                        }
+                    }
                 }
             }
         }

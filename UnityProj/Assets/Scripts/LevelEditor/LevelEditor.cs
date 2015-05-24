@@ -268,8 +268,7 @@ public class LevelEditor : MonoBehaviour
     
     void OnPassabilityModeChanged(bool isEnabled)
     {
-        isInPassabilityMode = isEnabled;        
-        sbvisParent.SetActive(isInPassabilityMode);         
+        isInPassabilityMode = isEnabled; 
     }
 
     public void OnBrushSizeChanged(float size)
@@ -293,6 +292,11 @@ public class LevelEditor : MonoBehaviour
             sunLight.GetComponent<Light>().intensity = 1;
         else
             sunLight.GetComponent<Light>().intensity = 0f;
+    }
+
+    public void OnPassVis(bool val)
+    {
+        sbvisParent.SetActive(val);
     }
 
     public void OnSave()

@@ -10,6 +10,14 @@ namespace Engine
     {
         public bool CanRotate { get { return true; } }
 
+        public bool IsBlocking
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public SpellExecuting exSpell;
         public HexXY sourceSpellPos;
         public bool isCasting;

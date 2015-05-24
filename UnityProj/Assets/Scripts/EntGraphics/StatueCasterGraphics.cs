@@ -42,6 +42,14 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
 #if UNITY_EDITOR
     public HexXY sourceSpellPos;
 
+    public bool CanBeHighlighted
+    {
+        get
+        {
+            return true;
+        }
+    }
+
     public override Entity CreateEntity()
     {
         return new StatueCaster(0, sourceSpellPos);

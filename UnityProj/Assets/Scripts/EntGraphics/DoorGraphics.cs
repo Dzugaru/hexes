@@ -6,7 +6,7 @@ using System.Text;
 using UnityEngine;
 
 [ExecuteInEditMode]
-public class DoorGraphics : EntityGraphics
+public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
 {
     public VariableBool isOpen;
     public float doorHeight = 1.5f;
@@ -18,8 +18,18 @@ public class DoorGraphics : EntityGraphics
     public float openSpeed;
     float openProgress;
 
+    public bool CanBeHighlighted
+    {
+        get
+        {
+            return openProgress == (isOpen.value ? 1 : 0);
+        }
+    }
+
     protected override void Awake()
     {
+        base.Awake();
+
         var mesh = new Mesh();
         var vertices = new List<Vector3>();       
         var triangles = new List<int>();
@@ -58,22 +68,28 @@ public class DoorGraphics : EntityGraphics
             triangles.Add(12 + ((i + 1) % 6));
         }
 
+        //Bottom
+        for (int i = 11; i >= 0; i--)
+            triangles.Add(HexTerrain.cellTriangles[i] + 12);
+
         mesh.vertices = vertices.ToArray();
         mesh.uv = uvs.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
 
-        transform.GetChild(0).GetComponent<MeshFilter>().mesh = mesh;
+        transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh = mesh;
+        transform.GetChild(0).GetComponent<MeshCollider>().sharedMesh = mesh;
     }
+
+    
 
     void Start()
     {
-        if (G.IsInUnityEditMode() || LevelEditor.S != null)        
-            isOpen = new VariableBool() { value = false };
-        else           
-            isOpen = new VariableBool(() => ((Door)entity).isOpen);        
+        if (!G.IsInUnityEditMode() && LevelEditor.S == null)                 
+            isOpen = new VariableBool(() => ((Door)entity).isOpen);
 
+        bool _ = isOpen.IsNew;
         openProgress = isOpen.value ? 1 : 0;
         SetPosition();
 
@@ -90,7 +106,7 @@ public class DoorGraphics : EntityGraphics
 
     void Update()
     {        
-        bool _ = isOpen.IsNew;
+        bool isOpenNew = isOpen.IsNew;
         float prevProgress = openProgress;        
 
         if (isOpen.value)        
@@ -102,16 +118,18 @@ public class DoorGraphics : EntityGraphics
             SetPosition();
         
 #if UNITY_EDITOR
-        if (LevelEditor.S != null) EditorUpdate();
+        if (LevelEditor.S != null) EditorUpdate(isOpenNew);
 #endif
     }
 
 #if UNITY_EDITOR
-    public ScriptObjectID id;    
+    public ScriptObjectID id;
+
+    
 
     public override Entity CreateEntity()
     {
-        return new Door() { id = (ScriptObjectID)id.id };
+        return new Door() { id = (ScriptObjectID)id.id, isOpen = isOpen.value };
     }
 
     void EditorStart()
@@ -119,13 +137,21 @@ public class DoorGraphics : EntityGraphics
         Door door = (Door)entity;       
         id = (ScriptObjectID)door.id.id;
         isOpen.value = door.isOpen;
+
+        if (!isOpen.value)
+            LevelEditor.S.ChangeStaticPassability(door.pos, false);
+        SetPosition();
     }
 
-    void EditorUpdate()
+    void EditorUpdate(bool isOpenNew)
     {
         Door door = (Door)entity;
         door.id.id = id.id;
-        door.isOpen = isOpen.value;
+        if (isOpenNew)
+        {            
+            door.isOpen = isOpen.value;            
+            LevelEditor.S.ChangeStaticPassability(door.pos, false);
+        }
     }
 #endif
 }

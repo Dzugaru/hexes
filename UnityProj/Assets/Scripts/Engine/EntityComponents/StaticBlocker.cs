@@ -7,6 +7,6 @@ namespace Engine
 {
     interface IStaticBlocker
     {
-        //TODO: specify blocked area
+         bool IsBlocking { get; }
     }
 }

@@ -18,6 +18,8 @@ public class PressPlateGraphics : EntityGraphics
 
     protected override void Awake()
     {
+        base.Awake();
+
         var mesh = new Mesh();
         var vertices = new List<Vector3>();       
         var triangles = new List<int>();
