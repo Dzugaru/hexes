@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Engine
 {
@@ -16,6 +17,7 @@ namespace Engine
 
         public static Action<EntityHandle, HexXY, uint> PerformInterfaceSpawn;
         public static Action<EntityHandle, HexXY, float> PerformInterfaceMove;
+        public static Action<EntityHandle, Vector2, float> PerformInterfaceMovePrecise;
         public static Action<EntityHandle, HexXY> PerformInterfaceTeleport;
         public static Action<EntityHandle, HexXY> PerformInterfaceStop;
         public static Action<EntityHandle, HexXY> PerformInterfaceAttack;

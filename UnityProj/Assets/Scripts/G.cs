@@ -43,7 +43,8 @@ public class G : MonoBehaviour
         Interfacing.CreateEntity = CreateEntity;
         Interfacing.PerformInterfaceAttack = PerformInterfaceAttack;
         Interfacing.PerformInterfaceSpawn = PerformInterfaceSpawn;
-        Interfacing.PerformInterfaceMove = PerformInterfaceMove;        
+        Interfacing.PerformInterfaceMove = PerformInterfaceMove;
+        Interfacing.PerformInterfaceMovePrecise = PerformInterfaceMovePrecise;  
         Interfacing.PerformInterfaceDamage = PerformInterfaceDamage;
         Interfacing.PerformInterfaceDie = PerformInterfaceDie;
         Interfacing.PerformInterfaceStop = PerformInterfaceStop;
@@ -68,7 +69,7 @@ public class G : MonoBehaviour
         }
     }
 
-  
+   
 
     void Start()
     {
@@ -127,7 +128,13 @@ public class G : MonoBehaviour
     {
         GameObject obj = entities[objHandle];
         obj.GetComponent<EntityGraphics>().Move(pos, timeToGetThere);
-    }   
+    }
+
+    static void PerformInterfaceMovePrecise(Interfacing.EntityHandle objHandle, Vector2 pos, float timeToGetThere)
+    {
+        GameObject obj = entities[objHandle];
+        obj.GetComponent<EntityGraphics>().MovePrecise(pos, timeToGetThere);
+    }
 
     static void PerformInterfaceStop(Interfacing.EntityHandle objHandle, HexXY pos)
     {
@@ -166,6 +173,22 @@ public class G : MonoBehaviour
 #else
         return false;
 #endif 
-    }        
+    }
+
+    Dictionary<HexXY, GameObject> debugCells = new Dictionary<HexXY, GameObject>();
+    public void DebugShowCell(HexXY p)
+    {
+        var cell = Instantiate(Resources.Load<GameObject>("Prefabs/Editor/SBTileVis"));
+        debugCells.Add(p, cell);        
+        Vector2 fracPos = p.ToPlaneCoordinates();
+        cell.transform.position = new Vector3(fracPos.x, 0.01f, fracPos.y);
+    }
+
+    public void DebugHideCell(HexXY p)
+    {        
+        var cell = debugCells[p];
+        debugCells.Remove(p);
+        Destroy(cell);        
+    }
 }
 

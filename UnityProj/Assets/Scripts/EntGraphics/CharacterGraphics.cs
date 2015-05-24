@@ -46,8 +46,10 @@ class CharacterGraphics : EntityGraphics, IHighlightable
     public static List<CharacterGraphics> activeCharacters = new List<CharacterGraphics>();
 
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         state = State.Stand;
         if (animationsType == AnimationsType.Legacy)
         {
@@ -82,18 +84,23 @@ class CharacterGraphics : EntityGraphics, IHighlightable
     public override void Move(HexXY pos, float timeToGetThere)
     {
         //Debug.Log(entityHandle + " move " + args.pos);      
+        MovePrecise(pos.ToPlaneCoordinates(), timeToGetThere);
+    }
+
+    public override void MovePrecise(Vector2 pos, float timeToGetThere)
+    {
         state = State.Walk;
         walkProgress = 1;
-        Vector2 dest = pos.ToPlaneCoordinates();
+        Vector2 dest = pos;
         walkSource = new Vector2(transform.position.x, transform.position.z);
-        walkDest = dest;        
+        walkDest = dest;
         walkTime = timeToGetThere;
         Vector3 walkDir = (new Vector3(walkDest.x, 0, walkDest.y) - transform.position).normalized;
-        if(isAutoRotatable)
+        if (isAutoRotatable)
             RotateTo(walkDir);
 
         if (animationsType == AnimationsType.Legacy) legacyAnimator.Play("Walk");
-        else if(animationsType == AnimationsType.Mecanim) mecanimAnimator.SetBool("IsWalking", true);
+        else if (animationsType == AnimationsType.Mecanim) mecanimAnimator.SetBool("IsWalking", true);
     }
 
     public override void Stop(HexXY pos)
@@ -172,6 +179,7 @@ class CharacterGraphics : EntityGraphics, IHighlightable
 
     void RotateTo(Vector3 dir)
     {
+        if (dir.sqrMagnitude == 0) return;
         targetRotation = Quaternion.LookRotation(dir);
         if (transform.rotation != targetRotation)
         {

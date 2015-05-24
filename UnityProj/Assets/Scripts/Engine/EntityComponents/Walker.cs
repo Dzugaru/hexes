@@ -49,19 +49,26 @@ namespace Engine
         public bool OnUpdate(float dt)
         {
             if (onTileCenter && shouldRecalcPath)
-            {
+            {   
                 var pathLen = Pathfinder.FindPath(entity.pos, dest.Value, pathStorage, distToStop, blockedCost);
-                if (!pathLen.HasValue)
+                //Logger.Log(pathLen.ToString());
+                pathStart = 0;
+                shouldRecalcPath = false;
+                isWalkBlocked = false;
+
+                if (!pathLen.HasValue || pathLen.Value == 0)
                 {
-                    //log("PATH NULL");
+                    pathEnd = 0;
+                    if (isWalking)
+                    {                        
+                        Interfacing.PerformInterfaceStop(entity.graphicsHandle, entity.pos);
+                        isWalking = false;
+                    }
                     return true;
                 }
 
-                pathStart = 0;
-                pathEnd = pathLen.Value;
-
-                shouldRecalcPath = false;               
-                isWalkBlocked = false;
+                
+                pathEnd = pathLen.Value;                
             }
 
             if (pathStart == pathEnd) return true;
@@ -123,7 +130,7 @@ namespace Engine
         }
 	    
 	    public void SetDest(HexXY dest, uint distToStop, uint blockedCost)
-        {
+        {            
             this.dest = dest;
             this.distToStop = distToStop;
             this.blockedCost = blockedCost;            

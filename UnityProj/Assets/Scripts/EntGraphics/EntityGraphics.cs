@@ -26,7 +26,8 @@ public abstract class EntityGraphics : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public virtual void Move(HexXY pos, float timeToGetThere) { }   
+    public virtual void Move(HexXY pos, float timeToGetThere) { }
+    public virtual void MovePrecise(Vector2 pos, float timeToGetThere) { }
     public virtual void Stop(HexXY p) { }
     public virtual void Attack(HexXY p) { }
     public virtual void Damage(float dmg) { }
@@ -40,7 +41,7 @@ public abstract class EntityGraphics : MonoBehaviour
     public Highlight highlight;
     public GameObject meshRoot;
 
-    void Awake()
+    protected virtual void Awake()
     {
         if (this is IHighlightable)        
             highlight = new Highlight(this);

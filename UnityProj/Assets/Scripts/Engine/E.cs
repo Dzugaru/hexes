@@ -27,19 +27,19 @@ namespace Engine
             player = new Player();
             player.Spawn(levelScript.PlayerSpawnPos);
 
-            //for (int i = 0; i < 0; i++)
-            //{
-            //    HexXY p;
-            //    do
-            //    {
-            //        p.x = UnityEngine.Random.Range(0, WorldBlock.sz);
-            //        p.y = UnityEngine.Random.Range(0, WorldBlock.sz);
-            //    } while (WorldBlock.S.GetCellType(p) == TerrainCellType.Empty || HexXY.Dist(player.pos, p) < 10 ||
-            //    WorldBlock.S.pfBlockedMap[p.x,p.y]);
+            for (int i = 0; i < 30; i++)
+            {
+                HexXY p;
+                do
+                {
+                    p.x = UnityEngine.Random.Range(-2 *WorldBlock.sz, 2 *WorldBlock.sz);
+                    p.y = UnityEngine.Random.Range(-2 * WorldBlock.sz, 2 * WorldBlock.sz);
+                } while (Level.S.GetCellType(p) == TerrainCellType.Empty /*|| HexXY.Dist(player.pos, p) < 10*/ ||
+                Level.S.GetPFBlockedMap(p) == WorldBlock.PFBlockType.DynamicBlocked);
 
-            //    var mob = new Mob(Data.mobDatas["spider"]);
-            //    mob.Spawn(p);
-            //}
+                var mob = new Mob(Data.mobDatas["spider"]);
+                mob.Spawn(p);
+            }
 
             //Overseer.Start();
         }
