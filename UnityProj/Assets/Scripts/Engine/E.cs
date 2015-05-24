@@ -23,7 +23,10 @@ namespace Engine
             }
 
             levelScript = (LevelScript)Activator.CreateInstance(Assembly.GetExecutingAssembly().GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == levelName));
-            levelScript.Start();            
+            levelScript.Start();
+
+            //TODO: save/load player
+            player.InitForNewGame();         
         }
 
         public static void Update(float dt)
@@ -33,26 +36,6 @@ namespace Engine
 
             Spell.Update(dt);
             levelScript.Update(dt);            
-        }       
-
-        public static void PlayerDrawRune(RuneType type, HexXY p)
-        {
-            player.DrawRune(type, p);
-        }
-
-        public static void PlayerEraseRune(HexXY p)
-        {
-            player.EraseRune(p);
-        }
-
-        public static bool PlayerCompileSpell(HexXY p)
-        {
-            return player.CompileSpell(p);
-        }
-
-        public static void PlayerCastSpell(HexXY p)
-        {
-            player.CastCurrentSpell(p);
-        }        
+        }          
     }
 }

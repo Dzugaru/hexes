@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class StickyButton : MonoBehaviour
 {    
     public bool isPressed = false;
+    public bool isTextInsteadOfColor = false;
     public Color pressedColor = new Color(0.5f, 1f, 0.5f);
     public Color releasedColor = new Color(1f, 1f, 1f);
 
@@ -40,8 +41,17 @@ public class StickyButton : MonoBehaviour
     public virtual void SetPressed(bool pressed)
     {
         isPressed = pressed;
-        if (isPressed) GetComponent<Image>().color = pressedColor;
-        else GetComponent<Image>().color = releasedColor;
+
+        if (isTextInsteadOfColor)
+        {
+            if (isPressed) transform.GetChild(0).GetComponent<Text>().text = "x";
+            else transform.GetChild(0).GetComponent<Text>().text = string.Empty;            
+        }
+        else
+        {
+            if (isPressed) GetComponent<Image>().color = pressedColor;
+            else GetComponent<Image>().color = releasedColor;
+        }
 
         if (PressedChanged != null)
             PressedChanged(isPressed);

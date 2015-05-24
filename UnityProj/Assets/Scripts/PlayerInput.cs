@@ -64,36 +64,33 @@ class PlayerInput : MonoBehaviour
 
     void Update()
     {
-      
-
-
         foreach (var kvp in runeKeys)        
             if (Input.GetKeyDown(kvp.Key))
-                E.PlayerDrawRune(kvp.Value, getMouseOverTile());
+                E.player.DrawRune(kvp.Value, getMouseOverTile());
 
         if (Input.GetKeyDown(KeyCode.Space))
-            E.PlayerEraseRune(getMouseOverTile());
+            E.player.EraseRune(getMouseOverTile());
 
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            if (E.PlayerCompileSpell(E.player.pos))
-            {
-                //DEBUG save it
-                using (var writer = new BinaryWriter(File.OpenWrite(Path.Combine(Application.persistentDataPath, "spell"))))
-                    E.player.currentSpell.Save(writer);
-            }
-            else
-            {
-                Logger.Log("Can't compile this");
-            }
-        }
+        //if (Input.GetKeyDown(KeyCode.Return))
+        //{
+        //    if (E.PlayerCompileSpell(E.player.pos))
+        //    {
+        //        //DEBUG save it
+        //        using (var writer = new BinaryWriter(File.OpenWrite(Path.Combine(Application.persistentDataPath, "spell"))))
+        //            E.player.currentSpell.Save(writer);
+        //    }
+        //    else
+        //    {
+        //        Logger.Log("Can't compile this");
+        //    }
+        //}
 
-        if (Input.GetKeyDown(KeyCode.Backspace))
-            E.PlayerCastSpell(getMouseOverTile());
+        //if (Input.GetKeyDown(KeyCode.Backspace))
+        //    E.PlayerCastSpell(getMouseOverTile());
 
         //DEBUG redraw spell
-        if (Input.GetKeyDown(KeyCode.Backslash) && E.player.currentSpell != null)            
-            E.player.currentSpell.RedrawOnGround(E.player.currentSpell.root, E.player.pos);
+        //if (Input.GetKeyDown(KeyCode.Backslash) && E.player.currentSpell != null)            
+        //    E.player.currentSpell.RedrawOnGround(E.player.currentSpell.root, E.player.pos);
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {

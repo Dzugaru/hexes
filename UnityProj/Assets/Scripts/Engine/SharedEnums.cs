@@ -3,7 +3,8 @@ public enum TerrainCellType : byte
     Empty = 0,
     DryGround,
 	Grass,
-	Snow	
+	FusedRuneStone,
+    RuneStone
 }
 
 public enum EffectType

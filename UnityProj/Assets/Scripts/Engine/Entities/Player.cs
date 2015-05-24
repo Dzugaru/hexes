@@ -9,24 +9,29 @@ namespace Engine
     public class Player : Entity
     {
         public Spell currentSpell;
-        Entity clickable;
-                
-        float speed;
-        HexXY[] pathStorage;
-        HexXY? dest;
-        uint distToStop;
-        HexXY interDest;
-        bool isWalking;
-        Vector2 fracPos, interFracDest;        
-        const float blockForwardDist = 0.9f;
-        const float blockBackDist = 0;
-        HashSet<HexXY> blockedCells = new HashSet<HexXY>();
-        List<HexXY> blockedCellsToDelete = new List<HexXY>();               
 
-	    public Player() : base(EntityClass.Character, (uint)CharacterType.Player)
+        public event Action ActionFailure;
+
+        Action afterMoveAction;
+        HexXY afterMovePos;
+        uint afterMoveDist;
+
+        HashSet<RuneType> knownRunes = new HashSet<RuneType>();
+       
+
+        public Player() : base(EntityClass.Character, (uint)CharacterType.Player)
         {
             pathStorage = new HexXY[64];           
             speed = 2;
+        }
+
+        public void InitForNewGame()
+        {
+            knownRunes.Add(RuneType.Arrow0);
+            knownRunes.Add(RuneType.ArrowL120);
+            knownRunes.Add(RuneType.ArrowL60);
+            knownRunes.Add(RuneType.ArrowR120);
+            knownRunes.Add(RuneType.ArrowR60);            
         }
 
         public override void Spawn(HexXY p)
@@ -40,27 +45,158 @@ namespace Engine
 
         public override void Update(float dt)
         {            
-            if (!isWalking)
+            if (isWalking)
             {
-                if (clickable != null && HexXY.Dist(clickable.pos, this.pos) <= 1)
-                {
-                    ((IClickable)clickable).Click();
-                    clickable = null;
-                }
+                Walking(dt);                
             }
             else
             {
-                Walking(dt);
+                if (afterMoveAction != null && HexXY.Dist(afterMovePos, this.pos) <= afterMoveDist)
+                {
+                    afterMoveAction();
+                    afterMoveAction = null;
+                }
             }
 
             base.Update(dt);
         }
 
+      
+
+        public void Move(HexXY p)
+        {
+            if (Level.S.GetPFBlockedMap(p) != WorldBlock.PFBlockType.StaticBlocked &&
+               (!dest.HasValue || p != dest))
+            {
+                afterMoveAction = null;
+                dest = p;
+                distToStop = 0;
+                MovePart();                
+            }            
+        }
+
+        void DoAfterMoveTo(Action action, HexXY p, uint dist)
+        {
+            if (HexXY.Dist(p, this.pos) <= dist)
+            {
+                action();
+            }
+            else
+            {
+                afterMoveAction = action;
+                afterMovePos = p;
+                afterMoveDist = dist;
+                dest = p;
+                distToStop = 1;
+                MovePart();                
+            }
+        }
+
+        
+
+        public void DrawRune(RuneType type, HexXY p)
+        {
+            if (!knownRunes.Contains(type))
+            {
+                if (ActionFailure != null) ActionFailure();
+                return;
+            }
+
+            DoAfterMoveTo(() =>
+            {
+                bool isSuccess = !isWalking && Rune.CanDraw(this, type, p) && knownRunes.Contains(type);
+                if (isSuccess)
+                {
+                    var runeData = Data.runeDatas[type];
+                    var existingRune = Level.S.GetEntities(p).OfType<Rune>().FirstOrDefault();
+                    if (existingRune != null)
+                    {
+                        if (existingRune.entityType == (uint)type)
+                        {
+                            if (runeData.isDirectional)
+                            {
+                                //Rotate rune
+                                existingRune.dir = (existingRune.dir + 1) % 6;
+                                existingRune.UpdateInterface();
+                            }
+                            else if (ActionFailure != null) ActionFailure();
+                        }
+                        else
+                        {
+                            //Erase old rune
+                            Level.S.RemoveEntity(p, existingRune);
+                            existingRune = null;
+                        }
+                    }
+
+                    if (existingRune == null)
+                    {
+                        //Draw new rune
+                        var rune = new Rune(type, 0);
+                        rune.Spawn(p);
+                    }
+                }
+                else if (ActionFailure != null) ActionFailure();
+            }, p, 1);            
+        }
+
+        public void EraseRune(HexXY p)
+        {
+            DoAfterMoveTo(() =>
+            {
+                bool isSuccess = !isWalking && Rune.CanErase(this, p);
+                if (isSuccess)
+                {
+                    var rune = Level.S.GetEntities(p).First(e => e is Rune);
+                    rune.Die();
+                }
+                else if (ActionFailure != null) ActionFailure();
+            }, p, 1);            
+        }
+
+        public void Clicked(Entity clickable)
+        {
+            DoAfterMoveTo(() =>
+            {
+                ((IClickable)clickable).Click();
+            }, clickable.pos, 1);
+        }
+
+        //public bool CompileSpell(HexXY p)
+        //{
+        //    Rune compileRune =                                
+        //        (Rune)Level.S.GetEntities(p).FirstOrDefault(e => e is Rune && Avatar.IsAvatarElementRune((RuneType)e.entityType));
+
+        //    bool isSuccess = compileRune != null;
+        //    if (isSuccess) currentSpell = Spell.CompileSpell(compileRune, p);            
+        //    return isSuccess;
+        //}
+
+        //public bool CastCurrentSpell(HexXY p)
+        //{
+        //    bool isSuccess = currentSpell != null && HexXY.Dist(pos, p) == 1;
+        //    if (isSuccess) currentSpell.Cast(this, (uint)HexXY.neighbours.IndexOf(p - pos));
+        //    return isSuccess;            
+        //}
+
+        #region New walking
+        float speed;
+        HexXY[] pathStorage;
+        HexXY? dest;
+        uint distToStop;
+        HexXY interDest;
+        bool isWalking;
+        Vector2 fracPos, interFracDest;
+        const float blockForwardDist = 0.9f;
+        const float blockBackDist = 0;
+        HashSet<HexXY> blockedCells = new HashSet<HexXY>();
+        List<HexXY> blockedCellsToDelete = new List<HexXY>();
+
         void Walking(float dt)
         {
-            HexXY prevPos = pos;            
+            HexXY prevPos = pos;
 
-            float distToTargetSqr = (interFracDest - fracPos).sqrMagnitude;            
+            float distToTargetSqr = (interFracDest - fracPos).sqrMagnitude;
 
             Vector2 dir = (interFracDest - fracPos).normalized;
 
@@ -69,7 +205,7 @@ namespace Engine
             if (distToTargetSqr >= blockForwardDist * blockForwardDist)
             {
                 Vector2 nextBlockPos = fracPos + dir * blockForwardDist;
-                HexXY nextPosCell = HexXY.FromPlaneCoordinates(nextBlockPos);                
+                HexXY nextPosCell = HexXY.FromPlaneCoordinates(nextBlockPos);
                 if (!blockedCells.Contains(nextPosCell))
                 {
                     if (Level.S.GetPFBlockedMap(nextPosCell) != WorldBlock.PFBlockType.Unblocked)
@@ -110,13 +246,13 @@ namespace Engine
             else
             {
                 fracPos += step;
-            }  
+            }
 
             pos = HexXY.FromPlaneCoordinates(fracPos);
 
             if (pos != prevPos)
             {
-                Level.S.RemoveEntity(prevPos, this);                
+                Level.S.RemoveEntity(prevPos, this);
                 Level.S.AddEntity(pos, this);
 
                 //Remove blocked cells that are behind us
@@ -125,8 +261,8 @@ namespace Engine
                 foreach (var bc in blockedCells)
                 {
                     Vector2 bcFrac = bc.ToPlaneCoordinates();
-                    if (bc != pos && Vector2.Dot(fracPos - bcFrac, dir) > blockBackDist)                    
-                        blockedCellsToDelete.Add(bc);                    
+                    if (bc != pos && Vector2.Dot(fracPos - bcFrac, dir) > blockBackDist)
+                        blockedCellsToDelete.Add(bc);
                 }
 
                 foreach (var dbc in blockedCellsToDelete)
@@ -134,7 +270,7 @@ namespace Engine
                     blockedCells.Remove(dbc);
                     Level.S.SetPFBlockedMap(dbc, WorldBlock.PFBlockType.Unblocked);
                     //G.S.DebugHideCell(dbc);
-                }                
+                }
             }
         }
 
@@ -145,7 +281,7 @@ namespace Engine
             uint? pathLen = Pathfinder.FindPath(pos, dest.Value, pathStorage, distToStop, 10);
             if (pathLen.HasValue && pathLen.Value > 0)
             {
-                HexXY firstPathCell = pathStorage[0];               
+                HexXY firstPathCell = pathStorage[0];
                 if (!blockedCells.Contains(firstPathCell) && Level.S.GetPFBlockedMap(firstPathCell) != WorldBlock.PFBlockType.Unblocked)
                 {
                     //Even first cell is blocked, just rotate there
@@ -237,67 +373,8 @@ namespace Engine
                 Interfacing.PerformInterfaceStop(graphicsHandle, pos);
             }
         }
-
-        public void Move(HexXY p)
-        {
-            if (Level.S.GetPFBlockedMap(p) != WorldBlock.PFBlockType.StaticBlocked &&
-               (!dest.HasValue || p != dest))
-            {
-                clickable = null;
-                dest = p;
-                distToStop = 0;
-                MovePart();                
-            }            
-        }
-
-        public bool DrawRune(RuneType type, HexXY p)
-        {
-            bool isSuccess = !isWalking && Rune.CanDraw(this, type, p);
-            if (isSuccess) Rune.DrawRune(this, type, p);
-            return isSuccess;             
-        }
-
-        public bool EraseRune(HexXY p)
-        {
-            bool isSuccess = !isWalking && Rune.CanErase(this, p);
-            if (isSuccess) Rune.EraseRune(p);
-            return isSuccess;            
-        }
-
-        public bool CompileSpell(HexXY p)
-        {
-            Rune compileRune =                                
-                (Rune)Level.S.GetEntities(p).FirstOrDefault(e => e is Rune && Avatar.IsAvatarElementRune((RuneType)e.entityType));
-
-            bool isSuccess = compileRune != null;
-            if (isSuccess) currentSpell = Spell.CompileSpell(compileRune, p);            
-            return isSuccess;
-        }
-
-        public bool CastCurrentSpell(HexXY p)
-        {
-            bool isSuccess = currentSpell != null && HexXY.Dist(pos, p) == 1;
-            if (isSuccess) currentSpell.Cast(this, (uint)HexXY.neighbours.IndexOf(p - pos));
-            return isSuccess;            
-        }
-
-      
-
-        public void Clicked(Entity clickable)
-        {
-            if (HexXY.Dist(clickable.pos, this.pos) <= 1)
-            {
-                ((IClickable)clickable).Click();
-            }
-            else
-            {
-                this.clickable = clickable;
-                dest = clickable.pos;
-                distToStop = 1;
-                MovePart();
-            }
-        }
-    } 
+        #endregion
+    }
 }
 
 

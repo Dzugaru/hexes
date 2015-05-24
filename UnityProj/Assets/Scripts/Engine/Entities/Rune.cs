@@ -18,36 +18,15 @@ namespace Engine
 
         public static bool CanDraw(Entity ent, RuneType rune, HexXY pos)
         {
-            return 
-                HexXY.Dist(ent.pos, pos) == 1 &&                
-                !Level.S.GetEntities(pos).Any(e => e is Rune);
-
+            var cellType = Level.S.GetCellType(pos);
+            return cellType == TerrainCellType.RuneStone;
         }
 
         public static bool CanErase(Entity ent, HexXY pos)
         {
-            return
-                //HexXY.Dist(ent.pos, pos) <= 1 && //DEBUG
-                Level.S.GetEntities(pos).Any(e => e is Rune);
-        }
-
-        public static void DrawRune(Entity ent, RuneType type, HexXY pos)
-        {
-            var runeData = Data.runeDatas[type];
-            uint dirIdx;
-            if (runeData.isDirectional)
-                dirIdx = (uint)HexXY.neighbours.IndexOf(pos - ent.pos);
-            else
-                dirIdx = 0;
-
-            var rune = new Rune(type, dirIdx);            
-            rune.Spawn(pos);
-        }
-
-        public static void EraseRune(HexXY pos)
-        {   
-            var rune = Level.S.GetEntities(pos).First(e => e is Rune);
-            rune.Die();
+            var cellType = Level.S.GetCellType(pos);
+            return Level.S.GetEntities(pos).Any(e => e is Rune) &&
+                   cellType != TerrainCellType.FusedRuneStone;
         }
 
         public override void Save(BinaryWriter writer)
