@@ -23,25 +23,7 @@ namespace Engine
             }
 
             levelScript = (LevelScript)Activator.CreateInstance(Assembly.GetExecutingAssembly().GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == levelName));
-
-            player = new Player();
-            player.Spawn(levelScript.PlayerSpawnPos);
-
-            for (int i = 0; i < 0; i++)
-            {
-                HexXY p;
-                do
-                {
-                    p.x = UnityEngine.Random.Range(-2 *WorldBlock.sz, 2 *WorldBlock.sz);
-                    p.y = UnityEngine.Random.Range(-2 * WorldBlock.sz, 2 * WorldBlock.sz);
-                } while (Level.S.GetCellType(p) == TerrainCellType.Empty /*|| HexXY.Dist(player.pos, p) < 10*/ ||
-                Level.S.GetPFBlockedMap(p) == WorldBlock.PFBlockType.DynamicBlocked);
-
-                var mob = new Mob(Data.mobDatas["spider"]);
-                mob.Spawn(p);
-            }
-
-            //Overseer.Start();
+            levelScript.Start();            
         }
 
         public static void Update(float dt)
@@ -50,7 +32,7 @@ namespace Engine
                 ent.Update(dt);
 
             Spell.Update(dt);
-            //Overseer.Update();
+            levelScript.Update(dt);            
         }       
 
         public static void PlayerDrawRune(RuneType type, HexXY p)

@@ -22,7 +22,8 @@ public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
     {
         get
         {
-            return openProgress == (isOpen.value ? 1 : 0);
+            //return openProgress == (isOpen.value ? 1 : 0);
+            return false;
         }
     }
 
@@ -91,14 +92,14 @@ public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
 
         bool _ = isOpen.IsNew;
         openProgress = isOpen.value ? 1 : 0;
-        SetPosition();
+        SetOpenClosePosition();
 
 #if UNITY_EDITOR
         if (LevelEditor.S != null) EditorStart();
 #endif
     }
 
-    void SetPosition()
+    void SetOpenClosePosition()
     {
         float ypos = -openAnimation.Evaluate(openProgress) * doorHeight * 0.99f;
         transform.GetChild(0).transform.position = new Vector3(transform.GetChild(0).transform.position.x, ypos, transform.GetChild(0).transform.position.z);
@@ -115,7 +116,7 @@ public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
             openProgress = Mathf.Max(0, openProgress - Time.deltaTime / openSpeed);
 
         if (openProgress != prevProgress)
-            SetPosition();
+            SetOpenClosePosition();
         
 #if UNITY_EDITOR
         if (LevelEditor.S != null) EditorUpdate(isOpenNew);
@@ -140,7 +141,7 @@ public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
 
         if (!isOpen.value)
             LevelEditor.S.ChangeStaticPassability(door.pos, false);
-        SetPosition();
+        SetOpenClosePosition();
     }
 
     void EditorUpdate(bool isOpenNew)

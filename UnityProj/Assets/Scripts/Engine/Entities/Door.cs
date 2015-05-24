@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Engine
 {
-    public class Door : Entity, IFibered, IClickable, IStaticBlocker
+    public class Door : Entity, IFibered, IClickable, IStaticBlocker, IHasScriptID
     {
         Fibered.Fiber changingState;
 
@@ -18,6 +18,14 @@ namespace Engine
             get
             {
                 return !isOpen;
+            }
+        }
+
+        public ScriptObjectID ID
+        {
+            get
+            {
+                return id;
             }
         }
 

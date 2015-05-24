@@ -6,10 +6,18 @@ using System.Text;
 
 namespace Engine
 {
-    public class PressPlate : Entity
+    public class PressPlate : Entity, IHasScriptID
     {
         public bool isPressed;
         public ScriptObjectID id;
+
+        public ScriptObjectID ID
+        {
+            get
+            {
+                return id;
+            }
+        }
 
         public PressPlate() : base(EntityClass.Mech, (uint)MechType.AvatarWalkPressPlate)
         {
