@@ -92,6 +92,8 @@ namespace Undos
             foreach (var ch in changes)            
                 PaintOneCell(ch.p, ch.oldCellType, changedBlocks, TerrainCellType.Empty, false);
 
+            Level.S.RecalcPassabilityOnEdges();
+
             RecreateTerrain(changedBlocks);
         }
 
@@ -100,6 +102,8 @@ namespace Undos
             var changedBlocks = new HashSet<WorldBlock>();
             foreach (var ch in changes.Reverse())
                 PaintOneCell(ch.p, ch.newCellType, changedBlocks, TerrainCellType.Empty, false);
+
+            Level.S.RecalcPassabilityOnEdges();
 
             RecreateTerrain(changedBlocks);
         }

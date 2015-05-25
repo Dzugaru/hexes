@@ -26,5 +26,7 @@ namespace Engine
 
         public static Action<EntityHandle, float, float> PerformInterfaceUpdateHP;
         public static Action<EntityHandle, uint> PerformInterfaceUpdateRotation;
+
+        public static Action<Scroll> ShowScrollWindow;
     }
 }

@@ -203,7 +203,7 @@ public class G : MonoBehaviour
     {
         Destroy(GameObject.Find("UICamera"));
         Destroy(GameObject.Find("Main Camera"));
-        Destroy(GameObject.Find("Sun"));
+        //Destroy(GameObject.Find("Sun"));
         Destroy(GameObject.Find("UI"));
         Destroy(GameObject.Find("EventSystem"));       
         Destroy(GameObject.Find("Entities"));

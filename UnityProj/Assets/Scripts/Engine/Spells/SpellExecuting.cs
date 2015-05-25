@@ -56,6 +56,7 @@ namespace Engine
 
                 if (av.finishState != null)
                 {
+                    Logger.Log(av.finishState.ToString());
                     avatars.RemoveAt(i--);
                     av.avatarElement.OnDie();
                 }

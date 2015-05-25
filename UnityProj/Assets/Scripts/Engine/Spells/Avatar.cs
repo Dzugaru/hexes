@@ -21,6 +21,7 @@ namespace Engine
 
         bool isArrowCrossDirLeft;
         HashSet<HexXY> arrowsProcessed = new HashSet<HexXY>(); //This is for flow arrow cycle detection
+        List<Spell.CompiledRune> additionalInterpretedRunes = new List<Spell.CompiledRune>();
 
         public enum FinishedState
         {
@@ -52,7 +53,8 @@ namespace Engine
             if (SpellExecuting.isLogging)
                 Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> interpret " + rune.type + " at " + rune.relPos);
             
-            var currRune = rune;                       
+            var currRune = rune;
+            additionalInterpretedRunes.Clear();                    
 
             bool needsFlow = true;
             if (IsArrowRune(rune.type))
@@ -79,7 +81,7 @@ namespace Engine
             }
 
             if (avatarElement != null)
-                timeLeft += avatarElement.OnInterpret(currRune);
+                timeLeft += avatarElement.OnInterpret(currRune, additionalInterpretedRunes);
 
             if (needsFlow && finishState == null)
                 InterpretFlow();
@@ -124,6 +126,11 @@ namespace Engine
         {
             do
             {
+                if (!onlyOneRune)
+                {
+                    additionalInterpretedRunes.Add(r);
+                }
+
                 if (arrowsProcessed.Contains(r.relPos))
                 {
                     arrowsProcessed.Clear();
@@ -300,6 +307,7 @@ namespace Engine
             do
             {
                 var c = front.Dequeue();
+                additionalInterpretedRunes.Add(c);
                 if (c.type == RuneType.PredicateAvatarRef)
                 {
                     if (avatarRefRune != null)
@@ -355,13 +363,15 @@ namespace Engine
                     case RuneType.PredicateTileEmpty:
                         {
                             var blType = Level.S.GetPFBlockedMap(checkPos);
-                            if (blType == WorldBlock.PFBlockType.Unblocked ||
-                                blType == WorldBlock.PFBlockType.DynamicBlocked)
+                            if (blType != WorldBlock.PFBlockType.Unblocked &&
+                                blType != WorldBlock.PFBlockType.DynamicBlocked)
                                 isMatch = false;
                             break;
                         }
                     case RuneType.PredicateTileWall:
-                        if (Level.S.GetPFBlockedMap(checkPos) == WorldBlock.PFBlockType.EdgeBlocked)
+                        if (Level.S.GetPFBlockedMap(checkPos) != WorldBlock.PFBlockType.EdgeBlocked &&
+                            Level.S.GetPFBlockedMap(checkPos) != WorldBlock.PFBlockType.StaticBlocked &&
+                            Level.S.GetPFBlockedMap(checkPos) != WorldBlock.PFBlockType.DoorBlocked)
                             isMatch = false;
                         break;
                     case RuneType.PredicateTileMonster:
@@ -422,6 +432,8 @@ namespace Engine
                 toDir = rune.dir;
             else
                 toDir = (rune.dir + 5) % 6;
+
+            flowDir = toDir;
 
             if (!IsFlowCorrect(rune, toDir)) rune = null;
             else rune = rune.neighs[toDir];            

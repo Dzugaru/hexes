@@ -13,6 +13,6 @@ namespace Engine
         void OnDie();
         bool CanAvatarFork();
         void ForkTo(Avatar to);
-        float OnInterpret(Spell.CompiledRune rune);
+        float OnInterpret(Spell.CompiledRune rune, List<Spell.CompiledRune> additionalRunes);
     }
 }

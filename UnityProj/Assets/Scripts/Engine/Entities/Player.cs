@@ -27,12 +27,14 @@ namespace Engine
 
         public void InitForNewGame()
         {
-            knownRunes.Add(RuneType.Arrow0);
-            knownRunes.Add(RuneType.ArrowL120);
-            knownRunes.Add(RuneType.ArrowL60);
-            knownRunes.Add(RuneType.ArrowR120);
-            knownRunes.Add(RuneType.ArrowR60);
-            knownRunes.Add(RuneType.AvatarWalkDir);          
+            foreach (RuneType runeType in Enum.GetValues(typeof(RuneType)))
+                knownRunes.Add(runeType);
+            //knownRunes.Add(RuneType.Arrow0);
+            //knownRunes.Add(RuneType.ArrowL120);
+            //knownRunes.Add(RuneType.ArrowL60);
+            //knownRunes.Add(RuneType.ArrowR120);
+            //knownRunes.Add(RuneType.ArrowR60);
+            //knownRunes.Add(RuneType.AvatarWalkDir);          
         }
 
         public override void Spawn(HexXY p)
@@ -125,7 +127,7 @@ namespace Engine
                         else
                         {
                             //Erase old rune
-                            Level.S.RemoveEntity(p, existingRune);
+                            existingRune.Die();
                             existingRune = null;
                         }
                     }

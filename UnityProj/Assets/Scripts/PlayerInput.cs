@@ -64,6 +64,8 @@ class PlayerInput : MonoBehaviour
 
     void Update()
     {
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
+
         foreach (var kvp in runeKeys)        
             if (Input.GetKeyDown(kvp.Key))
                 E.player.DrawRune(kvp.Value, getMouseOverTile());

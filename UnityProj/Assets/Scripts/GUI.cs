@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
+using Engine;
 using System.Collections.Generic;
 
 public class GUI : MonoBehaviour
 {   
+    public static GUI S { get; private set; }
+
     Canvas canvas;
-    
 
     string hpBarPrefabName = "Prefabs/UI/HPBar";
     List<GameObject> hpBars = new List<GameObject>();    
@@ -16,11 +18,14 @@ public class GUI : MonoBehaviour
 
     void Start ()
     {
+        S = this;
+
         canvas = GetComponent<Canvas>();
         //
         //bar.transform.SetParent(canvas.transform, false);
         //barTransform = bar.GetComponent<RectTransform>();
 
+        Interfacing.ShowScrollWindow = ShowScrollWindow;
     }
 	
 	void Update ()
@@ -36,7 +41,7 @@ public class GUI : MonoBehaviour
             int barIdx = 0;
             foreach (var eg in CharacterGraphics.activeCharacters)
             {
-                if (eg.entityType == (int)CharacterType.Player) continue;
+                if (eg.entityType == (int)CharacterType.Player || eg.entityType == (int)CharacterType.AvatarLearn) continue;
 
                 Vector3 worldBarPosition = new Vector3(eg.transform.position.x, eg.transform.position.y + eg.hpBarUpDistance, eg.transform.position.z);
                 Vector3 screenBarPosition = Camera.main.WorldToScreenPoint(worldBarPosition);
@@ -83,4 +88,22 @@ public class GUI : MonoBehaviour
 
         gemCounts[0].GetComponent<UnityEngine.UI.Text>().text = Engine.GUIData.fireGemsCount.ToString();
     }
+
+    public void ShowScrollWindow(Scroll scroll)
+    {
+        var scrollWindow = canvas.transform.FindChild("ScrollWindow").gameObject;
+        var text = scrollWindow.transform.FindChild("Text").gameObject;
+        text.GetComponent<UnityEngine.UI.Text>().text = scroll.text;
+        text.SetActive(true);
+        scrollWindow.SetActive(true);        
+    }
+
+    public void CloseScrollWindow()
+    {
+        var scrollWindow = canvas.transform.FindChild("ScrollWindow").gameObject;
+        var text = scrollWindow.transform.FindChild("Text").gameObject;
+        scrollWindow.SetActive(false);
+        text.SetActive(false);       
+    }
+
 }

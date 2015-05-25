@@ -59,16 +59,16 @@ namespace Engine
         public void OnDie()
         {
 
-        }
-
-        public float OnInterpret(Spell.CompiledRune rune)
-        {
-            return 0;
-        }
+        }      
 
         public void OnRotate(uint dir)
         {
 
+        }
+
+        public float OnInterpret(Spell.CompiledRune rune, List<Spell.CompiledRune> additionalRunes)
+        {
+            return 0;
         }
     }
 }

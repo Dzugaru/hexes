@@ -17,7 +17,8 @@ namespace Engine
       
         public void Click()
         {
-            Logger.Log(text);
+            Die();
+            Interfacing.ShowScrollWindow(this);            
         }
 
         public override void Save(BinaryWriter writer)

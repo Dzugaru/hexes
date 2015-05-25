@@ -8,9 +8,8 @@ namespace Engine
 {
     public class AvatarLearn : Entity, IAvatarElement, IRotatable
     {
-        Rune litRune;
+        List<Rune> litRunes = new List<Rune>();
         float movementTimeLeft;
-
 
         public Avatar avatar;
         public uint elementRuneIdx;
@@ -28,8 +27,8 @@ namespace Engine
 
         public bool CanAvatarFork()
         {
-            //return true;
-            return false;
+            return avatar.spell.avatars.Count < 3;
+            //return false;
         }
 
         public void ForkTo(Avatar to)
@@ -62,8 +61,9 @@ namespace Engine
         }
 
         public void OnDie()
-        {           
-            litRune.isLit = false;            
+        {       
+            foreach(var litRune in litRunes)    
+                litRune.isLit = false;            
             base.Die();
         }
 
@@ -72,20 +72,30 @@ namespace Engine
             return Level.S.GetEntities(avatar.spell.compiledSpell.realWorldStartRunePos + compRune.relPos).OfType<Rune>().First();
         }
 
-        public float OnInterpret(Spell.CompiledRune rune)
+        public float OnInterpret(Spell.CompiledRune rune, List<Spell.CompiledRune> additionalRunes)
         {            
-            if (litRune != null)
+            foreach(var litRune in litRunes)
                 litRune.isLit = false;
+            litRunes.Clear();
 
-            litRune = GetRealRune(rune);
-            litRune.isLit = true;
+            var mainLitRune = GetRealRune(rune);
+            litRunes.Add(mainLitRune);
+            foreach (var arune in additionalRunes)
+                litRunes.Add(GetRealRune(arune));
+
+            foreach (var litRune in litRunes)
+                litRune.isLit = true;
+
+            float interTime;       
 
             if (rune.type == RuneType.Wind)
-                return 2;
+                interTime = 2;
             else if (Avatar.IsArrowRune(rune.type))
-                return 0.25f;
+                interTime = 0.25f;
             else
-                return 1;
+                interTime = 1;
+
+            return interTime * 0.1f;
         }
 
         public override void Update(float dt)

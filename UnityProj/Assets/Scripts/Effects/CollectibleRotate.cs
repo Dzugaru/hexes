@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GemRotate : MonoBehaviour
+public class CollectibleRotate : MonoBehaviour
 {
     public float speed;
 
