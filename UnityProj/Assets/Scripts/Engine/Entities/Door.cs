@@ -6,20 +6,12 @@ using System.Text;
 
 namespace Engine
 {
-    public class Door : Entity, IFibered, IClickable, IStaticBlocker, IHasScriptID
+    public class Door : Entity, IFibered, IClickable, IHasScriptID
     {
         Fibered.Fiber changingState;
 
         public ScriptObjectID id;
-        public bool isOpen;
-
-        public bool IsBlocking
-        {
-            get
-            {
-                return !isOpen;
-            }
-        }
+        public bool isOpen;      
 
         public ScriptObjectID ID
         {
@@ -37,12 +29,12 @@ namespace Engine
         public override void Spawn(HexXY p)
         {
             base.Spawn(p);
-            if (!isOpen) Level.S.SetPFBlockedMap(p, WorldBlock.PFBlockType.StaticBlocked);
+            if(!G.S.isEditMode) if (!isOpen) Level.S.SetPFBlockedMap(p, WorldBlock.PFBlockType.DoorBlocked);
         }
 
         public override void Die()
         {
-            if (!isOpen) Level.S.SetPFBlockedMap(pos, WorldBlock.PFBlockType.Unblocked);
+            if(!G.S.isEditMode) if (!isOpen) Level.S.SetPFBlockedMap(pos, WorldBlock.PFBlockType.Unblocked);
             base.Die();
         }
 
@@ -72,7 +64,7 @@ namespace Engine
             }
             else
             {
-                Level.S.SetPFBlockedMap(pos, isOpen ? WorldBlock.PFBlockType.Unblocked : WorldBlock.PFBlockType.StaticBlocked);
+                Level.S.SetPFBlockedMap(pos, isOpen ? WorldBlock.PFBlockType.Unblocked : WorldBlock.PFBlockType.DoorBlocked);
             }
             
             yield break;    

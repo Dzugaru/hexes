@@ -91,7 +91,7 @@ public class TerrainController : MonoBehaviour
         var tObj = Instantiate(hexTerrainPrefab);
         tObj.transform.SetParent(transform, false);
         tObj.name = block.position.ToString();
-        Vector2 centerp = new HexXY(block.position.x * WorldBlock.sz, block.position.y * WorldBlock.sz).ToPlaneCoordinates();
+        Vector2 centerp = block.Offset.ToPlaneCoordinates();
         tObj.transform.position = new Vector3(centerp.x, 0, centerp.y);
 
         var t = tObj.GetComponent<HexTerrain>();

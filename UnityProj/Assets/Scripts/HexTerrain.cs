@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Engine;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -123,7 +124,7 @@ public class HexTerrain : MonoBehaviour
             var meshFilter = obj.AddComponent<MeshFilter>();
             var mesh = new Mesh();
 
-            meshRenderer.sharedMaterial = (Material)Resources.Load("Terrain/" + terrainTypeName);         
+            meshRenderer.sharedMaterial = (Material)Resources.Load("Terrain/" + terrainTypeName);
 
             for (int x = 0; x < WorldBlock.sz; x++)
             {
@@ -146,45 +147,16 @@ public class HexTerrain : MonoBehaviour
 
                     for (int t = 0; t < celltcnt; t++)
                         triangles.Add(vertices.Count - cellvcnt + cellTriangles[t]);
-
-                    //Fill edges                    
-                    //for (int n = 0; n < 6; n++)
-                    //{
-                    //    HexXY ng = curr + HexXY.neighbours[n];
-                    //    HexXY ngr = curr + HexXY.neighbours[(n + 1) % 6];
-                    //    HexXY ngrn = ngr + HexXY.neighbours[n];
-                    //    Vector2 ngCoord = ng.ToPlaneCoordinates();
-                    //    if (wb.GetCellType(ng) != TerrainCellType.Empty &&
-                    //       wb.GetCellType(ngr) == TerrainCellType.Empty &&
-                    //       wb.GetCellType(ngrn) == TerrainCellType.Empty)
-                    //    {
-                    //        Vector2 vert = cellVertices[(n + 1) % 6] + coord;
-                    //        vertices.Add(new Vector3(vert.x, 0, vert.y));
-                    //        uvs.Add(new Vector2(vert.x * terrainTexScale, vert.y * terrainTexScale));
-
-                    //        vert = cellVertices[(n + 2) % 6] + coord;
-                    //        vertices.Add(new Vector3(vert.x, 0, vert.y));
-                    //        uvs.Add(new Vector2(vert.x * terrainTexScale, vert.y * terrainTexScale));
-
-                    //        vert = cellVertices[(n + 2) % 6] + ngCoord;
-                    //        vertices.Add(new Vector3(vert.x, 0, vert.y));
-                    //        uvs.Add(new Vector2(vert.x * terrainTexScale, vert.y * terrainTexScale));
-
-                    //        triangles.Add(vertices.Count - 3 + 1);
-                    //        triangles.Add(vertices.Count - 3);
-                    //        triangles.Add(vertices.Count - 3 + 2);
-                    //    }
-                    //}
                 }
             }
 
-            for (int i = 0; i < vertices.Count; i++)            
+            for (int i = 0; i < vertices.Count; i++)
                 normals.Add(new Vector3(0, 1, 0));
 
             mesh.vertices = vertices.ToArray();
             mesh.normals = normals.ToArray();
             mesh.uv = uvs.ToArray();
-            mesh.triangles = triangles.ToArray();            
+            mesh.triangles = triangles.ToArray();
             mesh.RecalculateBounds();
 
             meshFilter.mesh = mesh;
@@ -193,94 +165,168 @@ public class HexTerrain : MonoBehaviour
             normals.Clear();
             uvs.Clear();
             triangles.Clear();
-        }       
-
-        //Grid
-        {
-            float gridYPos = 0.02f;
-            GameObject obj = new GameObject("Grid");
-            obj.transform.SetParent(transform, false);
-            var meshRenderer = obj.AddComponent<MeshRenderer>();
-            var meshFilter = obj.AddComponent<MeshFilter>();
-            var mesh = new Mesh();
-
-            meshRenderer.sharedMaterial = (Material)Resources.Load("Terrain/Grid");
-
-            for (int x = 0; x < WorldBlock.sz; x++)
-            {
-                for (int y = 0; y < WorldBlock.sz; y++)
-                {
-                    var currType = wb.GetCellType(new HexXY(x, y));
-                    for (int n = 0; n < 3; n++)
-                    {
-                        HexXY curr = new HexXY(x, y);
-                        HexXY ng = curr + HexXY.neighbours[n];
-                        HexXY ngr = curr + HexXY.neighbours[(n + 1) % 6];
-                        if (currType == TerrainCellType.Empty &&
-                            (!WorldBlock.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty)) continue;
-
-                        Vector2 currCoord = curr.ToPlaneCoordinates();
-                        Vector2 ngCoord = ng.ToPlaneCoordinates();
-
-                        //Line between two
-                        Vector2 vert = cellVertices[n] * hexInset + currCoord;
-                        vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
-
-                        vert = cellVertices[(n + 1) % 6] * hexInset + currCoord;
-                        vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
-
-                        vert = cellVertices[(n + 3) % 6] * hexInset + ngCoord;
-                        vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
-
-                        vert = cellVertices[(n + 4) % 6] * hexInset + ngCoord;
-                        vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
-
-                        triangles.Add(vertices.Count - 4 + 1);
-                        triangles.Add(vertices.Count - 4);                        
-                        triangles.Add(vertices.Count - 4 + 2);
-                        triangles.Add(vertices.Count - 4 + 2);
-                        triangles.Add(vertices.Count - 4);                        
-                        triangles.Add(vertices.Count - 4 + 3);
-
-                        //Triangle between three
-                        if (currType == TerrainCellType.Empty &&
-                            (!WorldBlock.IsInRange(ngr) || wb.GetCellType(ngr) == TerrainCellType.Empty) &&
-                            (!WorldBlock.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty)) continue;
-                        Vector2 ngrCoord = ngr.ToPlaneCoordinates();
-
-                        vert = cellVertices[(n + 1) % 6] * hexInset + currCoord;
-                        vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
-
-                        vert = cellVertices[(n + 3) % 6] * hexInset + ngCoord;
-                        vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
-
-                        vert = cellVertices[(n + 5) % 6] * hexInset + ngrCoord;
-                        vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
-                        
-                        triangles.Add(vertices.Count - 3);
-                        triangles.Add(vertices.Count - 3 + 1);
-                        triangles.Add(vertices.Count - 3 + 2);
-                    }
-                }
-            }
-
-          
-
-            for (int i = 0; i < vertices.Count; i++)
-                normals.Add(new Vector3(0, 1, 0));
-
-            mesh.vertices = vertices.ToArray();
-            mesh.normals = normals.ToArray();            
-            mesh.triangles = triangles.ToArray();
-            mesh.RecalculateBounds();
-
-            meshFilter.mesh = mesh;
         }
 
-        GenerateWalls(wb);
+        //Grid
+        GenetareNewGrid(wb, hexInset, vertices, normals, triangles);
+
+        GenerateNewWalls(wb);
     }
 
-    public void GenerateWalls(WorldBlock wb)
+    void GenetareGrid(WorldBlock wb, float hexInset, List<Vector3> vertices, List<Vector3> normals, List<int> triangles)
+    {
+        float gridYPos = 0.02f;
+        GameObject obj = new GameObject("Grid");
+        obj.transform.SetParent(transform, false);
+        var meshRenderer = obj.AddComponent<MeshRenderer>();
+        var meshFilter = obj.AddComponent<MeshFilter>();
+        var mesh = new Mesh();
+
+        meshRenderer.sharedMaterial = (Material)Resources.Load("Terrain/Grid");
+
+        for (int x = 0; x < WorldBlock.sz; x++)
+        {
+            for (int y = 0; y < WorldBlock.sz; y++)
+            {
+                var currType = wb.GetCellType(new HexXY(x, y));
+                for (int n = 0; n < 3; n++)
+                {
+                    HexXY curr = new HexXY(x, y);
+                    HexXY ng = curr + HexXY.neighbours[n];
+                    HexXY ngr = curr + HexXY.neighbours[(n + 1) % 6];
+                    if (currType == TerrainCellType.Empty &&
+                        (!WorldBlock.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty))
+                        continue;
+
+                    Vector2 currCoord = curr.ToPlaneCoordinates();
+                    Vector2 ngCoord = ng.ToPlaneCoordinates();
+
+                    //Line between two
+                    Vector2 vert = cellVertices[n] * hexInset + currCoord;
+                    vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
+
+                    vert = cellVertices[(n + 1) % 6] * hexInset + currCoord;
+                    vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
+
+                    vert = cellVertices[(n + 3) % 6] * hexInset + ngCoord;
+                    vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
+
+                    vert = cellVertices[(n + 4) % 6] * hexInset + ngCoord;
+                    vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
+
+                    triangles.Add(vertices.Count - 4 + 1);
+                    triangles.Add(vertices.Count - 4);
+                    triangles.Add(vertices.Count - 4 + 2);
+                    triangles.Add(vertices.Count - 4 + 2);
+                    triangles.Add(vertices.Count - 4);
+                    triangles.Add(vertices.Count - 4 + 3);
+
+                    //Triangle between three
+                    if (currType == TerrainCellType.Empty &&
+                        (!WorldBlock.IsInRange(ngr) || wb.GetCellType(ngr) == TerrainCellType.Empty) &&
+                        (!WorldBlock.IsInRange(ng) || wb.GetCellType(ng) == TerrainCellType.Empty))
+                        continue;
+                    Vector2 ngrCoord = ngr.ToPlaneCoordinates();
+
+                    vert = cellVertices[(n + 1) % 6] * hexInset + currCoord;
+                    vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
+
+                    vert = cellVertices[(n + 3) % 6] * hexInset + ngCoord;
+                    vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
+
+                    vert = cellVertices[(n + 5) % 6] * hexInset + ngrCoord;
+                    vertices.Add(new Vector3(vert.x, gridYPos, vert.y));
+
+                    triangles.Add(vertices.Count - 3);
+                    triangles.Add(vertices.Count - 3 + 1);
+                    triangles.Add(vertices.Count - 3 + 2);
+                }
+            }
+        }
+
+
+
+        for (int i = 0; i < vertices.Count; i++)
+            normals.Add(new Vector3(0, 1, 0));
+
+        mesh.vertices = vertices.ToArray();
+        mesh.normals = normals.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateBounds();
+
+        meshFilter.mesh = mesh;
+    }
+
+    public void GenetareNewGrid(WorldBlock wb, float hexInset, List<Vector3> vertices, List<Vector3> normals, List<int> triangles)
+    {
+        var oldGrid = transform.Find("Grid");
+        if (oldGrid != null)
+            Destroy(oldGrid.gameObject);
+
+        GameObject obj = new GameObject("Grid");
+        obj.transform.SetParent(transform, false);
+        obj.transform.localPosition = new Vector3(0, 0.005f, 0);
+        var meshRenderer = obj.AddComponent<MeshRenderer>();
+        var meshFilter = obj.AddComponent<MeshFilter>();
+        var mesh = new Mesh();
+
+        meshRenderer.sharedMaterial = (Material)Resources.Load("Terrain/Grid");
+
+        float gridInsetOut = 1f, gridInsetIn = 0.925f;
+
+        for (int x = 0; x < WorldBlock.sz; x++)
+        {
+            for (int y = 0; y < WorldBlock.sz; y++)
+            {
+                var blType = wb.pfBlockedMap[x, y];
+                if (blType == WorldBlock.PFBlockType.StaticBlocked ||
+                    blType == WorldBlock.PFBlockType.EdgeBlocked) continue;
+                Vector2 currCoord = new HexXY(x,y).ToPlaneCoordinates();
+
+                int vertOffset = vertices.Count;
+                for (int i = 0; i < 6; i++)
+                {
+                    Vector2 vertOut = cellVertices[i] * gridInsetOut  + currCoord;
+                    vertices.Add(new Vector3(vertOut.x, 0, vertOut.y));
+
+                    Vector2 vertIn = cellVertices[i] * gridInsetIn + currCoord;
+                    vertices.Add(new Vector3(vertIn.x, 0, vertIn.y));                    
+                }                
+
+                for (int i = 0; i < 10; i += 2)
+                {
+                    triangles.Add(vertOffset + i);
+                    triangles.Add(vertOffset + i + 2);
+                    triangles.Add(vertOffset + i + 1);                    
+                    triangles.Add(vertOffset + i + 1);                    
+                    triangles.Add(vertOffset + i + 2);
+                    triangles.Add(vertOffset + i + 3);
+                }
+
+                triangles.Add(vertOffset);
+                triangles.Add(vertOffset + 11);
+                triangles.Add(vertOffset + 10);                
+                
+                triangles.Add(vertOffset);
+                triangles.Add(vertOffset + 1);
+                triangles.Add(vertOffset + 11);                
+            }
+        }
+
+
+
+        for (int i = 0; i < vertices.Count; i++)
+            normals.Add(new Vector3(0, 1, 0));
+
+        mesh.vertices = vertices.ToArray();
+        mesh.normals = normals.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateBounds();
+
+        meshFilter.mesh = mesh;
+    }
+
+    void GenerateWalls(WorldBlock wb)
     {
         wallsParent = new GameObject("Walls");
         wallsParent.SetActive(enableWalls);
@@ -294,7 +340,7 @@ public class HexTerrain : MonoBehaviour
                 HexXY p = new HexXY(x, y);
                 Vector2 coords = p.ToPlaneCoordinates();
                 //Need to request other blocks in case we're drawing outside wall
-                if ((!WorldBlock.IsInRange(p) && Level.S.GetCellType(p + new HexXY(wb.position.x * WorldBlock.sz, wb.position.y * WorldBlock.sz)) != TerrainCellType.Empty) ||
+                if ((!WorldBlock.IsInRange(p) && Level.S.GetCellType(p + wb.Offset) != TerrainCellType.Empty) ||
                      WorldBlock.IsInRange(p) && wb.GetCellType(p) != TerrainCellType.Empty) continue;
 
                 bool hasNeigh = false;
@@ -318,6 +364,67 @@ public class HexTerrain : MonoBehaviour
                 wall.SetActive(true);
             }
         }                
+    }
+
+    void GenerateNewWalls(WorldBlock wb)
+    {
+        wallsParent = new GameObject("Walls");
+        wallsParent.SetActive(enableWalls);
+        wallsParent.transform.SetParent(transform, false);
+        wallsParent.transform.localPosition = Vector3.zero;
+
+        bool[] emptyNs = new bool[6];        
+
+        for (int x = 0; x < WorldBlock.sz; x++)
+        {
+            for (int y = 0; y < WorldBlock.sz; y++)
+            {
+                HexXY p = new HexXY(x, y);
+                Vector2 coords = p.ToPlaneCoordinates();
+
+                if (Level.S.GetCellType(p + wb.Offset) == TerrainCellType.Empty) continue;
+
+                for (int n = 0; n < 6; n++)
+                    emptyNs[n] = Level.S.GetCellType(p + wb.Offset + HexXY.neighbours[n]) == TerrainCellType.Empty;
+
+                if (emptyNs.Count(e => e) == 1)
+                {
+                    int wallDir = -1;
+                    for (int n = 0; n < 6; n++)
+                        if (emptyNs[n]) wallDir = n;
+                    
+                    var wall = Instantiate(Resources.Load<GameObject>("Prefabs/OutCorner"));
+                    wall.transform.SetParent(wallsParent.transform, false);
+                    wall.transform.localPosition = new Vector3(coords.x, 0, coords.y);
+                    wall.transform.localRotation = Quaternion.Euler(0, -180 + wallDir * 60, 0);
+                    wall.SetActive(true);
+                }
+                else if (emptyNs.Count(e => e) == 2)
+                {
+                    int wallDir = -1;
+                    for (int n = 0; n < 6; n++)
+                        if (emptyNs[n] && emptyNs[(n + 1) % 6]) wallDir = n;
+                    if (wallDir == -1) continue;
+                    var wall = Instantiate(Resources.Load<GameObject>("Prefabs/NewWall"));
+                    wall.transform.SetParent(wallsParent.transform, false);
+                    wall.transform.localPosition = new Vector3(coords.x, 0, coords.y);
+                    wall.transform.localRotation = Quaternion.Euler(0, -60 + wallDir * 60, 0);
+                    wall.SetActive(true);
+                }
+                else if (emptyNs.Count(e => e) == 3)
+                {
+                    int wallDir = -1;
+                    for (int n = 0; n < 6; n++)
+                        if (emptyNs[(n + 5) % 6] && emptyNs[n % 6] && emptyNs[(n + 1) % 6]) wallDir = n;
+                    if (wallDir == -1) continue;
+                    var wall = Instantiate(Resources.Load<GameObject>("Prefabs/InCorner"));
+                    wall.transform.SetParent(wallsParent.transform, false);
+                    wall.transform.localPosition = new Vector3(coords.x, 0, coords.y);
+                    wall.transform.localRotation = Quaternion.Euler(0, wallDir * 60, 0);
+                    wall.SetActive(true);
+                }
+            }
+        }
     }
 
     public void SaveMeshesToAssets(string id)

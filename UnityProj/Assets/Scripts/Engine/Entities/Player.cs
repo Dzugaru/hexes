@@ -66,7 +66,7 @@ namespace Engine
 
         public void Move(HexXY p)
         {
-            if (Level.S.GetPFBlockedMap(p) != WorldBlock.PFBlockType.StaticBlocked &&
+            if (WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(p)) &&
                (!dest.HasValue || p != dest))
             {
                 afterMoveAction = null;

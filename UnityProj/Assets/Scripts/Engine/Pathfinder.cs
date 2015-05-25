@@ -83,7 +83,7 @@ namespace Engine
                 {
                     var np = c.p + st;
                     var blockType = Level.S.GetPFBlockedMap(np);
-                    if (blockType != WorldBlock.PFBlockType.StaticBlocked &&
+                    if (WorldBlock.CanTryToMoveToBlockType(blockType) &&
                         Level.S.GetPFExpandMap(np) < Level.S.pfExpandMarker)
                     {
                         Level.S.SetPFExpandMap(np, Level.S.pfExpandMarker);

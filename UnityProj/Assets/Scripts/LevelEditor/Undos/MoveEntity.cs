@@ -21,18 +21,10 @@ namespace Undos
         }
 
         public void Move()
-        {
-            IStaticBlocker blocker = ent as IStaticBlocker;
-
-            if (blocker != null && blocker.IsBlocking)
-                LevelEditor.S.ChangeStaticPassability(ent.pos, false);
+        {          
             Level.S.RemoveEntity(ent.pos, ent);
-
-            ent.pos = to;            
-
-            Level.S.AddEntity(ent.pos, ent);
-            if (blocker != null && blocker.IsBlocking)
-                LevelEditor.S.ChangeStaticPassability(ent.pos, false);
+            ent.pos = to;           
+            Level.S.AddEntity(ent.pos, ent);           
 
             Interfacing.PerformInterfaceTeleport(ent.graphicsHandle, to);        
         }
@@ -44,16 +36,8 @@ namespace Undos
 
         public void Undo()
         {
-            IStaticBlocker blocker = ent as IStaticBlocker;
-
-            if (blocker != null && blocker.IsBlocking)
-                LevelEditor.S.ChangeStaticPassability(ent.pos, false);
             Level.S.RemoveEntity(ent.pos, ent);
-
-            ent.pos = from;
-
-            if (blocker != null && blocker.IsBlocking)
-                LevelEditor.S.ChangeStaticPassability(ent.pos, false);
+            ent.pos = from;          
             Level.S.AddEntity(ent.pos, ent);
 
             Interfacing.PerformInterfaceTeleport(ent.graphicsHandle, from);

@@ -6,17 +6,9 @@ using System.Text;
 
 namespace Engine
 {
-    public class StatueCaster : Entity, IClickable, IRotatable, IStaticBlocker
+    public class StatueCaster : Entity, IClickable, IRotatable
     {
-        public bool CanRotate { get { return true; } }
-
-        public bool IsBlocking
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool CanRotate { get { return true; } }   
 
         public SpellExecuting exSpell;
         public HexXY sourceSpellPos;
@@ -26,6 +18,18 @@ namespace Engine
         {
             this.dir = dir;
             this.sourceSpellPos = sourceSpellPos;            
+        }
+
+        public override void Spawn(HexXY p)
+        {
+            base.Spawn(p);
+            if(!G.S.isEditMode) Level.S.SetPFBlockedMap(p, WorldBlock.PFBlockType.StaticBlocked);
+        }
+
+        public override void Die()
+        {
+            if (!G.S.isEditMode) Level.S.SetPFBlockedMap(pos, WorldBlock.PFBlockType.Unblocked);
+            base.Die();
         }
 
         public override void Update(float dt)

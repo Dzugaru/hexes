@@ -36,7 +36,9 @@ public class CollectibleGraphics : EntityGraphics, IHighlightable, IClickable
     }
 
 #if UNITY_EDITOR 
+    [TextArea(3, 10)]
     public string scrollText;
+        
     public CollectibleType type;
 
     public override Entity CreateEntity()

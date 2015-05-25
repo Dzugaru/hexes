@@ -11,6 +11,8 @@ namespace Engine
         public const int sz = 32;
         public readonly HexXY position;
 
+        public HexXY Offset { get { return new HexXY(position.x * sz, position.y * sz); } }
+
         //Terrain
         TerrainCellType[,] cellTypes = new TerrainCellType[sz, sz];
         public int[] cellTypeCounts = new int[terrainTypesCount];       
@@ -28,16 +30,18 @@ namespace Engine
             var oldCellType = cellTypes[pos.x, pos.y];
             --cellTypeCounts[(int)oldCellType];
             cellTypes[pos.x, pos.y] = type;
-            ++cellTypeCounts[(int)type];
-            if (type == TerrainCellType.Empty)
-                pfBlockedMap[pos.x, pos.y] = PFBlockType.StaticBlocked;
-            else
-                pfBlockedMap[pos.x, pos.y] = PFBlockType.Unblocked;
+            ++cellTypeCounts[(int)type];            
         }
 
         public static bool IsInRange(HexXY pos)
         {
             return pos.x >= 0 && pos.x < sz && pos.y >= 0 && pos.y < sz;
+        }
+
+        public static bool CanTryToMoveToBlockType(PFBlockType blockType)
+        {
+            return blockType == PFBlockType.DynamicBlocked ||
+                    blockType == PFBlockType.Unblocked;
         }
 
         //Entities       
@@ -46,9 +50,11 @@ namespace Engine
         //Pathfinding support        
         public enum PFBlockType : byte
         {
-            StaticBlocked = 0,
-            Unblocked,            
-            DynamicBlocked
+            EdgeBlocked = 0,
+            StaticBlocked = 1,            
+            Unblocked = 100,            
+            DynamicBlocked = 10,
+            DoorBlocked = 11,
         }
 
         public int[,] pfExpandMap = new int[sz, sz];
@@ -168,7 +174,7 @@ namespace Engine
 
             for (int x = 0; x < sz; x++)
                 for (int y = 0; y < sz; y++)                
-                    pfBlockedMap[x, y] = cellTypes[x, y] == TerrainCellType.Empty ? PFBlockType.StaticBlocked : PFBlockType.Unblocked;               
+                    pfBlockedMap[x, y] = cellTypes[x, y] == TerrainCellType.Empty ? PFBlockType.EdgeBlocked : PFBlockType.Unblocked;               
             
         }      
     }

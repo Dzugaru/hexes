@@ -144,7 +144,7 @@ namespace Engine
         {
             HexXY localPos;
             WorldBlock block = GetBlockWithCell(p, false, out localPos);
-            if (block == null) return  WorldBlock.PFBlockType.StaticBlocked;
+            if (block == null) return  WorldBlock.PFBlockType.EdgeBlocked;
             else return block.pfBlockedMap[localPos.x, localPos.y];
         }
 
@@ -212,7 +212,58 @@ namespace Engine
             return block.entityMap[localPos.x, localPos.y].Remove(ent);
         }
 
+        public HashSet<WorldBlock> RecalcPassabilityOnEdges()
+        {
+            var changedBlocks = new HashSet<WorldBlock>();
+            foreach (var wb in GetAllBlocks())
+            {
+                for (int x = 0; x < WorldBlock.sz; x++)
+                {
+                    for (int y = 0; y < WorldBlock.sz; y++)
+                    {
+                        var p = new HexXY(x, y) + wb.Offset;
+                        var type = GetCellType(p);
+                        var blType = GetPFBlockedMap(p);
+                        if (type != TerrainCellType.Empty)
+                        {
+                            bool isNearEmpty = false;
+                            for (int n = 0; n < 6; n++)
+                            {
+                                if (GetCellType(p + HexXY.neighbours[n]) == TerrainCellType.Empty)
+                                {
+                                    isNearEmpty = true;
+                                    break;
+                                }
+                            }
 
+                            if (isNearEmpty)
+                            {
+                                if (GetPFBlockedMap(p) != WorldBlock.PFBlockType.EdgeBlocked)
+                                {                                    
+                                    if (!changedBlocks.Contains(wb)) changedBlocks.Add(wb);
+                                    SetPFBlockedMap(p, WorldBlock.PFBlockType.EdgeBlocked);
+                                }
+                            }
+                            else if (!isNearEmpty && blType == WorldBlock.PFBlockType.EdgeBlocked)
+                            {                                
+                                if (!changedBlocks.Contains(wb)) changedBlocks.Add(wb);
+                                SetPFBlockedMap(p, WorldBlock.PFBlockType.Unblocked);
+                            }
+                        }
+                        else
+                        {
+                            if (GetPFBlockedMap(p) != WorldBlock.PFBlockType.EdgeBlocked)
+                            {                                
+                                if (!changedBlocks.Contains(wb)) changedBlocks.Add(wb);
+                                SetPFBlockedMap(p, WorldBlock.PFBlockType.EdgeBlocked);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return changedBlocks;
+        }
 
         public void SaveStaticPart(BinaryWriter writer)
         {

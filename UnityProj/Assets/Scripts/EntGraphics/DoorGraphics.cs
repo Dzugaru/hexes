@@ -137,9 +137,6 @@ public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
         Door door = (Door)entity;       
         id = (ScriptObjectID)door.id.id;
         isOpen.value = door.isOpen;
-
-        if (!isOpen.value)
-            LevelEditor.S.ChangeStaticPassability(door.pos, false);
         SetOpenClosePosition();
     }
 
@@ -150,7 +147,6 @@ public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
         if (isOpenNew)
         {            
             door.isOpen = isOpen.value;            
-            LevelEditor.S.ChangeStaticPassability(door.pos, false);
         }
     }
 #endif

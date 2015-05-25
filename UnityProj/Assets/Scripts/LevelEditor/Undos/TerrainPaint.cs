@@ -23,8 +23,9 @@ namespace Undos
             if (Level.S.GetCellType(p) != type) return; //Set failure
 
             if(writeChanges)
-                changes.Push(new CellChange() { oldCellType = oldCellType, newCellType = type, p = p });
+                changes.Push(new CellChange() { oldCellType = oldCellType, newCellType = type, p = p });           
 
+            //Changed blocks
             if (!changedBlocks.Contains(changedWb))
                 changedBlocks.Add(changedWb);
 
@@ -82,17 +83,16 @@ namespace Undos
                 }
             }
 
-            foreach (var wb in changedBlocks)
-                TerrainController.S.RecreateHexTerrain(wb);
+            RecreateTerrain(changedBlocks);
         }
 
         public void Undo()
         {
             var changedBlocks = new HashSet<WorldBlock>();
             foreach (var ch in changes)            
-                PaintOneCell(ch.p, ch.oldCellType, changedBlocks, TerrainCellType.Empty, false);            
-            foreach (var wb in changedBlocks)
-                TerrainController.S.RecreateHexTerrain(wb);
+                PaintOneCell(ch.p, ch.oldCellType, changedBlocks, TerrainCellType.Empty, false);
+
+            RecreateTerrain(changedBlocks);
         }
 
         public void Redo()
@@ -100,8 +100,15 @@ namespace Undos
             var changedBlocks = new HashSet<WorldBlock>();
             foreach (var ch in changes.Reverse())
                 PaintOneCell(ch.p, ch.newCellType, changedBlocks, TerrainCellType.Empty, false);
-            foreach (var wb in changedBlocks)
+
+            RecreateTerrain(changedBlocks);
+        }
+
+        void RecreateTerrain(HashSet<WorldBlock> changedBlocks)
+        {
+            foreach (var wb in changedBlocks)            
                 TerrainController.S.RecreateHexTerrain(wb);
+            
         }
     }
 }

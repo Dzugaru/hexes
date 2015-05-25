@@ -353,11 +353,15 @@ namespace Engine
                 switch (prune.type)
                 {
                     case RuneType.PredicateTileEmpty:
-                        if (Level.S.GetPFBlockedMap(checkPos) != WorldBlock.PFBlockType.StaticBlocked)
-                            isMatch = false;
-                        break;
+                        {
+                            var blType = Level.S.GetPFBlockedMap(checkPos);
+                            if (blType == WorldBlock.PFBlockType.Unblocked ||
+                                blType == WorldBlock.PFBlockType.DynamicBlocked)
+                                isMatch = false;
+                            break;
+                        }
                     case RuneType.PredicateTileWall:
-                        if (Level.S.GetPFBlockedMap(checkPos) == WorldBlock.PFBlockType.StaticBlocked)
+                        if (Level.S.GetPFBlockedMap(checkPos) == WorldBlock.PFBlockType.EdgeBlocked)
                             isMatch = false;
                         break;
                     case RuneType.PredicateTileMonster:

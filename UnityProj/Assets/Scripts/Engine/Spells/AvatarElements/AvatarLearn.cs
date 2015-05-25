@@ -39,7 +39,7 @@ namespace Engine
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
         {
-            if (Level.S.GetPFBlockedMap(to) == WorldBlock.PFBlockType.StaticBlocked)
+            if (!WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(to)))
             {
                 avatar.finishState = Avatar.FinishedState.CantMoveThere;
             }

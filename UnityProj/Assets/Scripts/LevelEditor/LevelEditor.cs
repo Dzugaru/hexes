@@ -76,7 +76,7 @@ public class LevelEditor : MonoBehaviour
         HexXY p = getMouseOverTile();
 
         //Info
-        canvas.transform.Find("StatsPanel").Find("CursorCoordsText").GetComponent<Text>().text = p.x + " " + p.y;
+        canvas.transform.Find("StatsPanel").Find("CursorCoordsText").GetComponent<Text>().text = p.x + " " + p.y + "\n" + Level.S.GetPFBlockedMap(p).ToString();
 
         //Drawing terrain
         if (Input.GetMouseButton(0) && brushCellType.HasValue)
@@ -94,6 +94,10 @@ public class LevelEditor : MonoBehaviour
             brushOldMousePos = null;
             if (currentTerrainPaint != null)
             {
+                var changedBlocks = Level.S.RecalcPassabilityOnEdges();
+                foreach (var wb in changedBlocks)
+                    TerrainController.S.RecreateHexTerrain(wb);
+
                 undos.Push(currentTerrainPaint);
                 redos.Clear();
                 currentTerrainPaint = null;
@@ -256,13 +260,19 @@ public class LevelEditor : MonoBehaviour
         }
     }
 
-    public void ChangeStaticPassability(HexXY p, bool isUndoable)
+    public void ChangeStaticPassability(HexXY p, bool isUndoable) //If isBlock is null then just switch
     {
+        
         var op = new Undos.ChangePassability(p);
-        if (op.Change() && isUndoable)
+        if (op.Change())
         {
-            undos.Push(op);
-            redos.Clear();
+            if (isUndoable)
+            {
+                undos.Push(op);
+                redos.Clear();
+            }
+            
+            TerrainController.S.RecreateHexTerrain(Level.S.GetBlock(Level.GetBlockCoords(p)));
         }
     }
     
@@ -325,12 +335,19 @@ public class LevelEditor : MonoBehaviour
 
     public void OnLoad()
     {
-        var levelDataAsset = (TextAsset)Resources.Load("Levels/" + Application.loadedLevelName);        
+        var levelDataAsset = (TextAsset)Resources.Load("Levels/" + Application.loadedLevelName);
 
-        using (var reader = new BinaryReader(new MemoryStream(levelDataAsset.bytes)))
+        if (levelDataAsset == null)
         {
-            Level.Load(reader);
-            Level.S.LoadDynamicPart(reader);
+            new Level();
+        }
+        else
+        {
+            using (var reader = new BinaryReader(new MemoryStream(levelDataAsset.bytes)))
+            {
+                Level.Load(reader);
+                Level.S.LoadDynamicPart(reader);
+            }
         }       
 
         //SB vis
