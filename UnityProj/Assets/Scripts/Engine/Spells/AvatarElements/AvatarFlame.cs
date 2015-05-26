@@ -20,39 +20,34 @@ namespace Engine
 
         public bool CanAvatarFork()
         {          
-            return avatar.spell.GetElementalPower(elementRuneIdx) > 0;
+            return avatar.spell.caster.Mana > 10;
         }
 
         public void ForkTo(Avatar to)
         {
-            avatar.spell.UseElementalPower(elementRuneIdx, 0.1f);
+            avatar.spell.caster.SpendMana(10);
             to.avatarElement = new AvatarFlame(to, elementRuneIdx);            
         }
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
-        {
-            float powerLeft = avatar.spell.GetElementalPower(elementRuneIdx);
-            if (powerLeft == 0)
-            {
-                avatar.finishState = Avatar.FinishedState.DiedCauseTooWeak;
-                return;
-            }
-            
+        {   
             if (!isDrawing || !WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(to)))
             {
-                avatar.spell.UseElementalPower(elementRuneIdx, 0.01f);
+                if (!avatar.spell.caster.SpendMana(1))
+                {
+                    avatar.finishState = Avatar.FinishedState.NoManaLeft;
+                    return;
+                }
             }
             else
-            {               
-                float powerMax = 0.1f;
-                float powerLowThresh = 0.2f;
-                float powerUse = powerLeft > powerLowThresh ?
-                    powerMax :
-                    Mathf.Lerp(powerMax, powerMax * 0.1f, (powerLowThresh - powerLeft) / powerLowThresh);
+            {
+                if (!avatar.spell.caster.SpendMana(5))
+                {
+                    avatar.finishState = Avatar.FinishedState.NoManaLeft;
+                    return;
+                }
 
-                avatar.spell.UseElementalPower(elementRuneIdx, powerUse);
-
-                var spellEffect = new SpellEffects.GroundFlame(powerUse / powerMax);                
+                var spellEffect = new SpellEffects.GroundFlame(1);
                 spellEffect.StackOn(to);
             }
         }

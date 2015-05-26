@@ -21,16 +21,23 @@ namespace Engine
         public EntityClass entityClass;
         public uint entityType;
 
-        public Entity(EntityClass cls, uint type)
+        public Entity()
         {
             components = new List<IEntityComponent>();
             if (this is IHasHP) { hasHP = new HasHP(this); components.Add(hasHP); }
             if (this is IWalker) { walker = new Walker(this, 64); components.Add(walker); }
             if (this is IFibered) { fibered = new Fibered(); components.Add(fibered); }
+            hasGraphicsHandle = false;
+        }
 
-            entityType = type;
+        public Entity(EntityClass cls) : this()
+        {            
             entityClass = cls;
-            hasGraphicsHandle = false;            
+        }
+
+        public Entity(EntityClass cls, uint type) : this(cls)
+        {
+            entityType = type;            
         }
 
         public T GetComponent<T>() where T : IEntityComponent

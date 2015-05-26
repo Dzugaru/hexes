@@ -14,7 +14,9 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
     {
         get
         {
-            return true;
+            var behType = ((StatueCaster)entity).behType;
+            return behType == StatueCaster.BehaviorType.CastingSpell ||
+                   (behType == StatueCaster.BehaviorType.TeachingMeleeSpell && !isCasting.value);
         }
     }
 
@@ -24,11 +26,8 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
     }      
 
     void Start()
-    {
-        if (G.IsInUnityEditMode())
-            isCasting = new VariableBool() { value = false };
-        else
-            isCasting = new VariableBool(() => ((StatueCaster)entity).isCasting);
+    {       
+        isCasting = new VariableBool(() => ((StatueCaster)entity).isCasting);
 
 #if UNITY_EDITOR
         if (LevelEditor.S != null) EditorStart();
@@ -49,20 +48,23 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
 
 #if UNITY_EDITOR
     public HexXY sourceSpellPos;
+    public StatueCaster.BehaviorType behType;
 
     public override Entity CreateEntity()
     {
-        return new StatueCaster(0, sourceSpellPos);
+        return new StatueCaster(behType) { dir = 0, sourceSpellPos = sourceSpellPos };
     }
 
     void EditorStart()
     {
         sourceSpellPos = ((StatueCaster)entity).sourceSpellPos;
+        behType = ((StatueCaster)entity).behType;
     }
 
     void EditorUpdate()
     {
         ((StatueCaster)entity).sourceSpellPos = sourceSpellPos;
+        ((StatueCaster)entity).behType = behType;
     }
 #endif
 }

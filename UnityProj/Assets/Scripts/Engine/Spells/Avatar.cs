@@ -26,7 +26,7 @@ namespace Engine
         public enum FinishedState
         {
             FlowFinished,
-            DiedCauseTooWeak,            
+            NoManaLeft,            
             PredicateParseError,
             CantMoveThere,
             CantFork                         

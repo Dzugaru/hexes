@@ -33,6 +33,7 @@ public enum EntityClass
 public enum MechType
 {
     StatueCaster,
+    StatueTeachMelee,
     AvatarWalkPressPlate,
     Door
 }

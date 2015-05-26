@@ -6,18 +6,32 @@ using System.Text;
 
 namespace Engine
 {
-    public class StatueCaster : Entity, IClickable, IRotatable
+    public class StatueCaster : Entity, IClickable, IRotatable, ICaster
     {
-        public bool CanRotate { get { return true; } }   
+        public bool CanRotate { get { return true; } }
 
-        public SpellExecuting exSpell;
-        public HexXY sourceSpellPos;
-        public bool isCasting;
-
-        public StatueCaster(uint dir, HexXY sourceSpellPos) : base(EntityClass.Mech, (uint)MechType.StatueCaster)
+        public enum BehaviorType : byte
         {
-            this.dir = dir;
-            this.sourceSpellPos = sourceSpellPos;            
+            CastingSpell = 0,
+            TeachingMeleeSpell = 1,
+            TeachingRangedSpell = 2        
+        }
+
+        public bool isCasting;
+        public SpellExecuting exSpell;
+
+
+        public HexXY sourceSpellPos;
+        public BehaviorType behType;        
+
+        public StatueCaster(BehaviorType type) : base(EntityClass.Mech)
+        {
+            behType = type;
+            switch (behType)
+            {
+                case BehaviorType.CastingSpell: entityType = (uint)MechType.StatueCaster; break;
+                case BehaviorType.TeachingMeleeSpell: entityType = (uint)MechType.StatueTeachMelee; break;
+            }             
         }
 
         public override void Spawn(HexXY p)
@@ -43,11 +57,25 @@ namespace Engine
 
         public void Click()
         {
+            switch (behType)
+            {
+                case BehaviorType.CastingSpell: ClickCaster(); break;
+                case BehaviorType.TeachingMeleeSpell: ClickTeacher(); break;
+            }
+        }
+
+        void ClickTeacher()
+        {
+
+        }
+
+        void ClickCaster()
+        {
             if (!isCasting)
             {
                 var compileRune = (Rune)Level.S.GetEntities(sourceSpellPos).FirstOrDefault(e => e is Rune);
                 var spell = Spell.CompileSpell(compileRune, sourceSpellPos);
-                exSpell = spell.Cast(this, dir);
+                exSpell = spell.CastMelee(this, dir);
             }
             else
             {
@@ -61,6 +89,7 @@ namespace Engine
             base.Save(writer);
             writer.Write((byte)DerivedTypes.StatueCaster);
 
+            writer.Write((byte)behType);
             writer.Write((byte)dir);
             writer.Write(sourceSpellPos.x);
             writer.Write(sourceSpellPos.y);
@@ -68,7 +97,25 @@ namespace Engine
 
         public new static StatueCaster Load(BinaryReader reader)
         {
-            return new StatueCaster(reader.ReadByte(), new HexXY(reader.ReadInt32(), reader.ReadInt32()));
+            var behType = (BehaviorType)reader.ReadByte();
+            return new StatueCaster(behType)
+            {                
+                dir = reader.ReadByte(),
+                sourceSpellPos = new HexXY(reader.ReadInt32(), reader.ReadInt32())
+            };
+        }
+
+        public bool SpendMana(float amount)
+        {
+            return true;
+        }
+
+        public float Mana
+        {
+            get
+            {
+                return float.MaxValue;
+            }
         }
     }
 }

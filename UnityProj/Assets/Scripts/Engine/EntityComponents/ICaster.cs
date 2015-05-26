@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Engine
 {
-    public static class GUIData
+    public interface ICaster
     {
-        public static float cooldownBarValue;
-        public static int fireGemsCount;
+        float Mana { get; }
+        bool SpendMana(float amount);
     }
 }

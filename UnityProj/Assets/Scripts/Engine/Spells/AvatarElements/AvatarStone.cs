@@ -20,31 +20,32 @@ namespace Engine
 
         public bool CanAvatarFork()
         {
-            return avatar.spell.GetElementalPower(elementRuneIdx) > 0;
+            return avatar.spell.caster.Mana > 10;
         }
 
         public void ForkTo(Avatar to)
         {
-            avatar.spell.UseElementalPower(elementRuneIdx, 0.1f);
+            avatar.spell.caster.SpendMana(10);
             to.avatarElement = new AvatarStone(to, elementRuneIdx);
         }
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
         {
-            float powerLeft = avatar.spell.GetElementalPower(elementRuneIdx);
-            if (powerLeft == 0)
-            {
-                avatar.finishState = Avatar.FinishedState.DiedCauseTooWeak;
-                return;
-            }
-
             if (!isDrawing || !WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(to)))
             {
-                avatar.spell.UseElementalPower(elementRuneIdx, 0.01f);
+                if (!avatar.spell.caster.SpendMana(1))
+                {
+                    avatar.finishState = Avatar.FinishedState.NoManaLeft;
+                    return;
+                }
             }
             else
             {
-                avatar.spell.UseElementalPower(elementRuneIdx, 0.2f);
+                if (!avatar.spell.caster.SpendMana(10))
+                {
+                    avatar.finishState = Avatar.FinishedState.NoManaLeft;
+                    return;
+                }
 
                 var spellEffect = new SpellEffects.Stone(1);
                 spellEffect.StackOn(to);

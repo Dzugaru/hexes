@@ -16,6 +16,9 @@ public class GUI : MonoBehaviour
     public GameObject cooldown;
     public GameObject[] gemCounts;
 
+    public VariableFloat playerMana;
+    public VariableFloat playerMaxMana;
+
     void Start ()
     {
         S = this;
@@ -26,6 +29,12 @@ public class GUI : MonoBehaviour
         //barTransform = bar.GetComponent<RectTransform>();
 
         Interfacing.ShowScrollWindow = ShowScrollWindow;
+
+        if (E.player != null)
+        {
+            playerMana = new VariableFloat(() => E.player.mana);
+            playerMaxMana = new VariableFloat(() => E.player.maxMana);
+        }
     }
 	
 	void Update ()
@@ -41,7 +50,7 @@ public class GUI : MonoBehaviour
             int barIdx = 0;
             foreach (var eg in CharacterGraphics.activeCharacters)
             {
-                if (eg.entityType == (int)CharacterType.Player || eg.entityType == (int)CharacterType.AvatarLearn) continue;
+                if (eg.entity is Player || eg.entity is IAvatarElement) continue;
 
                 Vector3 worldBarPosition = new Vector3(eg.transform.position.x, eg.transform.position.y + eg.hpBarUpDistance, eg.transform.position.z);
                 Vector3 screenBarPosition = Camera.main.WorldToScreenPoint(worldBarPosition);
@@ -82,11 +91,11 @@ public class GUI : MonoBehaviour
             hpBars.Clear();
         }
         #endregion
-       
-        cooldown.SetActive(Engine.GUIData.cooldownBarValue != 0);
-        cooldown.GetComponent<UnityEngine.UI.Slider>().value = Engine.GUIData.cooldownBarValue;
 
-        gemCounts[0].GetComponent<UnityEngine.UI.Text>().text = Engine.GUIData.fireGemsCount.ToString();
+        if (playerMana.IsNew || playerMaxMana.IsNew)
+        {
+            canvas.transform.FindChild("Mana").GetComponent<UnityEngine.UI.Slider>().value = playerMana.value / playerMaxMana.value;
+        }
     }
 
     public void ShowScrollWindow(Scroll scroll)

@@ -95,7 +95,7 @@ namespace Engine
             else
                 interTime = 1;
 
-            return interTime * 0.1f;
+            return interTime;// * 0.1f;
         }
 
         public override void Update(float dt)

@@ -10,17 +10,15 @@ namespace Engine
     {
         public const bool isLogging = false;
 
-        public Entity caster;
+        public ICaster caster;
         public Spell compiledSpell;
         public HexXY refPos;
         public uint dir;
         public List<Avatar> avatars = new List<Avatar>();
         public uint avatarLastID;
-        public bool isExecuting;
+        public bool isExecuting;        
 
-        Dictionary<uint, float> elementalPower = new Dictionary<uint, float>();
-
-        public SpellExecuting(Entity caster, Spell compiledSpell, HexXY refPos, uint dir)
+        public SpellExecuting(ICaster caster, Spell compiledSpell, HexXY refPos, uint dir)
         {
             this.caster = caster;            
             this.compiledSpell = compiledSpell;
@@ -67,24 +65,7 @@ namespace Engine
 
             if (avatars.Count == 0)
                 isExecuting = false;
-        }
-
-        public float GetElementalPower(uint idx)
-        {
-            float pow;
-            if (!elementalPower.TryGetValue(idx, out pow)) return 1;
-            else return pow;
-        }
-
-        public void UseElementalPower(uint idx, float amount)
-        {
-            if (!elementalPower.ContainsKey(idx))
-                elementalPower[idx] = Mathf.Max(0, 1 - amount);
-            else
-                elementalPower[idx] = Mathf.Max(0, elementalPower[idx] - amount);
-
-            //Debug.Log("power used: " + amount + ", left: " + elementalPower[idx]);
-        }
+        }       
 
         public void Die()
         {

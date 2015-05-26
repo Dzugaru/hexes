@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Engine
 {
-    public class Player : Entity
+    public class Player : Entity, ICaster
     {
         public Spell currentSpell;
 
@@ -17,12 +17,15 @@ namespace Engine
         uint afterMoveDist;
 
         HashSet<RuneType> knownRunes = new HashSet<RuneType>();
-       
+
+        public float mana, maxMana;
 
         public Player() : base(EntityClass.Character, (uint)CharacterType.Player)
         {
             pathStorage = new HexXY[64];           
             speed = 2;
+            maxMana = 100;
+            mana = 0;
         }
 
         public void InitForNewGame()
@@ -60,6 +63,9 @@ namespace Engine
                     afterMoveAction = null;
                 }
             }
+
+            //Mana regen
+            mana = Mathf.Min(maxMana, mana + dt * 5);
 
             base.Update(dt);
         }
@@ -163,6 +169,15 @@ namespace Engine
             {
                 ((IClickable)clickable).Click();
             }, clickable.pos, 1);
+        }
+
+        public float Mana { get { return mana; } }
+
+        public bool SpendMana(float amount)
+        {
+            if (amount > mana) return false;
+            mana -= amount;
+            return true;
         }
 
         //public bool CompileSpell(HexXY p)

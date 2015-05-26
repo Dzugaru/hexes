@@ -18,12 +18,12 @@ namespace Engine
 
         public bool CanAvatarFork()
         {
-            return avatar.spell.GetElementalPower(elementRuneIdx) > 0;
+            return avatar.spell.caster.Mana > 10;
         }
 
         public void ForkTo(Avatar to)
         {
-            avatar.spell.UseElementalPower(elementRuneIdx, 0.1f);
+            avatar.spell.caster.SpendMana(10);
             to.avatarElement = new AvatarWind(to, elementRuneIdx);
         }
 
