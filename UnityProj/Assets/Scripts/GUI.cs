@@ -19,6 +19,8 @@ public class GUI : MonoBehaviour
     public VariableFloat playerMana;
     public VariableFloat playerMaxMana;
 
+    public StickyButton[] abilityButtons;
+
     void Start ()
     {
         S = this;
@@ -35,6 +37,11 @@ public class GUI : MonoBehaviour
             playerMana = new VariableFloat(() => E.player.mana);
             playerMaxMana = new VariableFloat(() => E.player.maxMana);
         }
+
+        abilityButtons = new StickyButton[2];
+        abilityButtons[0] = canvas.transform.FindChild("Abilities").FindChild("First").GetComponent<StickyButton>();
+        abilityButtons[1] = canvas.transform.FindChild("Abilities").FindChild("Second").GetComponent<StickyButton>();
+        abilityButtons[1].SetDisabled(true);
     }
 	
 	void Update ()
@@ -96,6 +103,8 @@ public class GUI : MonoBehaviour
         {
             canvas.transform.FindChild("Mana").GetComponent<UnityEngine.UI.Slider>().value = playerMana.value / playerMaxMana.value;
         }
+
+        abilityButtons[0].SetDisabled(E.player.abilitySpell == null);
     }
 
     public void ShowScrollWindow(Scroll scroll)

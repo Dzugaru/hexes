@@ -14,5 +14,6 @@ namespace Engine
         bool CanAvatarFork();
         void ForkTo(Avatar to);
         float OnInterpret(Spell.CompiledRune rune, List<Spell.CompiledRune> additionalRunes);
+        float ForkManaCost { get; }
     }
 }

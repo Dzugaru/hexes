@@ -6,9 +6,15 @@ using System.Text;
 
 namespace Engine
 {
+    [GameSaveLoad("00000006")]
     public class Scroll : Entity, IClickable
     {
         public string text;
+
+        public Scroll() : base(EntityClass.Collectible, (uint)CollectibleType.Scroll)
+        {
+
+        }
 
         public Scroll(string text) : base(EntityClass.Collectible, (uint)CollectibleType.Scroll)
         {
@@ -23,15 +29,14 @@ namespace Engine
 
         public override void Save(BinaryWriter writer)
         {
-            base.Save(writer);
-            writer.Write((byte)DerivedTypes.Scroll);
+            base.Save(writer);            
 
             writer.Write(text);
         }
 
-        public new static Scroll Load(BinaryReader reader)
+        public override void LoadDerived(BinaryReader reader)
         {
-            return new Scroll(reader.ReadString());
+            this.text = reader.ReadString();
         }
     }
 }

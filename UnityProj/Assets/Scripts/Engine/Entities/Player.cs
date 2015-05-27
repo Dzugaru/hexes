@@ -6,11 +6,13 @@ using UnityEngine;
 
 namespace Engine
 {
+    [GameSaveLoad("D900D210")]
     public class Player : Entity, ICaster
     {
-        public Spell currentSpell;
-
         public event Action ActionFailure;
+
+        public Spell abilitySpell;
+        public bool cantMove;
 
         Action afterMoveAction;
         HexXY afterMovePos;
@@ -65,7 +67,7 @@ namespace Engine
             }
 
             //Mana regen
-            mana = Mathf.Min(maxMana, mana + dt * 5);
+            mana = Mathf.Min(maxMana, mana + dt * 10);
 
             base.Update(dt);
         }
@@ -74,7 +76,7 @@ namespace Engine
 
         public void Move(HexXY p)
         {
-            if (WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(p)) &&
+            if (!cantMove && WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(p)) &&
                (!dest.HasValue || p != dest))
             {
                 afterMoveAction = null;
@@ -141,7 +143,8 @@ namespace Engine
                     if (existingRune == null)
                     {
                         //Draw new rune
-                        var rune = new Rune(type, 0);
+                        var rune = new Rune(0);
+                        rune.entityType = (uint)type;
                         rune.Spawn(p);
                     }
                 }
@@ -178,24 +181,14 @@ namespace Engine
             if (amount > mana) return false;
             mana -= amount;
             return true;
+        }     
+
+        public void CastAbilitySpell(HexXY p)
+        {
+            bool isSuccess = abilitySpell != null && HexXY.Dist(pos, p) == 1;
+            if (isSuccess) abilitySpell.CastMelee(this, (uint)HexXY.neighbours.IndexOf(p - pos), false);
+            else if (ActionFailure != null) ActionFailure();            
         }
-
-        //public bool CompileSpell(HexXY p)
-        //{
-        //    Rune compileRune =                                
-        //        (Rune)Level.S.GetEntities(p).FirstOrDefault(e => e is Rune && Avatar.IsAvatarElementRune((RuneType)e.entityType));
-
-        //    bool isSuccess = compileRune != null;
-        //    if (isSuccess) currentSpell = Spell.CompileSpell(compileRune, p);            
-        //    return isSuccess;
-        //}
-
-        //public bool CastCurrentSpell(HexXY p)
-        //{
-        //    bool isSuccess = currentSpell != null && HexXY.Dist(pos, p) == 1;
-        //    if (isSuccess) currentSpell.Cast(this, (uint)HexXY.neighbours.IndexOf(p - pos));
-        //    return isSuccess;            
-        //}
 
         #region New walking
         float speed;

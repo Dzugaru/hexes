@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Engine
 {
+    [GameSaveLoad("00000002")]
     public abstract class SpellEffect : Entity, IFibered
     {
         public float power;

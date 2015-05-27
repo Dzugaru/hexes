@@ -6,6 +6,7 @@ using System.Text;
 
 namespace Engine
 {
+    [GameSaveLoad("00000005")]
     public class Door : Entity, IFibered, IClickable, IHasScriptID
     {
         Fibered.Fiber changingState;
@@ -74,20 +75,16 @@ namespace Engine
 
         public override void Save(BinaryWriter writer)
         {
-            base.Save(writer);
-            writer.Write((byte)DerivedTypes.Door);
+            base.Save(writer);           
 
             writer.Write(id);
             writer.Write(isOpen);
         }
 
-        public new static Door Load(BinaryReader reader)
+        public override void LoadDerived(BinaryReader reader)
         {
-            return new Door()
-            {
-                id = (ScriptObjectID)reader.ReadInt32(),
-                isOpen = reader.ReadBoolean()
-            };
+            id = (ScriptObjectID)reader.ReadInt32();
+            isOpen = reader.ReadBoolean();            
         }
 
         public void Click()

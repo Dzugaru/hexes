@@ -104,7 +104,7 @@ namespace Engine
                     nextRune = nrune;
                 else
                 {
-                    if (avatarElement.CanAvatarFork())
+                    if (spell.caster.Mana >= avatarElement.ForkManaCost && avatarElement.CanAvatarFork())
                     {
                         spell.SpawnAvatar(nrune, this, pos, dir);
                     }
@@ -208,12 +208,22 @@ namespace Engine
                 default: throw new Tools.AssertException();
             }
 
+            if (spell.caster.Mana < newEl.ForkManaCost)
+            {
+                finishState = FinishedState.NoManaLeft;
+                return;
+            }
+            else
+            {
+                spell.caster.SpendMana(newEl.ForkManaCost);
+            }
+
             if (avatarElement == null || newEl.GetType() != avatarElement.GetType()) //TODO: what if it's the same?
             {
                 if (avatarElement != null)
                 {
                     avatarElement.OnDie();
-                }
+                }               
 
                 avatarElement = newEl;
                 if (avatarElement is Entity)

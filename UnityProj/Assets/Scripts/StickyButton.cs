@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,12 +7,13 @@ using UnityEngine.UI;
 
 public class StickyButton : MonoBehaviour
 {    
-    public bool isPressed = false;
+    public bool isPressed = false;    
     public bool isTextInsteadOfColor = false;
     public Color pressedColor = new Color(0.5f, 1f, 0.5f);
     public Color releasedColor = new Color(1f, 1f, 1f);
+    public Color disabledColor = new Color(0.5f, 0.5f, 0.5f);
 
-    public event Action<bool> PressedChanged;
+    public event Action<StickyButton, bool> PressedChanged;
 
     void OnEnable()
     {
@@ -40,6 +40,8 @@ public class StickyButton : MonoBehaviour
 
     public virtual void SetPressed(bool pressed)
     {
+        if (pressed == isPressed) return;
+
         isPressed = pressed;
 
         if (isTextInsteadOfColor)
@@ -54,8 +56,22 @@ public class StickyButton : MonoBehaviour
         }
 
         if (PressedChanged != null)
-            PressedChanged(isPressed);
+            PressedChanged(this, isPressed);
+    }
+
+    public void SetDisabled(bool disabled)
+    {
+        if (disabled == !GetComponent<Button>().interactable) return;
+        
+        if (disabled)
+        {
+            if (isPressed)
+                SetPressed(false);            
+        }       
+
+        GetComponent<Button>().interactable = !disabled;
+
     }
 }
-#endif
+
 

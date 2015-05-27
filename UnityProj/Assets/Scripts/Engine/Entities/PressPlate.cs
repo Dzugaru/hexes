@@ -6,6 +6,7 @@ using System.Text;
 
 namespace Engine
 {
+    [GameSaveLoad("00000004")]
     public class PressPlate : Entity, IHasScriptID
     {
         public bool isPressed;
@@ -26,15 +27,14 @@ namespace Engine
 
         public override void Save(BinaryWriter writer)
         {
-            base.Save(writer);
-            writer.Write((byte)DerivedTypes.PressPlate);
+            base.Save(writer);           
 
             writer.Write(id);         
         }
 
-        public new static PressPlate Load(BinaryReader reader)
+        public override void LoadDerived(BinaryReader reader)
         {
-            return new PressPlate() { id = (ScriptObjectID)reader.ReadInt32() };
+            id = (ScriptObjectID)reader.ReadInt32();
         }
 
         public override void Update(float dt)

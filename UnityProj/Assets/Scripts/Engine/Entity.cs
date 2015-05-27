@@ -21,7 +21,7 @@ namespace Engine
         public EntityClass entityClass;
         public uint entityType;
 
-        public Entity()
+        private Entity()
         {
             components = new List<IEntityComponent>();
             if (this is IHasHP) { hasHP = new HasHP(this); components.Add(hasHP); }
@@ -109,42 +109,32 @@ namespace Engine
             return ReferenceEquals(this, other);
         }
 
-        protected enum DerivedTypes : byte
-        {
-            Rune = 0,
-            Mob = 1,
-            SpellEffect = 2,
-            StatueCaster = 3,
-            PressPlate = 4,
-            Door = 5,
-            Scroll = 6
-        }      
-
         public virtual void Save(BinaryWriter writer)
-        {   
+        {
+            //Logger.Log(GetType().ToString() + " " + entityType.ToString());
+            writer.Write(E.saveLoadTypeToGuid[GetType()]);
             writer.Write(entityType);
             writer.Write(pos.x);
-            writer.Write(pos.y);           
+            writer.Write(pos.y);            
         }
+
+        public virtual void LoadDerived(BinaryReader reader)
+        {
+        }
+        
 
         public static void Load(BinaryReader reader)
         {
             Entity ent;
 
+            var classType = E.saveLoadGuidToType[reader.ReadUInt32()];
             var type = reader.ReadUInt32();
             var pos = new HexXY(reader.ReadInt32(), reader.ReadInt32());
-            
-            var classType = (DerivedTypes)reader.ReadByte();
-            switch (classType)
-            {
-                case DerivedTypes.Rune: ent = Rune.Load(reader, type); break;
-                case DerivedTypes.StatueCaster: ent = StatueCaster.Load(reader); break;
-                case DerivedTypes.PressPlate: ent = PressPlate.Load(reader); break;
-                case DerivedTypes.Door: ent = Door.Load(reader); break;
-                case DerivedTypes.Scroll: ent = Scroll.Load(reader); break;
-                default: throw new NotImplementedException();
-            }
 
+            ent = (Entity)Activator.CreateInstance(classType);
+            ent.entityType = type;
+
+            ent.LoadDerived(reader);
             ent.Spawn(pos);            
         }
     }

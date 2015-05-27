@@ -86,7 +86,7 @@ public class DoorGraphics : EntityGraphics, IClickable, IHighlightable
 
     void Start()
     {
-        if (!G.IsInUnityEditMode() && LevelEditor.S == null)                 
+        if (!G.IsInUnityEditMode() && !G.S.isEditMode)                 
             isOpen = new VariableBool(() => ((Door)entity).isOpen);
 
         bool _ = isOpen.IsNew;

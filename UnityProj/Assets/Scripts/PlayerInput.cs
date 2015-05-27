@@ -3,6 +3,7 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 class PlayerInput : MonoBehaviour
 {
@@ -112,10 +113,27 @@ class PlayerInput : MonoBehaviour
         //    }
         //}
 
+        if (Input.GetKeyDown(KeyCode.Alpha1) && !GUI.S.abilityButtons[0].isPressed)
+            GUI.S.abilityButtons[0].SetPressed(true);
+
         bool isClickedObject = MouseOverHighlightAndClick();
 
-        if (!isClickedObject && Input.GetMouseButtonDown(0))        
-            E.player.Move(getMouseOverTile());        
+        if (!isClickedObject && Input.GetMouseButtonDown(0))
+        {
+            var pressedAbilityBtn = GUI.S.abilityButtons.FirstOrDefault(b => b.isPressed);
+            if (pressedAbilityBtn != null)
+            {
+                if (pressedAbilityBtn.name == "First")
+                {
+                    E.player.CastAbilitySpell(getMouseOverTile());
+                    pressedAbilityBtn.SetPressed(false);
+                }
+            }
+            else
+            {
+                E.player.Move(getMouseOverTile());
+            }
+        }
     }
 
     bool MouseOverHighlightAndClick()
@@ -170,6 +188,6 @@ class PlayerInput : MonoBehaviour
         }
 
         return false;
-    }
+    }    
 }
 

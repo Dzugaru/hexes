@@ -18,6 +18,14 @@ namespace Engine
 
         public bool CanRotate { get { return true; } }
 
+        public float ForkManaCost
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
         public AvatarLearn(Avatar avatar, uint elementRuneIdx, float speed) : base(EntityClass.Character, (uint)CharacterType.AvatarLearn)
         {
             this.avatar = avatar;
@@ -67,10 +75,7 @@ namespace Engine
             base.Die();
         }
 
-        Rune GetRealRune(Spell.CompiledRune compRune)
-        {
-            return Level.S.GetEntities(avatar.spell.compiledSpell.realWorldStartRunePos + compRune.relPos).OfType<Rune>().First();
-        }
+        
 
         public float OnInterpret(Spell.CompiledRune rune, List<Spell.CompiledRune> additionalRunes)
         {            
@@ -78,10 +83,10 @@ namespace Engine
                 litRune.isLit = false;
             litRunes.Clear();
 
-            var mainLitRune = GetRealRune(rune);
+            var mainLitRune = avatar.spell.compiledSpell.GetRealRune(rune);
             litRunes.Add(mainLitRune);
             foreach (var arune in additionalRunes)
-                litRunes.Add(GetRealRune(arune));
+                litRunes.Add(avatar.spell.compiledSpell.GetRealRune(arune));
 
             foreach (var litRune in litRunes)
                 litRune.isLit = true;

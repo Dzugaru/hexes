@@ -11,21 +11,22 @@ namespace Engine
     {
         public Avatar avatar;
         public uint elementRuneIdx;
+        public float ForkManaCost { get; private set; }
 
         public AvatarFlame(Avatar avatar, uint elementRuneIdx)
         {
             this.avatar = avatar;
             this.elementRuneIdx = elementRuneIdx;
+            this.ForkManaCost = 10;
         }
 
         public bool CanAvatarFork()
         {          
-            return avatar.spell.caster.Mana > 10;
+            return true;
         }
 
         public void ForkTo(Avatar to)
         {
-            avatar.spell.caster.SpendMana(10);
             to.avatarElement = new AvatarFlame(to, elementRuneIdx);            
         }
 

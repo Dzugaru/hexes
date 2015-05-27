@@ -35,12 +35,12 @@ namespace Engine
             }
         }
 
-        public SpellExecuting CastMelee(ICaster caster, uint dir)
+        public SpellExecuting CastMelee(ICaster caster, uint dir, bool lockRealRunes)
         {
             var pos = ((Entity)caster).pos;
-            var spEx = new SpellExecuting(caster, this, pos, dir);
+            var spEx = new SpellExecuting(caster, this, pos, dir, lockRealRunes);
             spEx.SpawnAvatar(root, null, pos, dir); //TODO: spawn at spell target? what to do with direction? make random if far?
-            executingSpells.Add(spEx);
+            executingSpells.Add(spEx);           
             return spEx;
         }
 
@@ -170,7 +170,8 @@ namespace Engine
             HexXY pos = refPos + rune.relPos;
             if (Level.S.GetEntities(pos).Any(e => e is Rune)) return;
 
-            Rune groundRune = new Rune(rune.type, rune.dir);            
+            Rune groundRune = new Rune(rune.dir);
+            groundRune.entityType = (uint)rune.type;
             groundRune.Spawn(pos);
 
             for (int i = 0; i < 6; i++)
@@ -179,6 +180,11 @@ namespace Engine
                 if (n != null)                
                     RedrawOnGround(n, refPos);                
             }
+        }
+
+        public Rune GetRealRune(CompiledRune compRune)
+        {
+            return Level.S.GetEntities(realWorldStartRunePos + compRune.relPos).OfType<Rune>().First();
         }
     }
 }

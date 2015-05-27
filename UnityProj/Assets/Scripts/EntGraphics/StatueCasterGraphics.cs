@@ -13,10 +13,9 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
     public bool CanBeHighlighted
     {
         get
-        {
-            var behType = ((StatueCaster)entity).behType;
-            return behType == StatueCaster.BehaviorType.CastingSpell ||
-                   (behType == StatueCaster.BehaviorType.TeachingMeleeSpell && !isCasting.value);
+        {           
+            return entity.GetType() == typeof(StatueCaster) ||
+                   (entity.GetType() == typeof(StatueTeach) && !isCasting.value);
         }
     }
 
@@ -27,7 +26,7 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
 
     void Start()
     {       
-        isCasting = new VariableBool(() => ((StatueCaster)entity).isCasting);
+        isCasting = new VariableBool(() => ((Statue)entity).isCasting);
 
 #if UNITY_EDITOR
         if (LevelEditor.S != null) EditorStart();
@@ -48,23 +47,32 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
 
 #if UNITY_EDITOR
     public HexXY sourceSpellPos;
-    public StatueCaster.BehaviorType behType;
+    public MechType type;
 
     public override Entity CreateEntity()
     {
-        return new StatueCaster(behType) { dir = 0, sourceSpellPos = sourceSpellPos };
+        Statue statue;
+        switch (type)
+        {
+            case MechType.StatueCaster: statue = new StatueCaster(); break;
+            case MechType.StatueTeachMelee: statue = new StatueTeach(); break;
+            default: throw new Tools.AssertException();
+        }
+
+        statue.entityType = (uint)type;
+        statue.dir = 0;
+        statue.sourceSpellPos = sourceSpellPos;
+        return statue;
     }
 
     void EditorStart()
     {
-        sourceSpellPos = ((StatueCaster)entity).sourceSpellPos;
-        behType = ((StatueCaster)entity).behType;
+        sourceSpellPos = ((Statue)entity).sourceSpellPos;        
     }
 
     void EditorUpdate()
     {
-        ((StatueCaster)entity).sourceSpellPos = sourceSpellPos;
-        ((StatueCaster)entity).behType = behType;
+        ((Statue)entity).sourceSpellPos = sourceSpellPos;        
     }
 #endif
 }

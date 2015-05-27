@@ -23,17 +23,7 @@ namespace Engine
             this.attackDmgAppDelay = attackDmgAppDelay;
             this.attackDur = attackDur;
         }
-    }
-
-    public struct SpellData
-    {
-        public readonly float launchTime;
-
-        public SpellData(float launchTime)
-        {
-            this.launchTime = launchTime;
-        }
-    }
+    }   
 
     public struct RuneData
     {
@@ -49,19 +39,13 @@ namespace Engine
     {
         public static readonly Dictionary<string, MobData> mobDatas = new Dictionary<string, MobData>();
 
-        //TODO: make a complex key (SpellType, Level)?
-        public static readonly Dictionary<SpellType, SpellData> spellDatas = new Dictionary<SpellType, SpellData>();
+        //TODO: make a complex key (SpellType, Level)?        
         public static readonly Dictionary<RuneType, RuneData> runeDatas = new Dictionary<RuneType, RuneData>();
 
         static Data()
         {
             //											Graphics				HP		Speed	DmgDelay	AtkDuration		AtkDmg
-            mobDatas["spider"] = new MobData(CharacterType.Spider, 10, 1, 0.5f, 1.0f, 1);
-
-            //
-            spellDatas[SpellType.LineOfFire] = new SpellData(0.25f);
-            spellDatas[SpellType.ColdCircle] = new SpellData(1.0f);
-            spellDatas[SpellType.FireTurret] = new SpellData(2.0f);
+            mobDatas["spider"] = new MobData(CharacterType.Spider, 10, 1, 0.5f, 1.0f, 1);           
 
             //													        Directional?
             runeDatas[RuneType.Nop] =                   new RuneData(false);

@@ -6,12 +6,18 @@ using System.Text;
 
 namespace Engine
 {
+    [GameSaveLoad("00000000")]
     public class Rune : Entity, IRotatable
     {
-        public bool isLit;
+        public bool isLit, isUsedInSpell;
         public bool CanRotate { get { return Data.runeDatas[(RuneType)entityType].isDirectional; } }
 
-        public Rune(RuneType type, uint dir) : base(EntityClass.Rune, (uint)type)
+        public Rune() : base(EntityClass.Rune)
+        {
+
+        }
+
+        public Rune(uint dir) : base(EntityClass.Rune)
         {            
             this.dir = dir;
         }      
@@ -25,21 +31,21 @@ namespace Engine
         public static bool CanErase(Entity ent, HexXY pos)
         {
             var cellType = Level.S.GetCellType(pos);
-            return Level.S.GetEntities(pos).Any(e => e is Rune) &&
+            var rune = Level.S.GetEntities(pos).OfType<Rune>().FirstOrDefault();
+            return rune != null && !rune.isUsedInSpell &&
                    cellType != TerrainCellType.FusedRuneStone;
         }
 
         public override void Save(BinaryWriter writer)
         {
-            base.Save(writer);
-            writer.Write((byte)DerivedTypes.Rune);
+            base.Save(writer);            
             
             writer.Write((byte)dir);            
         }
 
-        public static Rune Load(BinaryReader reader, uint type)
+        public override void LoadDerived(BinaryReader reader)
         {
-            return new Rune((RuneType)type, reader.ReadByte());
+            this.dir = reader.ReadByte();
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Engine
 {
+    [GameSaveLoad("00000001")]
     public class Mob : Entity, IHasHP, IWalker, IFibered
     {
         float attackDmgAppDelay, attackDur, attackDamage;

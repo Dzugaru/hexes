@@ -5,12 +5,29 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
+
 namespace Engine
 {
     public static class E
     {
+        public static Dictionary<uint, Type> saveLoadGuidToType = new Dictionary<uint, Type>();
+        public static Dictionary<Type, uint> saveLoadTypeToGuid = new Dictionary<Type, uint>();
+
         public static Player player;
-        public static LevelScript levelScript;  
+        public static LevelScript levelScript;
+
+        static E()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            foreach (var type in assembly.GetTypes())
+            {
+                var saveLoadAttr = type.GetCustomAttributes(typeof(GameSaveLoadAttribute), false).OfType<GameSaveLoadAttribute>().FirstOrDefault();
+                if (saveLoadAttr == null) continue;
+                uint guidUInt = uint.Parse(saveLoadAttr.Guid, System.Globalization.NumberStyles.HexNumber);
+                saveLoadGuidToType.Add(guidUInt, type);
+                saveLoadTypeToGuid.Add(type, guidUInt);
+            }
+        }
         
 
         public static void LoadLevel(string levelName)

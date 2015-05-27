@@ -63,16 +63,6 @@ public class G : MonoBehaviour
 
 
         E.LoadLevel(Application.loadedLevelName);       
-
-
-        //DEBUG load saved spell
-        string spellFilePath = Path.Combine(Application.persistentDataPath, "spell");
-        if (File.Exists(spellFilePath))
-        {
-            //Debug.Log(spellFilePath);
-            using (var writer = new BinaryReader(File.OpenRead(spellFilePath)))
-                E.player.currentSpell = Spell.Load(writer);
-        }
     }
 
    
@@ -172,7 +162,7 @@ public class G : MonoBehaviour
     {
         GameObject obj = entities[objHandle];
         obj.GetComponent<EntityGraphics>().UpdateInterfaceRotation(dir);
-    }
+    }    
 
     public static bool IsInUnityEditMode()
     {

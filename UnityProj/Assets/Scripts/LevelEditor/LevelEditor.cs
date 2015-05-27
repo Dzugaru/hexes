@@ -56,11 +56,13 @@ public class LevelEditor : MonoBehaviour
         var instrPanel = canvas.transform.Find("InstrPanel");
 
         instrPanel.Find("Passability").GetComponent<StickyButton>().PressedChanged += OnPassabilityModeChanged;
-        instrPanel.Find("EntitySet").GetComponent<StickyButton>().PressedChanged += val => isInEntitySetMode = val;
-        instrPanel.Find("Runes").GetComponent<StickyButton>().PressedChanged += val => isInRuneDrawingMode = val;
+        instrPanel.Find("EntitySet").GetComponent<StickyButton>().PressedChanged += (obj, val) => isInEntitySetMode = val;
+        instrPanel.Find("Runes").GetComponent<StickyButton>().PressedChanged += (obj, val) => isInRuneDrawingMode = val;
 
 
         sbvisParent = GameObject.Find("EditorSBTileVis");
+
+        Logger.LogAction = msg => UnityEngine.Debug.Log(msg);
 
         OnLoad();
     }
@@ -160,7 +162,7 @@ public class LevelEditor : MonoBehaviour
 
                     if (existingRune == null)
                     {
-                        var rune = new Rune(kvp.Value, 0);
+                        var rune = new Rune(0) { entityType = (uint)kvp.Value };
                         var op = new Undos.AddEntity(rune, p);
                         op.Add();
                         undos.Push(op);
@@ -276,7 +278,7 @@ public class LevelEditor : MonoBehaviour
         }
     }
     
-    void OnPassabilityModeChanged(bool isEnabled)
+    void OnPassabilityModeChanged(StickyButton btn, bool isEnabled)
     {
         isInPassabilityMode = isEnabled; 
     }
