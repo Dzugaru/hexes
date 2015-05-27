@@ -44,8 +44,14 @@ namespace Engine
         }
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
-        {   
-            if (!isDrawing || !WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(to)))
+        {
+            if (!WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(to)))
+            {
+                avatar.finishState = Avatar.FinishedState.CantMoveThere;
+                return;
+            }
+
+            if (!isDrawing)
             {
                 if (!avatar.spell.caster.SpendMana(1))
                 {
@@ -104,7 +110,7 @@ namespace Engine
             if (Avatar.IsMovementCommandRune(rune.type))
                 return movTime;
             else
-                return 0.1f;
+                return 0;
         }
     }
 }
