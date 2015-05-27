@@ -37,8 +37,7 @@ namespace Engine
         {
             Avatar av = new Avatar(this, pos, dir, rune, avatarLastID++);
             if (forkFrom != null)
-            {
-                av.timeLeft = forkFrom.timeLeft;
+            {                
                 caster.SpendMana(forkFrom.avatarElement.ForkManaCost);
                 forkFrom.avatarElement.ForkTo(av);
                 if (av.avatarElement is Entity)

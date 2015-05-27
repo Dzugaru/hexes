@@ -19,6 +19,7 @@ namespace Engine
         public FinishedState? finishState;        
         public IAvatarElement avatarElement;
 
+        bool needsFlow;
         bool isArrowCrossDirLeft;
         HashSet<HexXY> arrowsProcessed = new HashSet<HexXY>(); //This is for flow arrow cycle detection
         List<Spell.CompiledRune> additionalInterpretedRunes = new List<Spell.CompiledRune>();
@@ -52,11 +53,17 @@ namespace Engine
 
             if (SpellExecuting.isLogging)
                 Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> interpret " + rune.type + " at " + rune.relPos);
-            
-            var currRune = rune;
-            additionalInterpretedRunes.Clear();                    
 
-            bool needsFlow = true;
+            if (needsFlow)
+                InterpretFlow();
+
+            if (finishState != null)            
+                return;            
+
+            var currRune = rune;
+            additionalInterpretedRunes.Clear();
+
+            needsFlow = true;            
             if (IsArrowRune(rune.type))
             {
                 rune = InterpretArrowSeq(rune, true, true);
@@ -82,9 +89,6 @@ namespace Engine
 
             if (avatarElement != null)
                 timeLeft += avatarElement.OnInterpret(currRune, additionalInterpretedRunes);
-
-            if (needsFlow && finishState == null)
-                InterpretFlow();
         }    
 
         void InterpretFlow()
