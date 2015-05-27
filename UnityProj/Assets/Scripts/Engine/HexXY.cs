@@ -82,6 +82,41 @@ namespace Engine
             return new HexXY(nx + center.x, ny + center.y);
         }
 
+        public static uint GetApproximateDir(HexXY from, HexXY to)
+        {
+            var diff = to - from;
+            var absX = Mathf.Abs(diff.x);
+            var absY = Mathf.Abs(diff.y);
+            if (diff.x > 0 == diff.y > 0 && absX * 2 >= absY && absY * 2 > absX)
+                return diff.x > 0 ? 0u : 3u;
+
+            if (absX > absY) return diff.x > 0 ? 1u : 4u;
+            else return diff.y > 0 ? 5u : 2u;            
+        }
+
+        public static uint GetApproximateDir(Vector2 planeDir)
+        {
+            var normDir = planeDir.normalized;
+            float[] dp = new float[6];
+            dp[0] = Vector2.Dot(ex + ey, normDir);
+            dp[1] = Vector2.Dot(ex, normDir);
+            dp[2] = Vector2.Dot(-ey, normDir);
+            dp[3] = Vector2.Dot(-ex - ey, normDir);
+            dp[4] = Vector2.Dot(-ex, normDir);
+            dp[5] = Vector2.Dot(ey, normDir);
+
+            float maxDp = 0;
+            uint maxDir = 0;
+            for (int i = 0; i < 6; i++)            
+                if (dp[i] > maxDp)
+                {
+                    maxDp = dp[i];
+                    maxDir = (uint)i;
+                }
+
+            return maxDir;            
+        }
+
         public static HexXY operator +(HexXY lhs, HexXY rhs)
         {
             return new HexXY(lhs.x + rhs.x, lhs.y + rhs.y);

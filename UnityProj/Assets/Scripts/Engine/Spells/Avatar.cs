@@ -202,8 +202,8 @@ namespace Engine
 
             switch (rune.type)
             {
-                case RuneType.Flame: newEl = new AvatarFlame(this, rune.listIdx); break;
-                case RuneType.Wind: newEl = new AvatarLearn(this, rune.listIdx, 3); break;
+                case RuneType.Flame: newEl = new AvatarFlame(this, rune.listIdx, 0.1f); break;
+                case RuneType.Wind: newEl = new AvatarLearn(this, rune.listIdx, 0.3f); break;
                 case RuneType.Stone: newEl = new AvatarStone(this, rune.listIdx); break;
                 default: throw new Tools.AssertException();
             }
@@ -475,7 +475,7 @@ namespace Engine
             }
         }
 
-        static bool IsPredicateRune(RuneType type)
+        public static bool IsPredicateRune(RuneType type)
         {
             switch (type)
             {
@@ -489,7 +489,7 @@ namespace Engine
             }
         }
 
-        static bool IsNumberRune(RuneType type)
+        public static bool IsNumberRune(RuneType type)
         {
             switch (type)
             {
@@ -505,7 +505,7 @@ namespace Engine
             }
         }
 
-        static bool IsMovementCommandRune(RuneType type)
+        public static bool IsMovementCommandRune(RuneType type)
         {
             switch (type)
             {

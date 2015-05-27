@@ -67,7 +67,7 @@ namespace Engine
             }
 
             //Mana regen
-            mana = Mathf.Min(maxMana, mana + dt * 10);
+            mana = Mathf.Min(maxMana, mana + dt * 50);
 
             base.Update(dt);
         }
@@ -185,8 +185,8 @@ namespace Engine
 
         public void CastAbilitySpell(HexXY p)
         {
-            bool isSuccess = abilitySpell != null && HexXY.Dist(pos, p) == 1;
-            if (isSuccess) abilitySpell.CastMelee(this, (uint)HexXY.neighbours.IndexOf(p - pos), false);
+            bool isSuccess = abilitySpell != null;
+            if (isSuccess) abilitySpell.CastRanged(this, p);
             else if (ActionFailure != null) ActionFailure();            
         }
 
@@ -283,6 +283,8 @@ namespace Engine
                     //G.S.DebugHideCell(dbc);
                 }
             }
+
+            this.dir = HexXY.GetApproximateDir(dir);
         }
 
         //Trace first straight line dest and move there

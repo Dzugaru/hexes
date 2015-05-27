@@ -10,7 +10,7 @@ namespace Engine
     {
         public HexXY realWorldStartRunePos;
         public CompiledRune root;
-        public List<CompiledRune> allRunes = new List<CompiledRune>();
+        public List<CompiledRune> allRunes = new List<CompiledRune>();       
 
         public class CompiledRune
         {            
@@ -44,6 +44,23 @@ namespace Engine
             return spEx;
         }
 
+        public SpellExecuting CastRanged(ICaster caster, HexXY target)
+        {
+            var pos = ((Entity)caster).pos;
+            var dist = HexXY.Dist(pos, target);
+            uint dir;
+            if (dist == 0)
+                dir = ((Entity)caster).dir;
+            else
+                dir = HexXY.GetApproximateDir(pos, target);
+             
+
+            var spEx = new SpellExecuting(caster, this, target, dir, false);
+            spEx.SpawnAvatar(root, null, target, dir); 
+            executingSpells.Add(spEx);
+            return spEx;
+        }
+
 
         static List<SpellExecuting> executingSpells = new List<SpellExecuting>();
         public static void Update(float dt)
@@ -60,24 +77,28 @@ namespace Engine
 
         static Queue<CompiledRune> compilationFront = new Queue<CompiledRune>();
         static Dictionary<HexXY, CompiledRune> compilationMap = new Dictionary<HexXY, CompiledRune>();
-        public static Spell CompileSpell(Rune compileRune, HexXY compileRunePos)
+        public void Compile(Rune compileRune, HexXY compileRunePos, List<Rune> visSeq = null)
         {
-            Spell spell = new Spell();
-
-            HexXY refPos = spell.realWorldStartRunePos = compileRunePos;
-            spell.root = new CompiledRune((RuneType)compileRune.entityType, new HexXY(0, 0), compileRune.dir, 0);
-            spell.allRunes.Add(spell.root);
+            HexXY refPos = realWorldStartRunePos = compileRunePos;
+            root = new CompiledRune((RuneType)compileRune.entityType, new HexXY(0, 0), compileRune.dir, 0);
+            allRunes.Add(root);
 
             compilationFront.Clear();
             compilationMap.Clear();
-            compilationFront.Enqueue(spell.root);
-            compilationMap.Add(compileRunePos, spell.root);
+            compilationFront.Enqueue(root);
+            compilationMap.Add(compileRunePos, root);
+
+            //Nice visualization support included
+           
+            uint compileNextBatchCount = 0;
+            uint compileBatchCount = 1;
 
             CompiledRune c;            
 
             do
-            {
+            {                
                 c = compilationFront.Dequeue();
+                if (visSeq != null) visSeq.Add(GetRealRune(c));
 
                 for (int i = 0; i < 6; i++)
                 {
@@ -97,18 +118,26 @@ namespace Engine
                     }
                     else
                     {
-                        nrune = new CompiledRune((RuneType)rune.entityType, c.relPos + d, rune.dir, (uint)spell.allRunes.Count);
-                        spell.allRunes.Add(nrune);
-                        compilationFront.Enqueue(nrune);
+                        nrune = new CompiledRune((RuneType)rune.entityType, c.relPos + d, rune.dir, (uint)allRunes.Count);
+                        allRunes.Add(nrune);
+                        compilationFront.Enqueue(nrune);                        
                         compilationMap.Add(np, nrune);
+                        compileNextBatchCount++;
                     }
                 }
+
+                compileBatchCount--;
+                if (compileBatchCount == 0)
+                {
+                    compileBatchCount = compileNextBatchCount;
+                    compileNextBatchCount = 0;
+                    if (visSeq != null) visSeq.Add(null); //Pause
+                }
+
             } while (compilationFront.Count > 0);
 
             //foreach (var r in spell.allRunes)
-            //  Logger.Log(r.relPos + " " + r.type);            
-
-            return spell;
+            //  Logger.Log(r.relPos + " " + r.type);                        
         }
 
         public void Save(System.IO.BinaryWriter writer)
@@ -185,6 +214,6 @@ namespace Engine
         public Rune GetRealRune(CompiledRune compRune)
         {
             return Level.S.GetEntities(realWorldStartRunePos + compRune.relPos).OfType<Rune>().First();
-        }
+        }      
     }
 }

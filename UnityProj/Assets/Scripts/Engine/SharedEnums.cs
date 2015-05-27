@@ -29,7 +29,8 @@ public enum CharacterType
     Player,
     Spider, 
     
-    AvatarLearn   
+    AvatarLearn,
+    AvatarFlame
 }
 
 public enum InanimateType

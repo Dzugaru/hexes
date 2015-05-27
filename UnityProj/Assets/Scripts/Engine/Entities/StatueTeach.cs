@@ -7,7 +7,10 @@ namespace Engine
 {
     [GameSaveLoad("02FB581A")]
     public class StatueTeach : Statue, IFibered
-    {       
+    {
+        Spell compilingSpell;
+        List<Rune> runeLightSeq = new List<Rune>();
+
         public StatueTeach() : base()
         {
             
@@ -15,19 +18,42 @@ namespace Engine
 
         public override void Click()
         {            
-            fibered.StartFiber(TeachFib());
-        }
-
-        IEnumerator<float> TeachFib()
-        {
             isCasting = true;
             E.player.cantMove = true;
-            yield return 2;            
-            isCasting = false;
+
             var compileRune = Level.S.GetEntities(sourceSpellPos).OfType<Rune>().First();
-            var spell = Spell.CompileSpell(compileRune, compileRune.pos);
+            var spell = new Spell();
+            runeLightSeq.Clear();
+           
+            spell.Compile(compileRune, compileRune.pos, runeLightSeq);            
             E.player.abilitySpell = spell;
+            E.player.cantMove = true;
+
+            compilingSpell = spell;
+            fibered.StartFiber(RuneLightFib());
+        }        
+
+        IEnumerator<float> RuneLightFib()
+        {
+            foreach (var rune in runeLightSeq)
+            {
+                if (rune == null) yield return 0.025f;
+                else
+                {
+                    rune.isLit = true;
+                    fibered.StartFiber(RuneQuenchFib(rune));
+                }
+            }
+
+            yield return 0.1f;
+            isCasting = false;
             E.player.cantMove = false;
+        }
+
+        IEnumerator<float> RuneQuenchFib(Rune rune)
+        {
+            yield return UnityEngine.Random.Range(0.1f, 0.15f);
+            rune.isLit = false;
         }
     }
 }

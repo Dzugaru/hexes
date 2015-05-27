@@ -10,7 +10,7 @@
         Lighting Off
         ZTest LEqual Cull Back ZWrite Off Fog { Mode Off } 
 		Blend SrcAlpha OneMinusSrcAlpha
-		Tags {"Queue" = "Transparent-1"}
+		Tags {"Queue" = "Transparent-10"}
 		Offset 0, 0
 
         Pass

@@ -29,7 +29,9 @@ namespace Engine
             if (!isCasting)
             {
                 var compileRune = Level.S.GetEntities(sourceSpellPos).OfType<Rune>().First();
-                var spell = Spell.CompileSpell(compileRune, sourceSpellPos);
+
+                var spell = new Spell();
+                spell.Compile(compileRune, sourceSpellPos);
                 exSpell = spell.CastMelee(this, dir, true);
             }
             else

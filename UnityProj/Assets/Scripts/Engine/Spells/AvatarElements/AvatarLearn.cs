@@ -8,13 +8,12 @@ namespace Engine
 {
     public class AvatarLearn : Entity, IAvatarElement, IRotatable
     {
-        List<Rune> litRunes = new List<Rune>();
-        float movementTimeLeft;
+        List<Rune> litRunes = new List<Rune>();        
 
         public Avatar avatar;
         public uint elementRuneIdx;
 
-        float speed;
+        float movTime, movTimeLeft;
 
         public bool CanRotate { get { return true; } }
 
@@ -26,11 +25,11 @@ namespace Engine
             }
         }
 
-        public AvatarLearn(Avatar avatar, uint elementRuneIdx, float speed) : base(EntityClass.Character, (uint)CharacterType.AvatarLearn)
+        public AvatarLearn(Avatar avatar, uint elementRuneIdx, float movTime) : base(EntityClass.Character, (uint)CharacterType.AvatarLearn)
         {
             this.avatar = avatar;
             this.elementRuneIdx = elementRuneIdx;
-            this.speed = speed;
+            this.movTime = movTime;
         }
 
         public bool CanAvatarFork()
@@ -41,7 +40,7 @@ namespace Engine
 
         public void ForkTo(Avatar to)
         {            
-            to.avatarElement = new AvatarLearn(to, elementRuneIdx, speed);
+            to.avatarElement = new AvatarLearn(to, elementRuneIdx, movTime);
         }
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
@@ -51,10 +50,9 @@ namespace Engine
                 avatar.finishState = Avatar.FinishedState.CantMoveThere;
             }
             else
-            {
-                float time = 1 / speed;
-                Interfacing.PerformInterfaceMove(graphicsHandle, to, time);
-                movementTimeLeft = time * 0.75f; //TODO: this is point in time when avatar changes pos and pressplates etc. react
+            {                
+                Interfacing.PerformInterfaceMove(graphicsHandle, to, movTime);
+                movTimeLeft = movTime * 0.75f; //TODO: this is point in time when avatar changes pos
             }
         }
 
@@ -91,12 +89,14 @@ namespace Engine
             foreach (var litRune in litRunes)
                 litRune.isLit = true;
 
-            float interTime;       
+            float interTime;
 
             if (rune.type == RuneType.Wind)
                 interTime = 2;
             else if (Avatar.IsArrowRune(rune.type))
                 interTime = 0.25f;
+            else if (Avatar.IsMovementCommandRune(rune.type))
+                interTime = movTime;
             else
                 interTime = 1;
 
@@ -105,10 +105,10 @@ namespace Engine
 
         public override void Update(float dt)
         {
-            if (movementTimeLeft > 0)
+            if (movTimeLeft > 0)
             {
-                movementTimeLeft = Mathf.Max(0, movementTimeLeft - dt);
-                if (movementTimeLeft == 0)
+                movTimeLeft = Mathf.Max(0, movTimeLeft - dt);
+                if (movTimeLeft == 0)
                 {
                     Level.S.RemoveEntity(pos, this);                    
                     pos = avatar.pos;                    
