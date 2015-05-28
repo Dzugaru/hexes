@@ -15,6 +15,7 @@ namespace Engine
 
         
         float movTime, movTimeLeft;
+        HexXY movPos;
         
 
         public bool CanRotate
@@ -43,8 +44,29 @@ namespace Engine
             to.avatarElement = new AvatarFlame(to, elementRuneIdx, movTime);
         }
 
+        void EnsurePrevMoveFinished()
+        {
+            if (movTimeLeft > 0) //Didn't finish prev move cause of lag? fix it
+            {
+                OnMoveFinish(movPos);
+                movTimeLeft = 0;
+            }
+        }
+
+        void OnMoveFinish(HexXY to)
+        {
+            Level.S.RemoveEntity(pos, this);
+            pos = to;
+            Level.S.AddEntity(pos, this);
+
+            var spellEffect = new SpellEffects.GroundFlame(1);
+            spellEffect.StackOn(pos);
+        }
+
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
         {
+            EnsurePrevMoveFinished();
+
             if (!WorldBlock.CanTryToMoveToBlockType(Level.S.GetPFBlockedMap(to)))
             {
                 avatar.finishState = Avatar.FinishedState.CantMoveThere;
@@ -69,6 +91,7 @@ namespace Engine
                
                 Interfacing.PerformInterfaceMove(graphicsHandle, to, movTime);
                 movTimeLeft = movTime * 0.75f; //TODO: this is point in time when avatar changes pos
+                movPos = to;
             }
         }
 
@@ -78,7 +101,8 @@ namespace Engine
         }
 
         public void OnDie()
-        {           
+        {
+            EnsurePrevMoveFinished();  
             base.Die();
         }
 
@@ -93,14 +117,7 @@ namespace Engine
             {
                 movTimeLeft = Mathf.Max(0, movTimeLeft - dt);
                 if (movTimeLeft == 0)
-                {
-                    Level.S.RemoveEntity(pos, this);
-                    pos = avatar.pos;
-                    Level.S.AddEntity(pos, this);
-
-                    var spellEffect = new SpellEffects.GroundFlame(1);
-                    spellEffect.StackOn(pos);
-                }
+                    OnMoveFinish(movPos);                
             }
             base.Update(dt);
         }       

@@ -66,6 +66,35 @@ public class VariableBool
     }
 }
 
+public class Variable<T> where T : IEquatable<T>
+{
+    T prevValue = default(T);
+
+    
+    public T value;
+
+    public Func<T> binding;
+
+    public Variable(Func<T> binding = null)
+    {
+        this.binding = binding;
+        if (binding != null)
+            value = binding();
+    }
+
+    public bool IsNew
+    {
+        get
+        {
+            if (binding != null) value = binding();
+
+            bool isNew = !value.Equals(prevValue);
+            prevValue = value;
+            return isNew;
+        }
+    }
+}
+
 
 
 

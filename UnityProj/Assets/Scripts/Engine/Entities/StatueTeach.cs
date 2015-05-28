@@ -14,7 +14,9 @@ namespace Engine
         public StatueTeach() : base()
         {
             
-        }       
+        }
+
+        public override bool CanBeClicked { get { return E.player.selectedAbilitySpell != -1 && !isCasting; } }
 
         public override void Click()
         {            
@@ -26,8 +28,9 @@ namespace Engine
             runeLightSeq.Clear();
            
             spell.Compile(compileRune, compileRune.pos, runeLightSeq);            
-            E.player.abilitySpell = spell;
+            E.player.abilitySpells[E.player.selectedAbilitySpell] = spell;
             E.player.cantMove = true;
+            E.player.selectedAbilitySpell = -1;
 
             compilingSpell = spell;
             fibered.StartFiber(RuneLightFib());

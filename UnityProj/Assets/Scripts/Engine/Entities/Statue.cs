@@ -64,5 +64,7 @@ namespace Engine
                 return float.MaxValue;
             }
         }
+
+        public abstract bool CanBeClicked { get; }
     }
 }

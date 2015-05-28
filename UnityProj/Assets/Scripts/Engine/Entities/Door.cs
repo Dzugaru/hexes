@@ -22,6 +22,8 @@ namespace Engine
             }
         }
 
+        public bool CanBeClicked { get { return false; } }
+
         public Door() : base(EntityClass.Mech, (uint)MechType.Door)
         {
 

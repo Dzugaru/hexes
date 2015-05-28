@@ -113,26 +113,25 @@ class PlayerInput : MonoBehaviour
         //    }
         //}
 
-        if (Input.GetKeyDown(KeyCode.Alpha1) && !GUI.S.abilityButtons[0].isPressed)
-            GUI.S.abilityButtons[0].SetPressed(true);
+        if (Input.GetKeyDown(KeyCode.F1))
+            E.player.selectedAbilitySpell = 0;             
+        if (Input.GetKeyDown(KeyCode.F2))
+            E.player.selectedAbilitySpell = 1;
+        if (Input.GetKeyDown(KeyCode.F3))
+            E.player.selectedAbilitySpell = 2;
 
         bool isClickedObject = MouseOverHighlightAndClick();
-
         if (!isClickedObject && Input.GetMouseButtonDown(0))
         {
-            var pressedAbilityBtn = GUI.S.abilityButtons.FirstOrDefault(b => b.isPressed);
-            if (pressedAbilityBtn != null)
+            if (E.player.selectedAbilitySpell != -1 && E.player.abilitySpells[E.player.selectedAbilitySpell] != null)
             {
-                if (pressedAbilityBtn.name == "First")
-                {
-                    E.player.CastAbilitySpell(getMouseOverTile());
-                    pressedAbilityBtn.SetPressed(false);
-                }
+                E.player.CastAbilitySpell(E.player.selectedAbilitySpell, getMouseOverTile());
+                E.player.selectedAbilitySpell = -1;
             }
             else
             {
                 E.player.Move(getMouseOverTile());
-            }
+            }          
         }
     }
 

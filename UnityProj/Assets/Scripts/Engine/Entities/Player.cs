@@ -11,7 +11,8 @@ namespace Engine
     {
         public event Action ActionFailure;
 
-        public Spell abilitySpell;
+        public Spell[] abilitySpells;
+        public int selectedAbilitySpell = -1;
         public bool cantMove;
 
         Action afterMoveAction;
@@ -25,9 +26,10 @@ namespace Engine
         public Player() : base(EntityClass.Character, (uint)CharacterType.Player)
         {
             pathStorage = new HexXY[64];           
-            speed = 2;
+            speed = 3;
             maxMana = 100;
             mana = 0;
+            abilitySpells = new Spell[3];
         }
 
         public void InitForNewGame()
@@ -183,10 +185,10 @@ namespace Engine
             return true;
         }     
 
-        public void CastAbilitySpell(HexXY p)
+        public void CastAbilitySpell(int i, HexXY p)
         {
-            bool isSuccess = abilitySpell != null;
-            if (isSuccess) abilitySpell.CastRanged(this, p);
+            bool isSuccess = abilitySpells[i] != null;
+            if (isSuccess) abilitySpells[i].CastMelee(this, HexXY.GetApproximateDir(pos, p), false);
             else if (ActionFailure != null) ActionFailure();            
         }
 

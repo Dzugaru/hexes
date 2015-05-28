@@ -14,8 +14,9 @@ public class StatueCasterGraphics : EntityGraphics, IHighlightable, IClickable
     {
         get
         {           
-            return entity.GetType() == typeof(StatueCaster) ||
-                   (entity.GetType() == typeof(StatueTeach) && !isCasting.value);
+            return ((Engine.IClickable)entity).CanBeClicked &&                    
+                    (entity.GetType() == typeof(StatueCaster) ||
+                   (entity.GetType() == typeof(StatueTeach) && !isCasting.value));
         }
     }
 

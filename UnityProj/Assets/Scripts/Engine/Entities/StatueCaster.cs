@@ -10,6 +10,8 @@ namespace Engine
     {
         public SpellExecuting exSpell;
 
+        public override bool CanBeClicked { get { return true; } }
+
         public StatueCaster() : base()
         {
             entityType = (uint)MechType.StatueCaster;

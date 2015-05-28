@@ -7,6 +7,7 @@ namespace Engine
 {
     public interface IClickable
     {
+        bool CanBeClicked { get; }
         void Click();  
     }    
 }

@@ -11,6 +11,8 @@ namespace Engine
     {
         public string text;
 
+        public bool CanBeClicked { get { return true; } }
+
         public Scroll() : base(EntityClass.Collectible, (uint)CollectibleType.Scroll)
         {
 
@@ -23,7 +25,7 @@ namespace Engine
       
         public void Click()
         {
-            Die();
+            //Die();
             Interfacing.ShowScrollWindow(this);            
         }
 

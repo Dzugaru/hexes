@@ -21,9 +21,13 @@ public class GUI : MonoBehaviour
 
     public StickyButton[] abilityButtons;
 
+    public Variable<int> playerSelectedAbilitySpell;
+
     void Start ()
     {
         S = this;
+
+        playerSelectedAbilitySpell = new Variable<int>(() => E.player.selectedAbilitySpell);
 
         canvas = GetComponent<Canvas>();
         //
@@ -38,10 +42,16 @@ public class GUI : MonoBehaviour
             playerMaxMana = new VariableFloat(() => E.player.maxMana);
         }
 
-        abilityButtons = new StickyButton[2];
+        abilityButtons = new StickyButton[3];
         abilityButtons[0] = canvas.transform.FindChild("Abilities").FindChild("First").GetComponent<StickyButton>();
         abilityButtons[1] = canvas.transform.FindChild("Abilities").FindChild("Second").GetComponent<StickyButton>();
-        abilityButtons[1].SetDisabled(true);
+        abilityButtons[2] = canvas.transform.FindChild("Abilities").FindChild("Third").GetComponent<StickyButton>();
+
+        for (int i = 0; i < 3; i++)
+        {
+            int ci = i;
+            abilityButtons[i].PressedChanged += (obj, val) => { if (val) E.player.selectedAbilitySpell = ci; };
+        }
     }
 	
 	void Update ()
@@ -104,7 +114,26 @@ public class GUI : MonoBehaviour
             canvas.transform.FindChild("Mana").GetComponent<UnityEngine.UI.Slider>().value = playerMana.value / playerMaxMana.value;
         }
 
-        abilityButtons[0].SetDisabled(E.player.abilitySpell == null);
+        if (playerSelectedAbilitySpell.IsNew)
+        {
+            if (playerSelectedAbilitySpell.value == -1)
+            {
+                foreach (var btn in abilityButtons)
+                    btn.SetPressed(false);
+            }
+            else
+            {
+                abilityButtons[playerSelectedAbilitySpell.value].SetPressed(true);
+            }
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (E.player.abilitySpells[i] != null)
+                abilityButtons[i].GetComponentInChildren<UnityEngine.UI.Text>().text = E.player.abilitySpells[i].root.type.ToString().Substring(0, 1);
+            else
+                abilityButtons[i].GetComponentInChildren<UnityEngine.UI.Text>().text = string.Empty;
+        }
     }
 
     public void ShowScrollWindow(Scroll scroll)
