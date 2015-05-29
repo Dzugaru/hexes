@@ -12,11 +12,10 @@ namespace Engine
         public Avatar avatar;
         public uint elementRuneIdx;
         public float ForkManaCost { get; private set; }
-
         
         float movTime, movTimeLeft;
         HexXY movPos;
-        
+        bool isDrawing;        
 
         public bool CanRotate
         {
@@ -59,8 +58,11 @@ namespace Engine
             pos = to;
             Level.S.AddEntity(pos, this);
 
-            var spellEffect = new SpellEffects.GroundFlame(1);
-            spellEffect.StackOn(pos);
+            if (isDrawing)
+            {
+                var spellEffect = new SpellEffects.GroundFlame(1);
+                spellEffect.StackOn(pos);
+            }
         }
 
         public void OnMove(HexXY from, HexXY to, bool isDrawing)
@@ -88,11 +90,13 @@ namespace Engine
                     avatar.finishState = Avatar.FinishedState.NoManaLeft;
                     return;
                 }
-               
-                Interfacing.PerformInterfaceMove(graphicsHandle, to, movTime);
-                movTimeLeft = movTime * 0.75f; //TODO: this is point in time when avatar changes pos
-                movPos = to;
             }
+
+            this.isDrawing = isDrawing;
+
+            Interfacing.PerformInterfaceMove(graphicsHandle, to, movTime);
+            movTimeLeft = movTime * 0.75f; //TODO: this is point in time when avatar element entity changes pos
+            movPos = to;
         }
 
         public void OnSpawn()

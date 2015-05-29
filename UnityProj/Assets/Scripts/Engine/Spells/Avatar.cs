@@ -21,6 +21,13 @@ namespace Engine
 
         bool needsFlow;
         bool isArrowCrossDirLeft;
+
+        uint repeatCounter;
+        Dictionary<HexXY, uint> loopCounters = new Dictionary<HexXY, uint>();
+
+        Queue<Spell.CompiledRune> blobFront = new Queue<Spell.CompiledRune>();
+        HashSet<Spell.CompiledRune> blobAll = new HashSet<Spell.CompiledRune>(new RunePosEqualityComparer());
+
         HashSet<HexXY> arrowsProcessed = new HashSet<HexXY>(); //This is for flow arrow cycle detection
         List<Spell.CompiledRune> additionalInterpretedRunes = new List<Spell.CompiledRune>();
 
@@ -53,15 +60,33 @@ namespace Engine
 
             if (SpellExecuting.isLogging)
                 Logger.Log(id + " " + (avatarElement == null ? "[no element]" : avatarElement.GetType().Name) + "> interpret " + rune.type + " at " + rune.relPos);
+           
 
-            if (needsFlow)
+            //This is written up here and not in the end for correct fork timing
+            if (needsFlow && repeatCounter == 0)
                 InterpretFlow();
 
-            if (finishState != null)            
-                return;            
+            if (finishState != null)
+                return;
 
-            var currRune = rune;
             additionalInterpretedRunes.Clear();
+
+            if (IsRepeatableByNumberRune(rune.type))
+            {
+                //Actually no need to reinterpret numbers, if repeatCounter > 0
+                //but its needed for proper additionalInterpretedRunes highlight
+                uint repCount = InterpretNearNumber();
+                
+                if (repeatCounter > 0)
+                    --repeatCounter;
+                else
+                {                    
+                    if (repCount > 0)
+                        repeatCounter = repCount - 1;
+                }                
+            }                     
+
+            var currRune = rune;                  
 
             needsFlow = true;            
             if (IsArrowRune(rune.type))
@@ -100,8 +125,8 @@ namespace Engine
                 var nrune = rune.neighs[i];
                 if (nrune == null) continue;
 
-                bool isArrow = IsArrowRune(nrune.type);
-                if ((isArrow && !IsArrowFrom(nrune, (uint)i)) || (!isArrow && i != flowDir)) continue;
+                bool isFlowArrow = IsArrowRune(nrune.type) || nrune.type == RuneType.If;
+                if ((isFlowArrow && !IsArrowFrom(nrune, (uint)i)) || (!isFlowArrow && i != flowDir)) continue;
                 if (i == flowDir && !IsFlowCorrect(rune, flowDir)) continue;
 
                 if (forkCount == 0)
@@ -171,8 +196,8 @@ namespace Engine
                 if (!IsArrowRune(r.type))
                 {
                     arrowsProcessed.Clear();
-                    if (setFlowDir)                    
-                        flowDir = toDir;                    
+                    //if (setFlowDir)                    
+                    //    flowDir = toDir;                    
                     return r;
                 }
             } while (!onlyOneRune);
@@ -182,14 +207,18 @@ namespace Engine
 
         bool IsFlowCorrect(Spell.CompiledRune from, uint toDir)
         {
-            from = from.neighs[toDir];
+            var to = from.neighs[toDir];
+
+            if (!IsFlowInterpretableRune(to.type)) return false;
+
+            //Logger.Log(from.type + " " + to.type + " " + toDir);
 
             //Cross arrow is special
-            if (rune != null && rune.type == RuneType.ArrowCross)
-            {
-                if (toDir == rune.dir)
+            if (to != null && to.type == RuneType.ArrowCross)
+            {   
+                if (toDir == to.dir)
                     isArrowCrossDirLeft = false;
-                else if ((toDir + 1) % 6 == rune.dir)
+                else if (toDir == (to.dir + 5) % 6)
                     isArrowCrossDirLeft = true;
                 else
                     return false;
@@ -294,7 +323,7 @@ namespace Engine
             }
         }
 
-        class InterpretPredicateRuneEqualityComparer : IEqualityComparer<Spell.CompiledRune>
+        class RunePosEqualityComparer : IEqualityComparer<Spell.CompiledRune>
         {
             public bool Equals(Spell.CompiledRune a, Spell.CompiledRune b)
             {
@@ -310,17 +339,14 @@ namespace Engine
         bool InterpretPredicate(Spell.CompiledRune predRune)
         {
             //Compute connected component and find avatar ref position
-            Spell.CompiledRune avatarRefRune = null;
+            Spell.CompiledRune avatarRefRune = null;            
 
-            Queue<Spell.CompiledRune> front = new Queue<Spell.CompiledRune>();
-            HashSet<Spell.CompiledRune> all = new HashSet<Spell.CompiledRune>(new InterpretPredicateRuneEqualityComparer());
-
-            front.Enqueue(predRune);
-            all.Add(predRune);
+            blobFront.Enqueue(predRune);
+            blobAll.Add(predRune);
 
             do
             {
-                var c = front.Dequeue();
+                var c = blobFront.Dequeue();
                 additionalInterpretedRunes.Add(c);
                 if (c.type == RuneType.PredicateAvatarRef)
                 {
@@ -338,11 +364,11 @@ namespace Engine
 
                 foreach (var n in c.neighs)
                 {
-                    if (n == null || !IsPredicateRune(n.type) || all.Contains(n)) continue;
-                    front.Enqueue(n);
-                    all.Add(n);
+                    if (n == null || !IsPredicateRune(n.type) || blobAll.Contains(n)) continue;
+                    blobFront.Enqueue(n);
+                    blobAll.Add(n);
                 }
-            } while (front.Count > 0);
+            } while (blobFront.Count > 0);
 
             HexXY predRefPos;
             if (avatarRefRune != null)
@@ -351,7 +377,7 @@ namespace Engine
             }
             else
             {
-                if (all.Count > 1)
+                if (blobAll.Count > 1)
                 {
                     //No avatar reference in predicate with more than one rune
                     finishState = FinishedState.PredicateParseError;
@@ -359,13 +385,13 @@ namespace Engine
                 }
                 else
                 {
-                    predRefPos = all.First().relPos;
+                    predRefPos = blobAll.First().relPos;
                 }
             }
 
             //Check predicate
             bool isMatch = true;
-            foreach (var prune in all)
+            foreach (var prune in blobAll)
             {
                 HexXY checkPos = prune.relPos - predRefPos;
                 for (int i = 0; i < dir; i++)
@@ -396,6 +422,8 @@ namespace Engine
                 if (!isMatch) break;                
             }
 
+            blobAll.Clear();
+
             if (SpellExecuting.isLogging)
                 Logger.Log("predicate at " + predRune.relPos + " is " + isMatch);
 
@@ -414,7 +442,7 @@ namespace Engine
             for (int i = 0; i < 6; i++)
             {
                 var nrune = rune.neighs[i];
-                if (i != 0 && i != 5 && nrune != null && IsArrowRune(nrune.type) && IsArrowFrom(nrune, (uint)i))
+                if (i != rune.dir && i != (rune.dir + 5) % 6 && nrune != null && IsArrowRune(nrune.type) && IsArrowFrom(nrune, (uint)i))
                 {
                     //Find following arrows
                     nrune = InterpretArrowSeq(nrune, false, false);
@@ -447,10 +475,45 @@ namespace Engine
             else
                 toDir = (rune.dir + 5) % 6;
 
-            flowDir = toDir;
+            //flowDir = toDir;
 
             if (!IsFlowCorrect(rune, toDir)) rune = null;
             else rune = rune.neighs[toDir];            
+        }
+
+        uint InterpretNearNumber()
+        {
+            uint count = 0;
+
+            blobFront.Enqueue(rune);
+            blobAll.Add(rune);
+
+            do
+            {
+                var c = blobFront.Dequeue();
+
+                foreach (var n in c.neighs)
+                {                    
+                    if (n == null || !IsNumberRune(n.type) || blobAll.Contains(n)) continue;
+                    additionalInterpretedRunes.Add(n);
+                    blobFront.Enqueue(n);
+                    blobAll.Add(n);
+
+                    switch (n.type)
+                    {
+                        case RuneType.Number2: count += 2; break;
+                        case RuneType.Number3: count += 3; break;
+                        case RuneType.Number4: count += 4; break;
+                        case RuneType.Number5: count += 5; break;
+                        case RuneType.Number6: count += 6; break;
+                        case RuneType.Number7: count += 7; break;
+                    }                    
+                }
+            } while (blobFront.Count > 0);
+
+            blobAll.Clear();
+
+            return count;
         }
            
 
@@ -458,8 +521,25 @@ namespace Engine
         {
             switch (arrow.type)
             {
-                case RuneType.ArrowCross: return arrow.dir == dir || arrow.dir == (dir + 1) % 6;
+                case RuneType.ArrowCross: return arrow.dir == dir || arrow.dir == (dir + 1) % 6;                
                 default: return arrow.dir == dir;
+            }
+        }
+
+        static bool IsRepeatableByNumberRune(RuneType type)
+        {
+            switch (type)
+            {
+                case RuneType.AvatarForward:
+                case RuneType.AvatarForwardDraw:
+                case RuneType.AvatarForwardDupDraw:
+                case RuneType.AvatarLeft:
+                case RuneType.AvatarRight:
+                case RuneType.AvatarWalkDir:
+                case RuneType.AvatarWalkDirDraw:
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -538,5 +618,12 @@ namespace Engine
                     return false;
             }
         }
+
+        public static bool IsFlowInterpretableRune(RuneType type)
+        {
+            return !IsNumberRune(type) && !IsPredicateRune(type);
+        }
+
+       
     }
 }
