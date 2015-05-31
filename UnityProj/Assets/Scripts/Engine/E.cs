@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -15,6 +16,8 @@ namespace Engine
 
         public static Player player;
         public static LevelScript levelScript;
+
+        public static string levelName;
 
         static E()
         {
@@ -32,18 +35,44 @@ namespace Engine
 
         public static void LoadLevel(string levelName)
         {
+            E.levelName = levelName;
             var levelDataAsset = (TextAsset)Resources.Load("Levels/" + levelName);
-            using (var reader = new System.IO.BinaryReader(new System.IO.MemoryStream(levelDataAsset.bytes)))
+            string savePath = Application.persistentDataPath + "/Save/save_";            
+
+            using (var reader = new BinaryReader(new MemoryStream(levelDataAsset.bytes)))
             {
-                Level.Load(reader);
-                Level.S.LoadDynamicPart(reader);
+                Level.Load(reader);               
+                if (File.Exists(savePath + levelName))
+                {
+                    using (var saveReader = new BinaryReader(File.OpenRead(savePath + levelName)))
+                    {
+                        Level.S.LoadDynamicPart(saveReader);
+                    }
+                }
+                else
+                {
+                    Level.S.LoadDynamicPart(reader);
+                }
             }
 
+            //TODO: save/load level script too
             levelScript = (LevelScript)Activator.CreateInstance(Assembly.GetExecutingAssembly().GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == levelName));
             levelScript.Start();
 
-            //TODO: save/load player
-            player.InitForNewGame();         
+            if (File.Exists(savePath + "player"))
+            {
+                using (var saveReader = new BinaryReader(File.OpenRead(savePath + "player")))
+                {
+                    player = Player.Load(saveReader);
+                    player.Spawn(player.pos);
+                }
+            }
+            else
+            {
+                player = new Player();
+                player.InitForNewGame();
+                player.Spawn(levelScript.PlayerSpawnPos);
+            } 
         }
 
         public static void Update(float dt)
@@ -53,6 +82,24 @@ namespace Engine
 
             Spell.Update(dt);
             levelScript.Update(dt);            
-        }          
+        }
+
+        public static void SaveGame()
+        {            
+            string savePath = Application.persistentDataPath + "/Save/";
+            if (!Directory.Exists(savePath))
+                Directory.CreateDirectory(savePath);
+            savePath += "save_";            
+
+            using (var writer = new BinaryWriter(File.OpenWrite(savePath + levelName)))
+            {
+                Level.S.SaveDynamicPart(writer);
+            }
+
+            using (var writer = new BinaryWriter(File.OpenWrite(savePath + "player")))
+            {
+                player.Save(writer);
+            }
+        }
     }
 }

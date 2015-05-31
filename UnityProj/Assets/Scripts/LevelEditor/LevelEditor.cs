@@ -33,12 +33,19 @@ public class LevelEditor : MonoBehaviour
     public bool isInRuneDrawingMode = false;
     public bool isInPassabilityMode = false;
     public bool isInEntitySetMode = false;
+    public bool isInTriggerSetMode = false;
+    public uint currentTriggerZone;
 
     public Entity draggedEntity;
     public HexXY draggedEntityCurrPos, draggedEntityOrigPos;
 
     public LevelScript levelScript;
     public Type levelScriptIDs;
+    public Type levelScriptTriggerIDs;
+
+
+
+    ComboBox triggerCombo;
 
     void Awake()
     {
@@ -58,6 +65,9 @@ public class LevelEditor : MonoBehaviour
         instrPanel.Find("Passability").GetComponent<StickyButton>().PressedChanged += OnPassabilityModeChanged;
         instrPanel.Find("EntitySet").GetComponent<StickyButton>().PressedChanged += (obj, val) => isInEntitySetMode = val;
         instrPanel.Find("Runes").GetComponent<StickyButton>().PressedChanged += (obj, val) => isInRuneDrawingMode = val;
+        instrPanel.Find("TriggerZone").GetComponent<StickyButton>().PressedChanged += (obj, val) => isInTriggerSetMode = val;
+
+        triggerCombo = instrPanel.Find("TriggerCombo").GetComponent<ComboBox>();
 
 
         sbvisParent = GameObject.Find("EditorSBTileVis");
@@ -264,7 +274,6 @@ public class LevelEditor : MonoBehaviour
 
     public void ChangeStaticPassability(HexXY p, bool isUndoable) //If isBlock is null then just switch
     {
-        
         var op = new Undos.ChangePassability(p);
         if (op.Change())
         {
@@ -273,8 +282,6 @@ public class LevelEditor : MonoBehaviour
                 undos.Push(op);
                 redos.Clear();
             }
-            
-            TerrainController.S.RecreateHexTerrain(Level.S.GetBlock(Level.GetBlockCoords(p)));
         }
     }
     
@@ -309,6 +316,11 @@ public class LevelEditor : MonoBehaviour
     public void OnPassVis(bool val)
     {
         sbvisParent.SetActive(val);
+    }
+
+    public void OnTriggerZoneChanged(string zoneName)
+    {
+        currentTriggerZone = (uint)Convert.ChangeType(Enum.Parse(levelScriptTriggerIDs, zoneName), typeof(uint));
     }
 
     public void OnSave()
@@ -362,7 +374,7 @@ public class LevelEditor : MonoBehaviour
                     {
                         var p = new HexXY(wb.position.x * WorldBlock.sz + x, wb.position.y * WorldBlock.sz + y);
                         var tileVis = Instantiate(Resources.Load<GameObject>("Prefabs/Editor/SBTileVis"));
-                        tileVis.GetComponent<StaticBlockedTileVisual>().p = p;
+                        tileVis.GetComponent<TileColorVisual>().p = p;
                         tileVis.transform.SetParent(sbvisParent.transform, false);
                         var pp = p.ToPlaneCoordinates();
                         tileVis.transform.localPosition = new Vector3(pp.x, 0, pp.y);
@@ -373,8 +385,11 @@ public class LevelEditor : MonoBehaviour
             .GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == Application.loadedLevelName));
 
         levelScriptIDs = levelScript.GetType().GetNestedType("ID");
+        levelScriptTriggerIDs = levelScript.GetType().GetNestedType("TriggerID");
 
         TerrainController.S.LoadAllTerrain();
+
+        triggerCombo.SetItemsByEnum(levelScriptTriggerIDs);
     }
 
     HexXY getMouseOverTile()

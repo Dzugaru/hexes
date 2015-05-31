@@ -27,24 +27,25 @@ namespace Undos
             {
                 Level.S.SetPFBlockedMap(p, WorldBlock.PFBlockType.StaticBlocked);
                 var tileVis = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/Editor/SBTileVis"));
-                tileVis.GetComponent<StaticBlockedTileVisual>().p = p;
+                tileVis.GetComponent<TileColorVisual>().p = p;
                 tileVis.transform.SetParent(LevelEditor.S.sbvisParent.transform, false);
                 Vector2 pp = p.ToPlaneCoordinates();
                 tileVis.transform.localPosition = new Vector3(pp.x, 0, pp.y);
             }
             else
             {
-                Level.S.SetPFBlockedMap(p, WorldBlock.PFBlockType.Unblocked);
-
+                Level.S.SetPFBlockedMap(p, WorldBlock.PFBlockType.Unblocked);                
                 foreach (Transform t in LevelEditor.S.sbvisParent.transform)
                 {
-                    if (t.GetComponent<StaticBlockedTileVisual>().p == p)
+                    if (t.GetComponent<TileColorVisual>().p == p)
                     {
                         GameObject.Destroy(t.gameObject);
                         break;
                     }
                 }            
             }
+
+            TerrainController.S.RecreateHexTerrain(Level.S.GetBlock(Level.GetBlockCoords(p)));
 
             return true;
         }

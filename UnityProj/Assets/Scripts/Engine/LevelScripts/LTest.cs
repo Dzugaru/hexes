@@ -13,6 +13,13 @@ namespace Engine.LevelScripts
             Door01
         }
 
+        public enum TriggerID
+        {
+            BossDoorClose,
+            Trigger01,
+            Trigger02
+        }
+
         public override HexXY PlayerSpawnPos
         {
             get

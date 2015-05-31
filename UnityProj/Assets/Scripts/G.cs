@@ -203,5 +203,10 @@ public class G : MonoBehaviour
 
         Application.LoadLevelAdditive("editor");
     }
+
+    void OnApplicationQuit()
+    {       
+        E.SaveGame();
+    }
 }
 

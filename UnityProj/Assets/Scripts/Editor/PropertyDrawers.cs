@@ -6,7 +6,7 @@ using System.Reflection;
 using System;
 
 [CustomPropertyDrawer(typeof(VariableFloat))]
-public class VariableFloatPropertyDrawer : UnityEditor.PropertyDrawer
+public class VariableFloatPropertyDrawer : PropertyDrawer
 {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {        
@@ -22,7 +22,7 @@ public class VariableFloatPropertyDrawer : UnityEditor.PropertyDrawer
 }
 
 [CustomPropertyDrawer(typeof(ScriptObjectID))]
-public class ScriptObjectIDPropertyDrawer : UnityEditor.PropertyDrawer
+public class ScriptObjectIDPropertyDrawer : PropertyDrawer
 {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {

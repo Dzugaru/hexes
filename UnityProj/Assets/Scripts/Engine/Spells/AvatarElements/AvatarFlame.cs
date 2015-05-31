@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Engine
 {
     //Set ground it passes aflame
-    public class AvatarFlame : Entity, IAvatarElement, IRotatable
+    public class AvatarFlame : Entity, IAvatarElement, IRotatable, INonSavable
     {
         public Avatar avatar;
         public uint elementRuneIdx;

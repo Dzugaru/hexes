@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using System.Linq;
 
 namespace Engine
 {
@@ -93,18 +94,18 @@ namespace Engine
             for (int x = 0; x < sz; x++)
                 for (int y = 0; y < sz; y++)
                 {
-                    int count = entityMap[x, y].Count;
+                    int count = entityMap[x, y].Count(e => !(e is INonSavable));
                     if (count > 0) nonZeroList.Add(new HexXY(x, y));
                 }
 
             writer.Write(nonZeroList.Count);
             foreach (var nz in nonZeroList)
             {
-                int count = entityMap[nz.x, nz.y].Count;                
+                int count = entityMap[nz.x, nz.y].Count(e => !(e is INonSavable));                
                 writer.Write(nz.x);
                 writer.Write(nz.y);
                 writer.Write(count);
-                foreach (var ent in entityMap[nz.x, nz.y])                
+                foreach (var ent in entityMap[nz.x, nz.y].Where(e => !(e is INonSavable)))
                     ent.Save(writer);                
             }        
         }

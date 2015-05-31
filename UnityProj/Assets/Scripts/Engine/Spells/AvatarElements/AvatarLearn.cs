@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Engine
 {
-    public class AvatarLearn : Entity, IAvatarElement, IRotatable
+    public class AvatarLearn : Entity, IAvatarElement, IRotatable, INonSavable
     {
         List<Rune> litRunes = new List<Rune>();        
 

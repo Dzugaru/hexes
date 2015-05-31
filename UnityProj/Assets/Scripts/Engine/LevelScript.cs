@@ -18,10 +18,7 @@ namespace Engine
 
         public virtual void Start()
         {
-            fibers = new Fibered();
-
-            E.player = new Player();
-            E.player.Spawn(PlayerSpawnPos);
+            fibers = new Fibered();            
         }
 
         protected T GetScriptEntity<T>(Enum idEnum) where T : Entity

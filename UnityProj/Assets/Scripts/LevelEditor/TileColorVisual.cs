@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-public class StaticBlockedTileVisual : MonoBehaviour
+public class TileColorVisual : MonoBehaviour
 {
     public float ypos;
     public HexXY p;
@@ -18,7 +18,7 @@ public class StaticBlockedTileVisual : MonoBehaviour
         var triangles = new List<int>();
         
         for (int i = 0; i < 6; i++)        
-            vertices.Add(new Vector3(HexTerrain.cellVertices[i].x, ypos, HexTerrain.cellVertices[i].y));
+            vertices.Add(new Vector3(HexTerrain.cellVertices[i].x * 0.8f, ypos, HexTerrain.cellVertices[i].y * 0.8f));
 
         for (int i = 0; i < 12; i++)
             triangles.Add(HexTerrain.cellTriangles[i]);

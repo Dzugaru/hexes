@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -7,7 +8,7 @@ using UnityEngine;
 namespace Engine
 {
     [GameSaveLoad("D900D210")]
-    public class Player : Entity, ICaster
+    public class Player : Entity, ICaster, INonSavable, IHasHP
     {
         public event Action ActionFailure;
 
@@ -21,19 +22,21 @@ namespace Engine
 
         HashSet<RuneType> knownRunes = new HashSet<RuneType>();
 
-        public float mana, maxMana;
+        public float mana, maxMana;       
 
         public Player() : base(EntityClass.Character, (uint)CharacterType.Player)
         {
             pathStorage = new HexXY[64];           
-            speed = 3;
-            maxMana = 100;
-            mana = 0;
+            speed = 3;            
             abilitySpells = new Spell[3];
         }
 
         public void InitForNewGame()
         {
+            maxMana = 100;
+            mana = 0;
+            hasHP.currentHP = hasHP.maxHP = 100;
+
             foreach (RuneType runeType in Enum.GetValues(typeof(RuneType)))
                 knownRunes.Add(runeType);
             //knownRunes.Add(RuneType.Arrow0);
@@ -389,6 +392,57 @@ namespace Engine
             }
         }
         #endregion
+
+        public new void Save(BinaryWriter writer)
+        {
+            writer.Write(pos.x);
+            writer.Write(pos.y);
+            writer.Write(mana);
+            writer.Write(maxMana);
+            writer.Write(hasHP.currentHP);
+            writer.Write(hasHP.maxHP);
+
+            foreach (var sp in abilitySpells)
+            {
+                if (sp == null)
+                    writer.Write(false);
+                else
+                {
+                    writer.Write(true);
+                    sp.Save(writer);
+                }
+            }
+
+            writer.Write(knownRunes.Count);
+            foreach (var rt in knownRunes)            
+                writer.Write((uint)rt);
+
+           
+        }
+
+        public new static Player Load(BinaryReader reader)
+        {
+            Player p = new Player();
+
+            p.pos = new HexXY(reader.ReadInt32(), reader.ReadInt32());
+            p.mana = reader.ReadSingle();
+            p.maxMana = reader.ReadSingle();
+            p.hasHP.currentHP = reader.ReadSingle();
+            p.hasHP.maxHP = reader.ReadSingle();            
+
+            for(int i = 0; i < p.abilitySpells.Length; i++)
+            {
+                bool isNotNull = reader.ReadBoolean();
+                if (isNotNull)                
+                    p.abilitySpells[i] = Spell.Load(reader);                
+            }
+
+            int runesCount = reader.ReadInt32();
+            for (int i = 0; i < runesCount; i++)
+                p.knownRunes.Add((RuneType)reader.ReadUInt32());
+
+            return p;
+        }
     }
 }
 
