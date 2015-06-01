@@ -28,7 +28,7 @@ public class LevelEditor : MonoBehaviour
     public bool shouldPaintOnEmpty;
     public GameObject sunLight;    
     
-    public GameObject sbvisParent;
+    public GameObject sbvisParent, trigVisParent;    
 
     public bool isInRuneDrawingMode = false;
     public bool isInPassabilityMode = false;
@@ -65,12 +65,13 @@ public class LevelEditor : MonoBehaviour
         instrPanel.Find("Passability").GetComponent<StickyButton>().PressedChanged += OnPassabilityModeChanged;
         instrPanel.Find("EntitySet").GetComponent<StickyButton>().PressedChanged += (obj, val) => isInEntitySetMode = val;
         instrPanel.Find("Runes").GetComponent<StickyButton>().PressedChanged += (obj, val) => isInRuneDrawingMode = val;
-        instrPanel.Find("TriggerZone").GetComponent<StickyButton>().PressedChanged += (obj, val) => isInTriggerSetMode = val;
+        instrPanel.Find("TriggerZone").GetComponent<StickyButton>().PressedChanged += OnTriggerModeChanged;
 
         triggerCombo = instrPanel.Find("TriggerCombo").GetComponent<ComboBox>();
 
 
         sbvisParent = GameObject.Find("EditorSBTileVis");
+        trigVisParent = GameObject.Find("EditorTriggerTileVis");
 
         Logger.LogAction = msg => UnityEngine.Debug.Log(msg);
 
@@ -124,7 +125,10 @@ public class LevelEditor : MonoBehaviour
 
         //Changing passability
         if (isInPassabilityMode && Input.GetMouseButtonDown(0))
-            ChangeStaticPassability(p, true); 
+            ChangeStaticPassability(p);
+
+        if (isInTriggerSetMode && Input.GetMouseButtonDown(0))
+            ChangeTriggerZone(p);
 
         //Undo and redo
         if (Input.GetKeyDown(KeyCode.BackQuote) && undos.Count > 0)
@@ -272,16 +276,13 @@ public class LevelEditor : MonoBehaviour
         }
     }
 
-    public void ChangeStaticPassability(HexXY p, bool isUndoable) //If isBlock is null then just switch
+    public void ChangeStaticPassability(HexXY p)
     {
         var op = new Undos.ChangePassability(p);
         if (op.Change())
         {
-            if (isUndoable)
-            {
-                undos.Push(op);
-                redos.Clear();
-            }
+            undos.Push(op);
+            redos.Clear();
         }
     }
     
@@ -318,10 +319,48 @@ public class LevelEditor : MonoBehaviour
         sbvisParent.SetActive(val);
     }
 
+    #region Trigger Zones
     public void OnTriggerZoneChanged(string zoneName)
     {
         currentTriggerZone = (uint)Convert.ChangeType(Enum.Parse(levelScriptTriggerIDs, zoneName), typeof(uint));
+        if (isInTriggerSetMode)
+        {
+            ClearTriggerZoneVis();
+            SetTriggerZoneVis();
+        }
     }
+
+    public void OnTriggerModeChanged(StickyButton btn, bool val)
+    {
+        isInTriggerSetMode = val;
+        if (isInTriggerSetMode)
+            SetTriggerZoneVis();
+        else
+            ClearTriggerZoneVis();
+    }
+
+    public void ChangeTriggerZone(HexXY p)
+    {
+        var op = new Undos.ChangeTriggerZone(p, currentTriggerZone);
+        if (op.Change())
+        {
+            undos.Push(op);
+            redos.Clear();
+        }
+    }
+
+    void ClearTriggerZoneVis()
+    {
+        foreach (Transform go in trigVisParent.transform)        
+            Destroy(go.gameObject);        
+    }
+
+    void SetTriggerZoneVis()
+    {
+        foreach (var p in levelScript.triggerZones.Where(a => a.Value.Contains(currentTriggerZone)).Select(a => a.Key))        
+            Undos.ChangeTriggerZone.CreateVis(p);        
+    }
+    #endregion
 
     public void OnSave()
     {
@@ -334,7 +373,8 @@ public class LevelEditor : MonoBehaviour
         using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(filePath)))
         {
             Level.S.SaveStaticPart(writer);
-            Level.S.SaveDynamicPart(writer);
+            levelScript.SaveStaticPart(writer);
+            Level.S.SaveDynamicPart(writer);            
         }
 
         AssetDatabase.Refresh();     
@@ -351,6 +391,12 @@ public class LevelEditor : MonoBehaviour
     {
         var levelDataAsset = (TextAsset)Resources.Load("Levels/" + Application.loadedLevelName);
 
+        levelScript = (LevelScript)Activator.CreateInstance(System.Reflection.Assembly.GetExecutingAssembly()
+            .GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == Application.loadedLevelName));
+
+        levelScriptIDs = levelScript.GetType().GetNestedType("ID");
+        levelScriptTriggerIDs = levelScript.GetType().GetNestedType("TriggerID");
+
         if (levelDataAsset == null)
         {
             new Level();
@@ -360,7 +406,8 @@ public class LevelEditor : MonoBehaviour
             using (var reader = new BinaryReader(new MemoryStream(levelDataAsset.bytes)))
             {
                 Level.Load(reader);
-                Level.S.LoadDynamicPart(reader);
+                levelScript.LoadStaticPart(reader);
+                Level.S.LoadDynamicPart(reader);                
             }
         }       
 
@@ -380,12 +427,6 @@ public class LevelEditor : MonoBehaviour
                         tileVis.transform.localPosition = new Vector3(pp.x, 0, pp.y);
                     }
                 }
-
-        levelScript = (LevelScript)Activator.CreateInstance(System.Reflection.Assembly.GetExecutingAssembly()
-            .GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == Application.loadedLevelName));
-
-        levelScriptIDs = levelScript.GetType().GetNestedType("ID");
-        levelScriptTriggerIDs = levelScript.GetType().GetNestedType("TriggerID");
 
         TerrainController.S.LoadAllTerrain();
 

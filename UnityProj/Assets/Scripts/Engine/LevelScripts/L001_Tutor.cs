@@ -25,11 +25,11 @@ namespace Engine.LevelScripts
         {
             base.Update(dt);
 
-            var plate01 = GetScriptEntity<PressPlate>(ID.PressurePlate01);
+            var plate01 = (PressPlate)GetScriptEntity(ID.PressurePlate01);
             if (plate01.isPressed)
             {
                 fibers.StartFiber(UnpressPlateAfter(plate01, 2));
-                foreach(var d in GetScriptEntities<Door>(ID.Door01))
+                foreach(Door d in GetScriptEntities(ID.Door01))
                     d.OpenOrClose(true);
             }
         }

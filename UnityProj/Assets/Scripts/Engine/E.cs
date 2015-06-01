@@ -37,27 +37,28 @@ namespace Engine
         {
             E.levelName = levelName;
             var levelDataAsset = (TextAsset)Resources.Load("Levels/" + levelName);
-            string savePath = Application.persistentDataPath + "/Save/save_";            
+            string savePath = Application.persistentDataPath + "/Save/save_";
+
+            levelScript = (LevelScript)Activator.CreateInstance(Assembly.GetExecutingAssembly().GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == levelName));
 
             using (var reader = new BinaryReader(new MemoryStream(levelDataAsset.bytes)))
             {
-                Level.Load(reader);               
+                Level.Load(reader);
+                levelScript.LoadStaticPart(reader);
                 if (File.Exists(savePath + levelName))
                 {
                     using (var saveReader = new BinaryReader(File.OpenRead(savePath + levelName)))
                     {
                         Level.S.LoadDynamicPart(saveReader);
+                        levelScript.LoadDynamicPart(saveReader);                       
                     }
                 }
                 else
                 {
                     Level.S.LoadDynamicPart(reader);
+                    levelScript.LoadDynamicPart(reader);
                 }
-            }
-
-            //TODO: save/load level script too
-            levelScript = (LevelScript)Activator.CreateInstance(Assembly.GetExecutingAssembly().GetTypes().First(t => t.Namespace == "Engine.LevelScripts" && t.Name == levelName));
-            levelScript.Start();
+            }    
 
             if (File.Exists(savePath + "player"))
             {
@@ -72,7 +73,9 @@ namespace Engine
                 player = new Player();
                 player.InitForNewGame();
                 player.Spawn(levelScript.PlayerSpawnPos);
-            } 
+            }
+
+            levelScript.Start();
         }
 
         public static void Update(float dt)
@@ -94,6 +97,7 @@ namespace Engine
             using (var writer = new BinaryWriter(File.OpenWrite(savePath + levelName)))
             {
                 Level.S.SaveDynamicPart(writer);
+                levelScript.SaveDynamicPart(writer);
             }
 
             using (var writer = new BinaryWriter(File.OpenWrite(savePath + "player")))

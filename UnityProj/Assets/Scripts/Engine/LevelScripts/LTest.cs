@@ -10,7 +10,8 @@ namespace Engine.LevelScripts
         public enum ID
         {
             PressurePlate01,
-            Door01
+            Door01,
+            BossDoor
         }
 
         public enum TriggerID
@@ -24,7 +25,7 @@ namespace Engine.LevelScripts
         {
             get
             {
-                return new HexXY(-13, -16);
+                return new HexXY(1, -1);
             }
         }
 
@@ -32,12 +33,18 @@ namespace Engine.LevelScripts
         {
             base.Update(dt);
 
-            var plate01 = GetScriptEntity<PressPlate>(ID.PressurePlate01);
-            if (plate01.isPressed)
+            //var plate01 = (PressPlate)GetScriptEntity(ID.PressurePlate01);
+            //if (plate01.isPressed)
+            //{
+            //    fibers.StartFiber(UnpressPlateAfter(plate01, 2));
+            //    foreach (Door d in GetScriptEntities(ID.Door01))
+            //        d.OpenOrClose(true);
+            //}
+
+            if (IsPlayerAtTriggerZone(TriggerID.BossDoorClose))
             {
-                fibers.StartFiber(UnpressPlateAfter(plate01, 2));
-                foreach (var d in GetScriptEntities<Door>(ID.Door01))
-                    d.OpenOrClose(true);
+                foreach (Door d in GetScriptEntities(ID.BossDoor))
+                    d.OpenOrClose(false);
             }
         }
 
